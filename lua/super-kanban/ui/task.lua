@@ -7,9 +7,12 @@ local hls = require("super-kanban.highlights")
 ---@field list_win snacks.win
 ---@field root kanban.RootUI
 
----@class kanban.TaskUI: kanban.Task.Opts
+---@class kanban.TaskUI
+---@field data kanban.TaskData
+---@field index number
 ---@field win snacks.win
----@overload fun(config :{} , opts: kanban.Task.Opts): kanban.TaskUI
+---@field list_index number
+---@overload fun(opts:kanban.Task.Opts,config :{}): kanban.TaskUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -17,9 +20,9 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@param config any
 ---@param opts kanban.Task.Opts
-function M.new(config, opts)
+---@param config any
+function M.new(opts, config)
 	local self = setmetatable({}, M)
 
 	local task_win = Snacks.win({
@@ -45,8 +48,7 @@ function M.new(config, opts)
 	self.win = task_win
 	self.data = opts.data
 	self.index = opts.index
-	self.list_win = opts.list_win
-	self.root = opts.root
+	self.list_index = opts.list_index
 
 	return self
 end
@@ -64,7 +66,7 @@ function M:set_actions(ctx)
 	local map = vim.keymap.set
 
 	map("n", "q", function()
-		self.root.win:close()
+		ctx.root.win:close()
 	end, { buffer = buf })
 end
 

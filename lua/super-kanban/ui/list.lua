@@ -5,9 +5,11 @@ local hls = require("super-kanban.highlights")
 ---@field index number
 ---@field root kanban.RootUI
 
----@class kanban.TaskListUI: kanban.TaskList.Opts
+---@class kanban.TaskListUI
+---@field data {title: string}
+---@field index number
 ---@field win snacks.win
----@overload fun(config :{} , opts: kanban.TaskList.Opts): kanban.TaskListUI
+---@overload fun(opts:kanban.TaskList.Opts,config:{}): kanban.TaskListUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -15,9 +17,9 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@param config any
 ---@param opts kanban.TaskList.Opts
-function M.new(config, opts)
+---@param config any
+function M.new(opts, config)
 	local self = setmetatable({}, M)
 
 	local list_win = Snacks.win({
@@ -39,7 +41,6 @@ function M.new(config, opts)
 	self.win = list_win
 	self.data = opts.data
 	self.index = opts.index
-	self.root = opts.root
 
 	return self
 end
@@ -67,6 +68,15 @@ function M:set_events(ctx)
 			tk.win:close()
 		end
 	end, { win = true })
+end
+
+---A hack to Combine list and tasks in a type safe way
+---@param list table
+---@param tasks kanban.TaskUI
+---@return kanban.TaskList.Ctx
+function M.gen_list_ctx(list, tasks)
+	list.tasks = tasks
+	return list
 end
 
 return M

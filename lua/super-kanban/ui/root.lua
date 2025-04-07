@@ -19,11 +19,13 @@ function M.new(config)
 		-- width = 0.8,
 		-- height = 0.8,
 		-- col = 1,
+		enter = false,
 		width = 0,
 		height = 0,
 		-- border = "rounded",
 		border = { "", " ", "", "", "", "", "", "" },
-		focusable = false,
+		focusable = true,
+		zindex = 10,
 		wo = {
 			winhighlight = hls.root,
 			winbar = string.format(
@@ -70,6 +72,12 @@ function M:set_events(ctx)
 			li.win:close()
 		end
 	end, { win = true })
+
+	self.win:on("BufEnter", function()
+		vim.defer_fn(function()
+			self.win:destroy()
+		end, 10)
+	end, { buf = true })
 end
 
 return M

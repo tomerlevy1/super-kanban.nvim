@@ -18,8 +18,8 @@ local M = setmetatable({}, {
 M.__index = M
 
 ---@param opts kanban.TaskList.Opts
----@param config any
-function M.new(opts, config)
+---@param conf kanban.Config
+function M.new(opts, conf)
 	local self = setmetatable({}, M)
 
 	local list_win = Snacks.win({
@@ -28,9 +28,9 @@ function M.new(opts, config)
 		title_pos = "center",
 		win = opts.root.win.win,
 		height = 0.9,
-		width = config.list_min_width,
+		width = conf.list_min_width,
 		row = 1,
-		col = 10 + (config.list_min_width + 3) * (opts.index - 1),
+		col = 10 + (conf.list_min_width + 3) * (opts.index - 1),
 		relative = "win",
 		border = "rounded",
 		focusable = true,
@@ -87,6 +87,7 @@ function M.gen_list_ctx(list, tasks)
 	return list
 end
 
+---@param ctx kanban.Ctx
 function M:get_actions(ctx)
 	local act = {
 		-- swap_vertical = function(direction)
@@ -103,7 +104,7 @@ function M:get_actions(ctx)
 		-- end,
 
 		close = function()
-			ctx.root.win:close()
+			ctx.root:exit(ctx)
 		end,
 	}
 

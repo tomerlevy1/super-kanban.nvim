@@ -1,5 +1,4 @@
 local hls = require("super-kanban.highlights")
-local Logger = require("super-kanban.file-logger")
 
 ---@class kanban.Task.Opts
 ---@field data kanban.TaskData
@@ -26,8 +25,8 @@ local function calculate_row_pos(index)
 end
 
 ---@param opts kanban.Task.Opts
----@param config any
-function M.new(opts, config)
+---@param conf kanban.Config
+function M.new(opts, conf)
 	local self = setmetatable({}, M)
 
 	local task_win = Snacks.win({
@@ -43,7 +42,7 @@ function M.new(opts, config)
 		-- border = "rounded",
 		border = { "", "", "", " ", "▁", "▁", "▁", " " },
 		focusable = true,
-    zindex = 20,
+		zindex = 20,
 		wo = {
 			winbar = "%=+",
 			winhighlight = hls.task,
@@ -69,6 +68,7 @@ function M:focus()
 	vim.wo.winhighlight = hls.taskActive
 end
 
+---@param ctx kanban.Ctx
 function M:get_actions(ctx)
 	local act = {
 		swap_vertical = function(direction)
@@ -133,7 +133,7 @@ function M:get_actions(ctx)
 		end,
 
 		close = function()
-			ctx.root.win:close()
+			ctx.root:exit(ctx)
 		end,
 	}
 

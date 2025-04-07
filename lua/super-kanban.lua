@@ -2,8 +2,36 @@ local ui = require("super-kanban.ui")
 
 local M = {}
 
+---@class kanban.Config
+---@field list_min_width number
+---@field markdown kanban.MarkdownConfig
 local config = {
 	list_min_width = 32,
+	markdown = {
+		description_folder = "./tasks/", -- "./"
+		list_head = "## ",
+		due_head = "@",
+		due_style = "{<due>}",
+		tag_head = "#",
+		tag_style = "<tag>",
+		header = {
+			"---",
+			"",
+			"kanban-plugin: basic",
+			"",
+			"---",
+			"",
+		},
+		footer = {
+			"",
+			"",
+			"%% kanban:settings",
+			"```",
+			'{"kanban-plugin":"basic"}',
+			"```",
+			"%%",
+		},
+	},
 }
 
 function M.setup()
@@ -11,9 +39,9 @@ function M.setup()
 end
 
 --- Open super-kanban
----@param kanban_md_path string
-function M.open(kanban_md_path)
-	local md = require("super-kanban.markdown").read(kanban_md_path)
+---@param source_path string
+function M.open(source_path)
+	local md = require("super-kanban.markdown").read(source_path)
 
 	local root = ui.root(config)
 	---@type kanban.TaskList.Ctx[]
@@ -45,7 +73,9 @@ function M.open(kanban_md_path)
 		lists[list_index] = ui.list.gen_list_ctx(list, tasks)
 	end
 
-	root:init({ root = root, lists = lists })
+	---@type kanban.Ctx
+	local ctx = { root = root, lists = lists, source_path = source_path }
+	root:init(ctx)
 end
 
 -- lua require("super-kanban").open()

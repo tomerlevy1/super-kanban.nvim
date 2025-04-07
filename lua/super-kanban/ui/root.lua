@@ -10,8 +10,11 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@param config any
-function M.new(config)
+---@type kanban.Config
+local config
+
+---@param conf kanban.Config
+function M.new(conf)
 	local self = setmetatable({}, M)
 
 	local root_win = Snacks.win({
@@ -36,6 +39,7 @@ function M.new(config)
 	})
 
 	self.win = root_win
+	config = conf
 	return self
 end
 
@@ -62,15 +66,21 @@ function M:init(ctx)
 	end
 end
 
+function M:exit(ctx)
+	require("super-kanban.markdown.writer").write(ctx, config)
+	for _, li in ipairs(ctx.lists) do
+		li.win:close()
+	end
+	self.win:close()
+end
+
 ---@param ctx kanban.Ctx
 function M:set_actions(ctx) end
 
 ---@param ctx kanban.Ctx
 function M:set_events(ctx)
 	self.win:on("WinClosed", function(_, ev)
-		for _, li in ipairs(ctx.lists) do
-			li.win:close()
-		end
+		self:exit(ctx)
 	end, { win = true })
 
 	self.win:on("BufEnter", function()

@@ -36,7 +36,10 @@ function M.new(opts, conf)
 		focusable = true,
 		zindex = 15,
 		wo = { winhighlight = hls.list },
-		bo = { modifiable = true },
+		bo = {
+      modifiable = false,
+			filetype = "superkanban_list",
+    },
 	})
 
 	self.win = list_win

@@ -36,6 +36,10 @@ function M.new(conf)
 				"KanBan"
 			),
 		},
+		bo = {
+			modifiable = false,
+			filetype = "superkanban_board",
+		},
 	})
 
 	self.win = root_win

@@ -32,7 +32,13 @@ function M.new(opts, conf)
 	local task_win = Snacks.win({
 		show = false,
 		enter = false,
-		text = opts.data.title,
+		text = function()
+			return {
+				opts.data.title or nil,
+				#opts.data.tag > 0 and table.concat(opts.data.tag, " ") or nil,
+				#opts.data.due > 0 and table.concat(opts.data.due, " ") or nil,
+			}
+		end,
 		win = opts.list_win.win,
 		width = 0,
 		height = 4,
@@ -47,7 +53,10 @@ function M.new(opts, conf)
 			winbar = "%=+",
 			winhighlight = hls.task,
 		},
-		bo = { modifiable = true },
+		bo = {
+			modifiable = true,
+			filetype = "superkanban_task",
+		},
 	})
 
 	self.win = task_win

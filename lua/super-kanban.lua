@@ -37,7 +37,6 @@ local config = {
 
 function M.setup()
 	hl.create_winhighlights()
-	print("setup working")
 end
 M.setup()
 

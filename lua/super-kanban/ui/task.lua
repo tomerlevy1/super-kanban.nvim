@@ -140,6 +140,48 @@ function M:get_actions(ctx)
 				self:focus()
 			end
 		end,
+		jump_verticaly = function(direction)
+			if direction == nil then
+				direction = 1
+			end
+			return function()
+				local target_list = ctx.lists[self.list_index]
+				if not target_list then
+					return
+				end
+				if #target_list.tasks == 0 then
+					return
+				end
+
+				-- Updating index
+				local target_index = self.index + direction
+				if target_list.tasks[target_index] then
+					target_list.tasks[target_index]:focus()
+				end
+			end
+		end,
+		jump_horizontal = function(direction)
+			if direction == nil then
+				direction = 1
+			end
+			return function()
+				local target_list = ctx.lists[self.list_index + direction]
+				if not target_list then
+					return
+				end
+				if #target_list.tasks == 0 then
+					target_list.win:focus()
+				end
+
+				-- Updating index
+				local target_index = self.index
+				if #target_list.tasks >= target_index then
+					target_list.tasks[target_index]:focus()
+				elseif target_list.tasks[#target_list.tasks] then
+					target_list.tasks[#target_list.tasks]:focus()
+				end
+			end
+		end,
 
 		close = function()
 			ctx.root:exit(ctx)
@@ -152,15 +194,14 @@ end
 ---@param ctx kanban.Ctx
 function M:init(ctx)
 	self.win:show()
-	self:set_actions(ctx)
+	self:set_keymaps(ctx)
 	self:set_events(ctx)
 end
 
 ---@param ctx kanban.Ctx
-function M:set_actions(ctx)
+function M:set_keymaps(ctx)
 	local buf = self.win.buf
 	local map = vim.keymap.set
-
 	local act = self:get_actions(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
@@ -170,6 +211,11 @@ function M:set_actions(ctx)
 
 	map("n", "L", act.swap_horizontal(1), { buffer = buf })
 	map("n", "H", act.swap_horizontal(-1), { buffer = buf })
+
+	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
+	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
+	map("n", "<C-k>", act.jump_verticaly(-1), { buffer = buf })
+	map("n", "<C-j>", act.jump_verticaly(1), { buffer = buf })
 end
 
 ---@param ctx kanban.Ctx

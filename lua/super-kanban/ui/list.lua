@@ -37,9 +37,9 @@ function M.new(opts, conf)
 		zindex = 15,
 		wo = { winhighlight = hl.list },
 		bo = {
-      modifiable = false,
+			modifiable = false,
 			filetype = "superkanban_list",
-    },
+		},
 	})
 
 	self.win = list_win
@@ -51,18 +51,20 @@ end
 
 ---@param ctx kanban.Ctx
 function M:init(ctx)
-	self:set_actions(ctx)
+	self:set_keymaps(ctx)
 	self:set_events(ctx)
 end
 
 ---@param ctx kanban.Ctx
-function M:set_actions(ctx)
+function M:set_keymaps(ctx)
 	local buf = self.win.buf
 	local map = vim.keymap.set
-
 	local act = self:get_actions(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
+
+	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
+	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
 end
 
 ---@param ctx kanban.Ctx
@@ -108,6 +110,27 @@ function M:get_actions(ctx)
 
 		close = function()
 			ctx.root:exit(ctx)
+		end,
+
+		jump_horizontal = function(direction)
+			if direction == nil then
+				direction = 1
+			end
+			return function()
+				local target_list = ctx.lists[self.index + direction]
+				if not target_list then
+					return
+				end
+				if #target_list.tasks == 0 then
+					target_list.win:focus()
+				end
+
+				-- -- Updating index
+				local target_index = 1
+				if target_list.tasks[target_index] then
+					target_list.tasks[target_index]:focus()
+				end
+			end
 		end,
 	}
 

@@ -1,4 +1,4 @@
-local hls = require("super-kanban.highlights")
+local hl = require("super-kanban.highlights")
 
 ---@class kanban.TaskList.Opts
 ---@field data {title: string}
@@ -35,7 +35,7 @@ function M.new(opts, conf)
 		border = "rounded",
 		focusable = true,
 		zindex = 15,
-		wo = { winhighlight = hls.list },
+		wo = { winhighlight = hl.list },
 		bo = {
       modifiable = false,
 			filetype = "superkanban_list",

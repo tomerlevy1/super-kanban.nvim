@@ -1,3 +1,4 @@
+local hl = require("super-kanban.highlights")
 local ui = require("super-kanban.ui")
 
 local M = {}
@@ -35,8 +36,10 @@ local config = {
 }
 
 function M.setup()
+	hl.create_winhighlights()
 	print("setup working")
 end
+M.setup()
 
 --- Open super-kanban
 ---@param source_path string

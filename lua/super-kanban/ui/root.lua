@@ -1,4 +1,4 @@
-local hls = require("super-kanban.highlights")
+local hl = require("super-kanban.highlights")
 
 ---@class kanban.RootUI
 ---@field win snacks.win
@@ -30,7 +30,7 @@ function M.new(conf)
 		focusable = true,
 		zindex = 10,
 		wo = {
-			winhighlight = hls.root,
+			winhighlight = hl.root,
 			winbar = string.format(
 				"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
 				"KanBan"

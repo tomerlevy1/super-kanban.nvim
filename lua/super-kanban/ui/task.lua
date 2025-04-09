@@ -1,4 +1,4 @@
-local hls = require("super-kanban.highlights")
+local hl = require("super-kanban.highlights")
 
 ---@class kanban.Task.Opts
 ---@field data kanban.TaskData
@@ -51,7 +51,7 @@ function M.new(opts, conf)
 		zindex = 20,
 		wo = {
 			winbar = "%=+",
-			winhighlight = hls.task,
+			winhighlight = hl.task,
 		},
 		bo = {
 			modifiable = true,
@@ -74,7 +74,7 @@ end
 
 function M:focus()
 	self.win:focus()
-	vim.wo.winhighlight = hls.taskActive
+	vim.wo.winhighlight = hl.taskActive
 end
 
 ---@param ctx kanban.Ctx
@@ -175,11 +175,11 @@ end
 ---@param ctx kanban.Ctx
 function M:set_events(ctx)
 	self.win:on("BufEnter", function()
-		vim.wo.winhighlight = hls.taskActive
+		vim.wo.winhighlight = hl.taskActive
 	end, { buf = true })
 
 	self.win:on("BufLeave", function()
-		vim.wo.winhighlight = hls.task
+		vim.wo.winhighlight = hl.task
 	end, { buf = true })
 end
 

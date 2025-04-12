@@ -12,6 +12,7 @@ local hl = require("super-kanban.highlights")
 ---@field index number
 ---@field win snacks.win
 ---@field list_index number
+---@field config kanban.Config
 ---@overload fun(opts:kanban.Task.Opts,config :{}): kanban.TaskUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
@@ -63,6 +64,7 @@ function M.new(opts, conf)
 	self.data = opts.data
 	self.index = opts.index
 	self.list_index = opts.list_index
+	self.config = conf
 
 	return self
 end
@@ -75,6 +77,47 @@ end
 function M:focus()
 	self.win:focus()
 	vim.wo.winhighlight = hl.taskActive
+end
+
+local function parse_tags(text)
+	local tags = {}
+	for tag in text:gmatch("#%w+") do
+		table.insert(tags, tag)
+	end
+	return tags
+end
+
+local function parse_dates(text)
+	local dates = {}
+	for date in text:gmatch("(@%d%d%d%d/%d?%d/%d?%d)") do
+		table.insert(dates, date)
+	end
+	return dates
+end
+
+---@param ctx kanban.Ctx
+function M:save(ctx)
+	local lines = self.win:lines()
+
+	local title = lines[1]
+	local tags = {}
+	local dates = {}
+
+	for i = 2, #lines, 1 do
+		local found_tags = parse_tags(lines[i])
+		if #found_tags >= 1 then
+			vim.list_extend(tags, found_tags)
+		end
+
+		local found_dates = parse_dates(lines[i])
+		if #found_dates >= 1 then
+			vim.list_extend(dates, found_dates)
+		end
+	end
+
+	self.data.title = title
+	self.data.tag = tags
+	self.data.due = dates
 end
 
 ---@param ctx kanban.Ctx
@@ -186,6 +229,26 @@ function M:get_actions(ctx)
 		close = function()
 			ctx.root:exit(ctx)
 		end,
+		create = function()
+			local list = ctx.lists[self.list_index]
+			local target_index = #list.tasks + 1
+			local task = self.new({
+				data = {
+					title = "",
+					check = " ",
+					tag = {},
+					due = {},
+				},
+				index = target_index,
+				list_index = self.list_index,
+				list_win = list.win,
+				root = ctx.root,
+			}, self.config):init(ctx)
+			list.tasks[target_index] = task
+
+			task:focus()
+			vim.cmd.startinsert()
+		end,
 	}
 
 	return act
@@ -196,6 +259,8 @@ function M:init(ctx)
 	self.win:show()
 	self:set_keymaps(ctx)
 	self:set_events(ctx)
+
+	return self
 end
 
 ---@param ctx kanban.Ctx
@@ -205,6 +270,7 @@ function M:set_keymaps(ctx)
 	local act = self:get_actions(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
+	map("n", "gn", act.create, { buffer = buf })
 
 	map("n", "K", act.swap_vertical(-1), { buffer = buf })
 	map("n", "J", act.swap_vertical(), { buffer = buf })
@@ -226,6 +292,10 @@ function M:set_events(ctx)
 
 	self.win:on("BufLeave", function()
 		vim.wo.winhighlight = hl.task
+	end, { buf = true })
+
+	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
+		self:save(ctx)
 	end, { buf = true })
 end
 

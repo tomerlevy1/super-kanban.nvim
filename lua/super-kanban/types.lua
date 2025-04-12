@@ -1,8 +1,8 @@
 ---@class kanban.TaskData
 ---@field title string
 ---@field check string
----@field due table
----@field tag table
+---@field due string[]
+---@field tag string[]
 
 ---@class kanban.TaskListData
 ---@field title string

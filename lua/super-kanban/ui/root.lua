@@ -52,21 +52,13 @@ function M:init(ctx)
 	self:set_actions(ctx)
 	self:set_events(ctx)
 
-	local task_focused = nil
-
 	for _, list in ipairs(ctx.lists) do
 		list:init(ctx)
-		for _, task in ipairs(list.tasks) do
-			task:init(ctx)
-
-			if task_focused == nil then
-				task_focused = task
-			end
-		end
 	end
 
-	if task_focused then
-		task_focused.win:focus()
+	local focus_loc = ctx.focus_location
+	if focus_loc then
+		ctx.lists[focus_loc[1]].tasks[focus_loc[2]]:focus()
 	end
 end
 

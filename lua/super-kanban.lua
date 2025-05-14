@@ -45,28 +45,38 @@ M.setup()
 function M.open(source_path)
 	local md = require("super-kanban.markdown").read(source_path)
 
-	local root = ui.root(config)
+	---@type kanban.Ctx
+	local ctx = {
+		root = ui.root(config),
+		source_path = source_path,
+		lists = {},
+	}
+
 	---@type kanban.TaskList.Ctx[]
 	local lists = {}
+	local first_task_loc = nil
 
 	-- Setup lists & tasks windows then generate ctx
 	for list_index, list_md in ipairs(md.lists) do
 		local list = ui.list({
 			data = { title = list_md.title },
 			index = list_index,
-			root = root,
+			ctx = ctx,
 		}, config)
 
 		---@type kanban.TaskUI[]
 		local tasks = {}
 		if type(list_md.tasks) == "table" and #list_md.tasks ~= 0 then
 			for task_index, task_md in ipairs(list_md.tasks) do
+				if first_task_loc == nil then
+					first_task_loc = { list_index, task_index }
+				end
 				local task = ui.task({
 					data = task_md,
 					index = task_index,
 					list_index = list_index,
 					list_win = list.win,
-					root = root,
+					root = ctx.root,
 				}, config)
 				tasks[task_index] = task
 			end
@@ -75,9 +85,9 @@ function M.open(source_path)
 		lists[list_index] = ui.list.gen_list_ctx(list, tasks)
 	end
 
-	---@type kanban.Ctx
-	local ctx = { root = root, lists = lists, source_path = source_path }
-	root:init(ctx)
+	ctx.lists = lists
+	ctx.focus_location = first_task_loc
+	ctx.root:init(ctx)
 end
 
 -- lua require("super-kanban").open()

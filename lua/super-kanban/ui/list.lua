@@ -3,7 +3,7 @@ local hl = require("super-kanban.highlights")
 ---@class kanban.TaskList.Opts
 ---@field data {title: string}
 ---@field index number
----@field root kanban.RootUI
+---@field ctx kanban.Ctx
 
 ---@class kanban.TaskListUI
 ---@field data {title: string}
@@ -24,9 +24,44 @@ function M.new(opts, conf)
 
 	local list_win = Snacks.win({
 		enter = false,
+		show = false,
+		on_win = function()
+			local list = opts.ctx.lists[self.index]
+			self:set_keymaps(opts.ctx)
+			self:set_events(opts.ctx)
+
+			local filled_space = 0
+			local list_height = list.win:size().height - 1
+
+			local task_hidden_start_index = 0
+
+			for task_index, task in ipairs(list.tasks) do
+				-- calcuate available space for list
+				local task_win = task:setup_win(list, opts.ctx)
+				filled_space = filled_space + task_win:size().height - 1
+				local is_list_space_full = filled_space >= list_height
+
+				if is_list_space_full and task_hidden_start_index == 0 then
+					task_hidden_start_index = task_index
+				end
+
+				task:init(opts.ctx, list, {
+					task_win = task_win,
+					space_available = not is_list_space_full,
+				})
+			end
+
+			-- Set footer
+			if task_hidden_start_index ~= 0 then
+				vim.api.nvim_win_set_config(self.win.win, {
+					footer = tostring(#list.tasks + 1 - task_hidden_start_index),
+					footer_pos = "right",
+				})
+			end
+		end,
 		title = opts.data.title,
 		title_pos = "center",
-		win = opts.root.win.win,
+		win = opts.ctx.root.win.win,
 		height = 0.9,
 		width = conf.list_min_width,
 		row = 1,
@@ -51,8 +86,7 @@ end
 
 ---@param ctx kanban.Ctx
 function M:init(ctx)
-	self:set_keymaps(ctx)
-	self:set_events(ctx)
+	self.win:show()
 end
 
 ---@param ctx kanban.Ctx

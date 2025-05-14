@@ -18,6 +18,7 @@
 ---@field root kanban.RootUI
 ---@field lists kanban.TaskList.Ctx[]
 ---@field source_path string
+---@field focus_location? number[]
 
 ---@class kanban.MarkdownConfig
 ---@field description_folder string

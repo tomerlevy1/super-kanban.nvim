@@ -30,29 +30,47 @@ end
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
 
+	self.data = opts.data
+	self.index = opts.index
+	self.list_index = opts.list_index
+	self.config = conf
+
+	return self
+end
+
+---@param list kanban.TaskListUI
+---@param ctx kanban.Ctx
+---@return snacks.win
+function M:setup_win(list, ctx)
 	local task_win = Snacks.win({
 		show = false,
 		enter = false,
+		on_win = function()
+			self:set_events(ctx)
+			self:set_keymaps(ctx)
+		end,
 		text = function()
 			return {
-				opts.data.title or nil,
-				#opts.data.tag > 0 and table.concat(opts.data.tag, " ") or nil,
-				#opts.data.due > 0 and table.concat(opts.data.due, " ") or nil,
+				self.data.title or nil,
+				#self.data.tag > 0 and table.concat(self.data.tag, " ") or nil,
+				#self.data.due > 0 and table.concat(self.data.due, " ") or nil,
 			}
 		end,
-		win = opts.list_win.win,
+		win = list.win.win,
 		width = 0,
 		height = 4,
 		col = 0,
-		row = calculate_row_pos(opts.index),
+		row = calculate_row_pos(self.index),
 		relative = "win",
 		-- border = "rounded",
 		border = { "", "", "", " ", "▁", "▁", "▁", " " },
 		focusable = true,
 		zindex = 20,
+		keys = { q = false },
 		wo = {
 			winbar = "%=+",
 			winhighlight = hl.task,
+			wrap = true,
 		},
 		bo = {
 			modifiable = true,
@@ -61,12 +79,7 @@ function M.new(opts, conf)
 	})
 
 	self.win = task_win
-	self.data = opts.data
-	self.index = opts.index
-	self.list_index = opts.list_index
-	self.config = conf
-
-	return self
+	return task_win
 end
 
 function M:update_index_position()
@@ -199,7 +212,9 @@ function M:get_actions(ctx)
 				-- Updating index
 				local target_index = self.index + direction
 				if target_list.tasks[target_index] then
-					target_list.tasks[target_index]:focus()
+					local found_task = target_list.tasks[target_index]
+					found_task.win:show()
+					found_task:focus()
 				end
 			end
 		end,
@@ -243,7 +258,7 @@ function M:get_actions(ctx)
 				list_index = self.list_index,
 				list_win = list.win,
 				root = ctx.root,
-			}, self.config):init(ctx)
+			}, self.config):init(ctx, list)
 			list.tasks[target_index] = task
 
 			task:focus()
@@ -255,11 +270,19 @@ function M:get_actions(ctx)
 end
 
 ---@param ctx kanban.Ctx
-function M:init(ctx)
-	self.win:show()
-	self:set_keymaps(ctx)
-	self:set_events(ctx)
+---@param list kanban.TaskListUI
+---@param opts? {space_available?: boolean, task_win?:snacks.win}
+function M:init(ctx, list, opts)
+	opts = opts or {}
 
+	local task_win = opts.task_win
+	if not task_win then
+		task_win = self:setup_win(list, ctx)
+	end
+
+	if opts.space_available ~= false then
+		task_win:show()
+	end
 	return self
 end
 

@@ -24,7 +24,7 @@ function M.new(conf)
 		-- col = 1,
 		enter = false,
 		width = 0,
-		height = 0,
+		height = vim.o.lines - 2,
 		-- border = "rounded",
 		border = { "", " ", "", "", "", "", "", "" },
 		focusable = true,

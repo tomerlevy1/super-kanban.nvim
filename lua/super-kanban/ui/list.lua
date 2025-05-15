@@ -47,7 +47,7 @@ function M.new(opts, conf)
 
 				task:init(opts.ctx, list, {
 					task_win = task_win,
-					space_available = not is_list_space_full,
+					visible_index = not is_list_space_full and task_index or nil,
 				})
 			end
 

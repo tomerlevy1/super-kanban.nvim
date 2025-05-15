@@ -76,7 +76,7 @@ function M.open(source_path)
 					index = task_index,
 					list_index = list_index,
 					list_win = list.win,
-					root = ctx.root,
+          ctx = ctx,
 				}, config)
 				tasks[task_index] = task
 			end

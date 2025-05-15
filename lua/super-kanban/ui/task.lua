@@ -4,8 +4,9 @@ local hl = require("super-kanban.highlights")
 ---@field data kanban.TaskData
 ---@field index number
 ---@field list_index number
+---@field visible_index number|nil
 ---@field list_win snacks.win
----@field root kanban.RootUI
+---@field ctx kanban.Ctx
 
 ---@class kanban.TaskUI
 ---@field data kanban.TaskData
@@ -79,6 +80,7 @@ function M:setup_win(list, ctx)
 	})
 
 	self.win = task_win
+	self.ctx = ctx
 	return task_win
 end
 
@@ -87,9 +89,61 @@ function M:update_index_position()
 	self.win:update()
 end
 
-function M:focus()
+function M:update_visible_position()
+	if type(self.visible_index) == "number" and self.visible_index > 0 then
+		self.win.opts.row = calculate_row_pos(self.visible_index)
+		self.win:update()
+	else
+		self.win:hide()
+		-- dd("hidding ", self.data.title, self.win.closed)
+	end
+end
+
+---@param from_location? number[]
+function M:focus(from_location)
+	local is_task_hidden = self.win.closed ~= false
+
+	if is_task_hidden then
+		if not from_location then
+			return
+		end
+
+		local direction = self.index > from_location[2] and 1 or -1
+		local is_downward = direction == 1
+
+		local list = self.ctx.lists[self.list_index]
+		local tasks = list.tasks
+
+		local list_height = list.win:size().height - 2
+		local task_can_fit = math.floor(list_height / 5)
+		if #tasks < task_can_fit then
+			task_can_fit = #tasks
+		end
+
+		-- Set loop incremental or decremental
+		local loop_step = is_downward and -1 or 1
+		local visual_index = is_downward and task_can_fit or 1
+
+		for cur_index = self.index, (is_downward and 1 or #tasks), loop_step do
+			local cur_task = tasks[cur_index]
+
+			if (is_downward and visual_index <= 0) or visual_index > task_can_fit then
+				cur_task.visible_index = nil
+				cur_task:update_visible_position()
+			else
+				cur_task.visible_index = visual_index
+				cur_task:update_visible_position()
+				if cur_task.win.closed ~= false then
+					cur_task.win:show()
+				end
+			end
+
+			visual_index = visual_index + loop_step
+		end
+	end
+
 	self.win:focus()
-	vim.wo.winhighlight = hl.taskActive
+	vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
 end
 
 local function parse_tags(text)
@@ -196,6 +250,7 @@ function M:get_actions(ctx)
 				self:focus()
 			end
 		end,
+		---@param direction? number
 		jump_verticaly = function(direction)
 			if direction == nil then
 				direction = 1
@@ -213,10 +268,29 @@ function M:get_actions(ctx)
 				local target_index = self.index + direction
 				if target_list.tasks[target_index] then
 					local found_task = target_list.tasks[target_index]
-					found_task.win:show()
-					found_task:focus()
+					found_task:focus({ self.list_index, self.index })
 				end
 			end
+		end,
+		jump_top = function()
+			local target_list = ctx.lists[self.list_index]
+			if not target_list then
+				return
+			end
+			if #target_list.tasks == 0 then
+				return
+			end
+			target_list.tasks[1]:focus({ self.list_index, self.index })
+		end,
+		jump_bottom = function()
+			local target_list = ctx.lists[self.list_index]
+			if not target_list then
+				return
+			end
+			if #target_list.tasks == 0 then
+				return
+			end
+			target_list.tasks[#target_list.tasks]:focus({ self.list_index, self.index })
 		end,
 		jump_horizontal = function(direction)
 			if direction == nil then
@@ -257,11 +331,11 @@ function M:get_actions(ctx)
 				index = target_index,
 				list_index = self.list_index,
 				list_win = list.win,
-				root = ctx.root,
+				ctx = ctx,
 			}, self.config):init(ctx, list)
 			list.tasks[target_index] = task
 
-			task:focus()
+			task:focus({ self.list_index, self.index })
 			vim.cmd.startinsert()
 		end,
 	}
@@ -271,7 +345,7 @@ end
 
 ---@param ctx kanban.Ctx
 ---@param list kanban.TaskListUI
----@param opts? {space_available?: boolean, task_win?:snacks.win}
+---@param opts? {task_win?:snacks.win,visible_index?:number}
 function M:init(ctx, list, opts)
 	opts = opts or {}
 
@@ -280,7 +354,8 @@ function M:init(ctx, list, opts)
 		task_win = self:setup_win(list, ctx)
 	end
 
-	if opts.space_available ~= false then
+	if type(opts.visible_index) == "number" then
+		self.visible_index = opts.visible_index
 		task_win:show()
 	end
 	return self
@@ -301,6 +376,9 @@ function M:set_keymaps(ctx)
 	map("n", "L", act.swap_horizontal(1), { buffer = buf })
 	map("n", "H", act.swap_horizontal(-1), { buffer = buf })
 
+	map("n", "gg", act.jump_top, { buffer = buf })
+	map("n", "G", act.jump_bottom, { buffer = buf })
+
 	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
 	map("n", "<C-k>", act.jump_verticaly(-1), { buffer = buf })
@@ -310,11 +388,11 @@ end
 ---@param ctx kanban.Ctx
 function M:set_events(ctx)
 	self.win:on("BufEnter", function()
-		vim.wo.winhighlight = hl.taskActive
+		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
 	end, { buf = true })
 
 	self.win:on("BufLeave", function()
-		vim.wo.winhighlight = hl.task
+		vim.api.nvim_set_option_value("winhighlight", hl.task, { win = self.win.win })
 	end, { buf = true })
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()

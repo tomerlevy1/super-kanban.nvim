@@ -107,8 +107,10 @@ function M:update_visible_position()
 end
 
 ---@param from_location? number[]
----@param only_move_into_view? boolean
-function M:focus(from_location, only_move_into_view)
+---@param opts? {only_move_into_view?:boolean}
+function M:focus(from_location, opts)
+	opts = opts or {}
+
 	if self:closed() then
 		if not from_location then
 			return
@@ -116,6 +118,7 @@ function M:focus(from_location, only_move_into_view)
 
 		local direction = self.index > from_location[2] and 1 or -1
 		local is_downward = direction == 1
+		local jump_difference = is_downward and self.index - from_location[2] or from_location[2] - self.index
 
 		local list = self.ctx.lists[self.list_index]
 		local tasks = list.tasks
@@ -128,9 +131,10 @@ function M:focus(from_location, only_move_into_view)
 
 		-- Set loop incremental or decremental
 		local loop_step = is_downward and -1 or 1
+		local loop_ending = is_downward and 1 or jump_difference == 1 and self.index + task_can_fit or #tasks
 		local visual_index = is_downward and task_can_fit or 1
 
-		for cur_index = self.index, (is_downward and 1 or self.index + task_can_fit), loop_step do
+		for cur_index = self.index, loop_ending, loop_step do
 			local cur_task = tasks[cur_index]
 
 			if (is_downward and visual_index <= 0) or visual_index > task_can_fit then
@@ -148,7 +152,7 @@ function M:focus(from_location, only_move_into_view)
 		end
 	end
 
-	if not only_move_into_view then
+	if not opts.only_move_into_view then
 		if self:closed() then
 			self.win:show()
 		end
@@ -223,7 +227,7 @@ function M:get_actions(ctx)
 			local moveto_task = list.tasks[moveto_index]
 
 			if moveto_task:closed() then
-				moveto_task:focus({ cur_task.list_index, cur_task.index }, true)
+				moveto_task:focus({ cur_task.list_index, cur_task.index }, { only_move_into_view = true })
 			end
 
 			cur_task.index, moveto_task.index = moveto_index, cur_index
@@ -309,7 +313,6 @@ function M:get_actions(ctx)
 		end
 	end
 	actions.jump_top = function()
-    -- FIXME: fix top & bottom jumps
 		local target_list = ctx.lists[self.list_index]
 		if not target_list then
 			return

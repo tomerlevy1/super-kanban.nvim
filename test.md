@@ -5,22 +5,9 @@ kanban-plugin: basic
 ---
 
 
-## TODO
+## todo
 
 - [ ] task 1
-
-- [ ] task 2
-
-- [ ] hads kuudus ali khan
-#foomoo
-
-- [ ] hasdfsdfsdfsdf
-
-## Work in progress
-
-## Done
-
-- [ ] task 7
 
 - [ ] task 2
 
@@ -28,13 +15,27 @@ kanban-plugin: basic
 
 - [ ] task 4
 
+- [ ] task 5
+
 - [ ] task 6
+
+- [ ] task 7
+
+- [ ] task 8
+
+- [ ] task 9
+
+- [ ] task 10
+
+- [ ] task 11
+
+## done
+
+- [ ] task 1
 
 - [ ] task 2
 
-- [ ] task 5
-
-## Archive
+- [ ] task 3
 
 
 %% kanban:settings

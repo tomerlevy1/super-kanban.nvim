@@ -150,6 +150,23 @@ function M:focus(from_location, opts)
 
 			visual_index = visual_index + loop_step
 		end
+
+		local info = { top = 0, bottom = 0 }
+		-- if #tasks <= task_can_fit then
+		-- 	dd("zero")
+		if is_downward then
+			local bot = #tasks - self.index
+			local top = #tasks - (bot + task_can_fit)
+			info.top = top
+			info.bottom = bot
+		elseif not is_downward then
+			local top = self.index - 1
+			local bot = #tasks - (top + task_can_fit)
+			info.top = top
+			info.bottom = bot
+		end
+
+		list:update_scroll_info(info.top, info.bottom)
 	end
 
 	if not opts.only_move_into_view then
@@ -347,7 +364,7 @@ function M:get_actions(ctx)
 			end
 
 			-- Focus same visual_index task
-			local target_index = self.index
+			local target_index = self.visible_index
 			if #target_list.tasks >= target_index then
 				for index = target_index, #target_list.tasks, 1 do
 					local tk = target_list.tasks[index]
@@ -434,6 +451,8 @@ function M:set_keymaps(ctx)
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
 	map("n", "<C-k>", act.jump_verticaly(-1), { buffer = buf })
 	map("n", "<C-j>", act.jump_verticaly(1), { buffer = buf })
+	map("n", "<S-tab>", act.jump_verticaly(-1), { buffer = buf })
+	map("n", "<tab>", act.jump_verticaly(1), { buffer = buf })
 end
 
 ---@param ctx kanban.Ctx

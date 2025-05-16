@@ -53,10 +53,7 @@ function M.new(opts, conf)
 
 			-- Set footer
 			if task_hidden_start_index ~= 0 then
-				vim.api.nvim_win_set_config(self.win.win, {
-					footer = tostring(#list.tasks + 1 - task_hidden_start_index),
-					footer_pos = "right",
-				})
+				self:update_scroll_info(0, #list.tasks + 1 - task_hidden_start_index)
 			end
 		end,
 		title = opts.data.title,
@@ -115,6 +112,13 @@ function M:set_events(ctx)
 			tk:focus()
 		end
 	end, { buf = true })
+end
+
+function M:update_scroll_info(top, bottom)
+	vim.api.nvim_win_set_config(self.win.win, {
+		footer = string.format("↑%d-↓%d", top, bottom),
+		footer_pos = "center",
+	})
 end
 
 ---A hack to Combine list and tasks in a type safe way

@@ -4,9 +4,7 @@ local hl = require("super-kanban.highlights")
 ---@field data kanban.TaskData
 ---@field index number
 ---@field list_index number
----@field visible_index number|nil
 ---@field list_win snacks.win
----@field ctx kanban.Ctx
 
 ---@class kanban.TaskUI
 ---@field data kanban.TaskData
@@ -14,6 +12,7 @@ local hl = require("super-kanban.highlights")
 ---@field win snacks.win
 ---@field list_index number
 ---@field config kanban.Config
+---@field type "task"
 ---@overload fun(opts:kanban.Task.Opts,config :{}): kanban.TaskUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
@@ -35,6 +34,7 @@ function M.new(opts, conf)
 	self.index = opts.index
 	self.list_index = opts.list_index
 	self.config = conf
+	self.type = "task"
 
 	return self
 end
@@ -93,16 +93,23 @@ function M:closed()
 	return self.win.closed ~= false
 end
 
-function M:update_visible_position()
-	if type(self.visible_index) == "number" and self.visible_index > 0 then
-		self.win.opts.row = calculate_row_pos(self.visible_index)
-		self.win:update()
+function M:has_visual_index()
+	return type(self.visible_index) == "number" and self.visible_index > 0
+end
+
+function M:update_visible_position(new_index)
+	if type(new_index) == "number" and new_index > 0 then
+		self.win.opts.row = calculate_row_pos(new_index)
+
 		if self:closed() then
 			self.win:show()
 		end
+
+		self.visible_index = new_index
+		self.win:update()
 	else
 		self.win:hide()
-		-- dd("hidding ", self.data.title, self.win.closed)
+		self.visible_index = nil
 	end
 end
 
@@ -138,11 +145,9 @@ function M:focus(from_location, opts)
 			local cur_task = tasks[cur_index]
 
 			if (is_downward and visual_index <= 0) or visual_index > task_can_fit then
-				cur_task.visible_index = nil
-				cur_task:update_visible_position()
+				cur_task:update_visible_position(nil)
 			else
-				cur_task.visible_index = visual_index
-				cur_task:update_visible_position()
+				cur_task:update_visible_position(visual_index)
 				if self:closed() then
 					cur_task.win:show()
 				end
@@ -223,6 +228,7 @@ end
 function M:get_actions(ctx)
 	local actions = {}
 
+	-- FIXME: update swap actions
 	actions.swap_vertical = function(direction)
 		if direction == nil then
 			direction = 1
@@ -307,80 +313,84 @@ function M:get_actions(ctx)
 			end
 		end
 	end
+
 	---@param direction? number
 	actions.jump_verticaly = function(direction)
 		if direction == nil then
 			direction = 1
 		end
 		return function()
-			local target_list = ctx.lists[self.list_index]
-			if not target_list then
+			local list = ctx.lists[self.list_index]
+			if not list then
 				return
 			end
-			if #target_list.tasks == 0 then
+			if #list.tasks == 0 then
 				return
 			end
 
-			-- Updating index
-			local target_index = self.index + direction
-			if target_list.tasks[target_index] then
-				local found_task = target_list.tasks[target_index]
-				found_task:focus({ self.list_index, self.index })
+			local target_task = list.tasks[self.index + direction]
+			if target_task and target_task:has_visual_index() then
+				target_task:focus()
+			elseif target_task and not target_task:has_visual_index() then
+				list:scroll_task(direction, self.index)
+				target_task:focus()
 			end
 		end
 	end
-	actions.jump_top = function()
-		local target_list = ctx.lists[self.list_index]
-		if not target_list then
-			return
-		end
-		if #target_list.tasks == 0 then
-			return
-		end
-		target_list.tasks[1]:focus({ self.list_index, self.index })
-	end
-	actions.jump_bottom = function()
-		local target_list = ctx.lists[self.list_index]
-		if not target_list then
-			return
-		end
-		if #target_list.tasks == 0 then
-			return
-		end
-		target_list.tasks[#target_list.tasks]:focus({ self.list_index, self.index })
-	end
 
+	---@param direction? number
 	actions.jump_horizontal = function(direction)
 		if direction == nil then
 			direction = 1
 		end
 		return function()
-			local target_list = ctx.lists[self.list_index + direction]
-			if not target_list then
+			local list = ctx.lists[self.list_index + direction]
+			if not list then
 				return
 			end
-			if #target_list.tasks == 0 then
-				target_list.win:focus()
+			if #list.tasks == 0 then
+				list:focus()
 			end
 
 			-- Focus same visual_index task
 			local target_index = self.visible_index
-			if #target_list.tasks >= target_index then
-				for index = target_index, #target_list.tasks, 1 do
-					local tk = target_list.tasks[index]
+			if #list.tasks >= target_index then
+				for index = target_index, #list.tasks, 1 do
+					local tk = list.tasks[index]
 					if tk.visible_index == self.visible_index then
 						tk:focus()
 						break
 					end
 				end
-			elseif target_list.tasks[#target_list.tasks] then
-				target_list.tasks[#target_list.tasks]:focus()
+			elseif list.tasks[#list.tasks] then
+				list.tasks[#list.tasks]:focus()
 			end
 		end
 	end
 
+	actions.top = function()
+		local list = ctx.lists[self.list_index]
+		if not list then
+			return
+		end
+		list:top()
+	end
+
+	actions.bottom = function()
+		local list = ctx.lists[self.list_index]
+		if not list then
+			return
+		end
+		list:bottom()
+	end
+
 	actions.info = function()
 		dd(self.data.title, string.format("index %s, visual_index %s", self.index, self.visible_index))
+
+		local list = ctx.lists[self.list_index]
+		for _, tk in ipairs(list.tasks) do
+			log(tk.data.title, string.format("index %s, visual_index %s", tk.index, tk.visible_index))
+		end
 	end
 
 	actions.close = function()
@@ -389,7 +399,11 @@ function M:get_actions(ctx)
 	actions.create = function()
 		local list = ctx.lists[self.list_index]
 		local target_index = #list.tasks + 1
-		local task = self.new({
+
+		local task_can_fit = list:task_can_fit()
+		local list_space_available = #list.tasks < task_can_fit
+
+		local new_task = self.new({
 			data = {
 				title = "",
 				check = " ",
@@ -399,12 +413,53 @@ function M:get_actions(ctx)
 			index = target_index,
 			list_index = self.list_index,
 			list_win = list.win,
-			ctx = ctx,
-		}, self.config):init(ctx, list)
-		list.tasks[target_index] = task
+		}, self.config):init(ctx, list, { visible_index = list_space_available and #list.tasks + 1 or nil })
+		list.tasks[target_index] = new_task
 
-		task:focus({ self.list_index, self.index })
+		list:bottom()
 		vim.cmd.startinsert()
+	end
+
+	actions.delete = function()
+		local list = ctx.lists[self.list_index]
+		local target_index = self.index
+
+		-- Select next or prev task
+		local focus_task = list.tasks[target_index + 1] or list.tasks[target_index - 1]
+
+		-- Remove task
+		self.win:close()
+		table.remove(list.tasks, target_index)
+
+		-- Update current list task position & index
+		local found_task_will_be_in_view_from_bottom = nil
+		for cur_index = target_index, #list.tasks, 1 do
+			local tk = list.tasks[cur_index]
+			tk.index = cur_index
+
+			if type(tk.visible_index) == "number" then
+				tk:update_visible_position(tk.visible_index - 1)
+			elseif found_task_will_be_in_view_from_bottom == nil then
+				found_task_will_be_in_view_from_bottom = true
+				tk:update_visible_position(list:task_can_fit())
+				-- Update scroll info for bottom
+				list:update_scroll_info(list.scroll_info.top, list.scroll_info.bot - 1)
+			end
+		end
+
+		-- There is no hidden task in bottom so try to show new task from top.
+		if found_task_will_be_in_view_from_bottom == nil then
+			local scrolled = list:scroll_task(-1)
+			if scrolled then
+				focus_task = list.tasks[target_index - 1] or focus_task
+			end
+		end
+
+		if focus_task and focus_task:has_visual_index() then
+			focus_task:focus()
+		elseif #list.tasks == 0 then
+			list:focus()
+		end
 	end
 
 	return actions
@@ -436,16 +491,17 @@ function M:set_keymaps(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
 	map("n", "gn", act.create, { buffer = buf })
+	map("n", "D", act.delete, { buffer = buf })
 
 	map("n", "x", act.info, { buffer = buf })
 
-	map("n", "<A-k>", act.swap_vertical(-1), { buffer = buf })
-	map("n", "<A-j>", act.swap_vertical(), { buffer = buf })
-	map("n", "<A-l>", act.swap_horizontal(1), { buffer = buf })
-	map("n", "<A-h>", act.swap_horizontal(-1), { buffer = buf })
+	-- map("n", "<A-k>", act.swap_vertical(-1), { buffer = buf })
+	-- map("n", "<A-j>", act.swap_vertical(), { buffer = buf })
+	-- map("n", "<A-l>", act.swap_horizontal(1), { buffer = buf })
+	-- map("n", "<A-h>", act.swap_horizontal(-1), { buffer = buf })
 
-	map("n", "gg", act.jump_top, { buffer = buf })
-	map("n", "G", act.jump_bottom, { buffer = buf })
+	map("n", "gg", act.top, { buffer = buf })
+	map("n", "G", act.bottom, { buffer = buf })
 
 	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
@@ -457,11 +513,11 @@ end
 
 ---@param ctx kanban.Ctx
 function M:set_events(ctx)
-	self.win:on("BufEnter", function()
+	self.win:on({ "BufEnter", "WinEnter" }, function()
 		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
 	end, { buf = true })
 
-	self.win:on("BufLeave", function()
+	self.win:on({ "BufLeave", "WinLeave" }, function()
 		vim.api.nvim_set_option_value("winhighlight", hl.task, { win = self.win.win })
 	end, { buf = true })
 

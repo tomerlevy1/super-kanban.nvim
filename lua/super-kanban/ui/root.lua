@@ -33,7 +33,7 @@ function M.new(conf)
 			winhighlight = hl.root,
 			winbar = string.format(
 				"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
-				"KanBan"
+				"Kanban"
 			),
 		},
 		bo = {
@@ -59,6 +59,8 @@ function M:init(ctx)
 	local focus_loc = ctx.focus_location
 	if focus_loc then
 		ctx.lists[focus_loc[1]].tasks[focus_loc[2]]:focus()
+	elseif ctx.lists[1] then
+		ctx.lists[1]:focus()
 	end
 end
 

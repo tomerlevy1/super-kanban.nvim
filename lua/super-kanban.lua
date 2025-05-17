@@ -43,7 +43,7 @@ M.setup()
 --- Open super-kanban
 ---@param source_path string
 function M.open(source_path)
-	local md = require("super-kanban.markdown").read(source_path)
+	local source = require("super-kanban.markdown").read(source_path)
 
 	---@type kanban.Ctx
 	local ctx = {
@@ -56,8 +56,10 @@ function M.open(source_path)
 	local lists = {}
 	local first_task_loc = nil
 
+	local default_list = { { tasks = {}, title = "todo" } }
+
 	-- Setup lists & tasks windows then generate ctx
-	for list_index, list_md in ipairs(md.lists) do
+	for list_index, list_md in ipairs(source and source.lists or default_list) do
 		local list = ui.list({
 			data = { title = list_md.title },
 			index = list_index,
@@ -76,7 +78,7 @@ function M.open(source_path)
 					index = task_index,
 					list_index = list_index,
 					list_win = list.win,
-          ctx = ctx,
+					ctx = ctx,
 				}, config)
 				tasks[task_index] = task
 			end

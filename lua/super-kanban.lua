@@ -3,9 +3,9 @@ local ui = require("super-kanban.ui")
 
 local M = {}
 
----@class kanban.Config
+---@class superkanban.Config
 ---@field list_min_width number
----@field markdown kanban.MarkdownConfig
+---@field markdown superkanban.MarkdownConfig
 local config = {
 	list_min_width = 32,
 	markdown = {
@@ -43,30 +43,30 @@ M.setup()
 --- Open super-kanban
 ---@param source_path string
 function M.open(source_path)
-	local source = require("super-kanban.parser.markdown").parse_file(source_path)
+	local parsed_data = require("super-kanban.parser.markdown").parse_file(source_path)
 
-	---@type kanban.Ctx
+	---@type superkanban.Ctx
 	local ctx = {
 		root = ui.root(config),
 		source_path = source_path,
 		lists = {},
 	}
 
-	---@type kanban.TaskList.Ctx[]
+	---@type superkanban.TaskList.Ctx[]
 	local lists = {}
 	local first_task_loc = nil
 
 	local default_list = { { tasks = {}, title = "todo" } }
 
 	-- Setup lists & tasks windows then generate ctx
-	for list_index, list_md in ipairs(source and source.lists or default_list) do
+	for list_index, list_md in ipairs(parsed_data and parsed_data.lists or default_list) do
 		local list = ui.list({
 			data = { title = list_md.title },
 			index = list_index,
 			ctx = ctx,
 		}, config)
 
-		---@type kanban.TaskUI[]
+		---@type superkanban.TaskUI[]
 		local tasks = {}
 		if type(list_md.tasks) == "table" and #list_md.tasks ~= 0 then
 			for task_index, task_md in ipairs(list_md.tasks) do

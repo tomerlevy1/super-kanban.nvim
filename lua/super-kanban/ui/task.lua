@@ -1,19 +1,19 @@
 local hl = require("super-kanban.highlights")
 
----@class kanban.Task.Opts
----@field data kanban.TaskData
+---@class superkanban.Task.Opts
+---@field data superkanban.TaskData
 ---@field index number
 ---@field list_index number
 ---@field list_win snacks.win
 
----@class kanban.TaskUI
----@field data kanban.TaskData
+---@class superkanban.TaskUI
+---@field data superkanban.TaskData
 ---@field index number
 ---@field win snacks.win
 ---@field list_index number
----@field config kanban.Config
+---@field config superkanban.Config
 ---@field type "task"
----@overload fun(opts:kanban.Task.Opts,config :{}): kanban.TaskUI
+---@overload fun(opts:superkanban.Task.Opts,config :{}): superkanban.TaskUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -25,8 +25,8 @@ local function calculate_row_pos(index)
 	return (4 + 1) * (index - 1)
 end
 
----@param opts kanban.Task.Opts
----@param conf kanban.Config
+---@param opts superkanban.Task.Opts
+---@param conf superkanban.Config
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
 
@@ -39,8 +39,8 @@ function M.new(opts, conf)
 	return self
 end
 
----@param list kanban.TaskListUI
----@param ctx kanban.Ctx
+---@param list superkanban.TaskListUI
+---@param ctx superkanban.Ctx
 ---@return snacks.win
 function M:setup_win(list, ctx)
 	local task_win = Snacks.win({
@@ -214,7 +214,7 @@ local function parse_dates(text)
 	return dates
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:save(ctx)
 	local lines = self.win:lines()
 
@@ -239,7 +239,7 @@ function M:save(ctx)
 	self.data.due = dates
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:get_actions(ctx)
 	local actions = {}
 
@@ -480,8 +480,8 @@ function M:get_actions(ctx)
 	return actions
 end
 
----@param ctx kanban.Ctx
----@param list kanban.TaskListUI
+---@param ctx superkanban.Ctx
+---@param list superkanban.TaskListUI
 ---@param opts? {task_win?:snacks.win,visible_index?:number}
 function M:init(ctx, list, opts)
 	opts = opts or {}
@@ -498,7 +498,7 @@ function M:init(ctx, list, opts)
 	return self
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_keymaps(ctx)
 	local buf = self.win.buf
 	local map = vim.keymap.set
@@ -526,7 +526,7 @@ function M:set_keymaps(ctx)
 	map("n", "<tab>", act.jump_verticaly(1), { buffer = buf })
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_events(ctx)
 	self.win:on({ "BufEnter", "WinEnter" }, function()
 		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })

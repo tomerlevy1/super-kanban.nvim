@@ -82,17 +82,19 @@ end
 local M = {}
 
 ---@param filepath string
+---@return superkanban.SourceData?
 function M.parse_file(filepath)
 	local buf = parser.create_scratch_buffer(filepath)
 	local md_parser = ts.get_parser(buf, "markdown")
 	if not md_parser then
-		return
+		return nil
 	end
 
 	local tree = md_parser:parse()[1]
 	local root = tree:root()
 
 	local list_index = 0
+	---@type superkanban.SourceData
 	local data = {
 		lists = {},
 	}
@@ -133,20 +135,20 @@ function writer.format_task_list_items(items)
 	return ""
 end
 
----@param task kanban.TaskUI
+---@param task superkanban.TaskUI
 function writer.format_md_checklist(task)
 	local tag = writer.format_task_list_items(task.data.tag)
 	local due = writer.format_task_list_items(task.data.due)
 	return string.format("- [%s] %s%s%s\n", task.data.check, task.data.title, tag, due)
 end
 
----@param ctx kanban.Ctx
----@param config kanban.Config
+---@param ctx superkanban.Ctx
+---@param config superkanban.Config
 function M.write_file(ctx, config)
 	local file = io.open(ctx.source_path, "w")
 	if not file then
 		require("super-kanban.utils").msg("Can't open file.", "error")
-		return
+		return nil
 	end
 
 	local new_lines = {}

@@ -1,26 +1,26 @@
----@class kanban.TaskData
+---@class superkanban.TaskData
 ---@field title string
 ---@field check string
 ---@field due string[]
 ---@field tag string[]
 
----@class kanban.TaskListData
+---@class superkanban.TaskListData
 ---@field title string
----@field tasks kanban.TaskData[]
+---@field tasks superkanban.TaskData[]
 
----@class kanban.Markdown
----@field lists kanban.TaskListData[]
+---@class superkanban.SourceData
+---@field lists superkanban.TaskListData
 
----@class kanban.TaskList.Ctx :kanban.TaskListUI[]
----@field tasks kanban.TaskUI[]
+---@class superkanban.TaskList.Ctx :superkanban.TaskListUI[]
+---@field tasks superkanban.TaskUI[]
 
----@class kanban.Ctx
----@field root kanban.RootUI
----@field lists kanban.TaskList.Ctx[]
+---@class superkanban.Ctx
+---@field root superkanban.RootUI
+---@field lists superkanban.TaskList.Ctx[]
 ---@field source_path string
 ---@field focus_location? number[]
 
----@class kanban.MarkdownConfig
+---@class superkanban.MarkdownConfig
 ---@field description_folder string
 ---@field list_head string
 ---@field due_head string

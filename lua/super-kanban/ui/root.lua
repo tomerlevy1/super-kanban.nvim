@@ -1,8 +1,8 @@
 local hl = require("super-kanban.highlights")
 
----@class kanban.RootUI
+---@class superkanban.RootUI
 ---@field win snacks.win
----@overload fun(config :{}): kanban.RootUI
+---@overload fun(config :{}): superkanban.RootUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -10,10 +10,10 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@type kanban.Config
+---@type superkanban.Config
 local config
 
----@param conf kanban.Config
+---@param conf superkanban.Config
 function M.new(conf)
 	local self = setmetatable({}, M)
 
@@ -47,7 +47,7 @@ function M.new(conf)
 	return self
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:init(ctx)
 	self:set_actions(ctx)
 	self:set_events(ctx)
@@ -76,10 +76,10 @@ function M:on_exit(ctx)
 	self.win:close()
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_actions(ctx) end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_events(ctx)
 	self.win:on("WinClosed", function(_, ev)
 		self:on_exit(ctx)

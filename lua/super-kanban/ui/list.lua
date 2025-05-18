@@ -1,18 +1,18 @@
 local hl = require("super-kanban.highlights")
 
----@class kanban.TaskList.Opts
+---@class superkanban.TaskList.Opts
 ---@field data {title: string}
 ---@field index number
----@field ctx kanban.Ctx
+---@field ctx superkanban.Ctx
 
----@class kanban.TaskListUI
+---@class superkanban.TaskListUI
 ---@field data {title: string}
 ---@field index number
 ---@field win snacks.win
----@field ctx kanban.Ctx
+---@field ctx superkanban.Ctx
 ---@field type "list"
 ---@field scroll_info {top:number,bot:number}
----@overload fun(opts:kanban.TaskList.Opts,config:{}): kanban.TaskListUI
+---@overload fun(opts:superkanban.TaskList.Opts,config:{}): superkanban.TaskListUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -20,8 +20,8 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@param opts kanban.TaskList.Opts
----@param conf kanban.Config
+---@param opts superkanban.TaskList.Opts
+---@param conf superkanban.Config
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
 
@@ -86,12 +86,12 @@ function M.new(opts, conf)
 	return self
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:init(ctx)
 	self.win:show()
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_keymaps(ctx)
 	local buf = self.win.buf
 	local map = vim.keymap.set
@@ -103,7 +103,7 @@ function M:set_keymaps(ctx)
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:set_events(ctx)
 	self.win:on("WinClosed", function(_, ev)
 		for _, tk in ipairs(ctx.lists[self.index].tasks) do
@@ -265,14 +265,14 @@ end
 
 ---A hack to Combine list and tasks in a type safe way
 ---@param list table
----@param tasks kanban.TaskUI
----@return kanban.TaskList.Ctx
+---@param tasks superkanban.TaskUI
+---@return superkanban.TaskList.Ctx
 function M.gen_list_ctx(list, tasks)
 	list.tasks = tasks
 	return list
 end
 
----@param ctx kanban.Ctx
+---@param ctx superkanban.Ctx
 function M:get_actions(ctx)
 	local act = {
 		-- swap_vertical = function(direction)

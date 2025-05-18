@@ -89,7 +89,7 @@ function M.open(source_path)
 
 	ctx.lists = lists
 	ctx.focus_location = first_task_loc
-	ctx.root:init(ctx)
+	ctx.root:mount(ctx)
 end
 
 -- lua require("super-kanban").open()

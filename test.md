@@ -1,10 +1,3 @@
----
-
-kanban-plugin: basic
-
----
-
-
 ## todo
 
 - [ ] task 1
@@ -36,10 +29,3 @@ kanban-plugin: basic
 - [ ] task 2
 
 - [ ] task 3
-
-
-%% kanban:settings
-```
-{"kanban-plugin":"basic"}
-```
-%%

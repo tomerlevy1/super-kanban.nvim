@@ -2,6 +2,7 @@ local hl = require("super-kanban.highlights")
 
 ---@class superkanban.RootUI
 ---@field win snacks.win
+---@field ctx superkanban.Ctx
 ---@overload fun(config :{}): superkanban.RootUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
@@ -13,47 +14,41 @@ M.__index = M
 ---@type superkanban.Config
 local config
 
+local function winbar(title)
+	return string.format(
+		"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
+		title
+	)
+end
+
 ---@param conf superkanban.Config
 function M.new(conf)
 	local self = setmetatable({}, M)
 
-	local root_win = Snacks.win({
-		-- file = fname,
-		-- width = 0.8,
-		-- height = 0.8,
-		-- col = 1,
-		enter = false,
+	self.win = Snacks.win({
+		zindex = 10,
 		width = 0,
 		height = vim.o.lines - 2,
-		-- border = "rounded",
-		border = { "", " ", "", "", "", "", "", "" },
+		enter = false,
 		focusable = true,
-		zindex = 10,
-		wo = {
-			winhighlight = hl.root,
-			winbar = string.format(
-				"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
-				"Kanban"
-			),
-		},
-		bo = {
-			modifiable = false,
-			filetype = "superkanban_board",
-		},
+		col = 0,
+		row = 0,
+		border = { "", " ", "", "", "", "", "", "" },
+		wo = { winhighlight = hl.root, winbar = winbar("Kanban") },
+		bo = { modifiable = false, filetype = "superkanban_board" },
 	})
 
-	self.win = root_win
 	config = conf
 	return self
 end
 
 ---@param ctx superkanban.Ctx
-function M:init(ctx)
+function M:mount(ctx)
 	self:set_actions(ctx)
 	self:set_events(ctx)
 
 	for _, list in ipairs(ctx.lists) do
-		list:init(ctx)
+		list:mount(ctx)
 	end
 
 	local focus_loc = ctx.focus_location
@@ -62,18 +57,20 @@ function M:init(ctx)
 	elseif ctx.lists[1] then
 		ctx.lists[1]:focus()
 	end
+
+	self.ctx = ctx
 end
 
-function M:exit(ctx)
+function M:exit()
 	self.win:close()
 end
 
-function M:on_exit(ctx)
-	require("super-kanban.parser.markdown").write_file(ctx, config)
-	for _, li in ipairs(ctx.lists) do
-		li.win:close()
+function M:on_exit()
+	require("super-kanban.parser.markdown").write_file(self.ctx, config)
+	for _, li in ipairs(self.ctx.lists) do
+		li:exit()
 	end
-	self.win:close()
+	self:exit()
 end
 
 ---@param ctx superkanban.Ctx
@@ -81,8 +78,8 @@ function M:set_actions(ctx) end
 
 ---@param ctx superkanban.Ctx
 function M:set_events(ctx)
-	self.win:on("WinClosed", function(_, ev)
-		self:on_exit(ctx)
+	self.win:on("WinClosed", function()
+		self:on_exit()
 	end, { win = true })
 
 	self.win:on("BufEnter", function()

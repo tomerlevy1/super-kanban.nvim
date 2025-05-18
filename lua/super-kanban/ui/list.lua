@@ -48,7 +48,7 @@ function M.new(opts, conf)
 					task_hidden_start_index = task_index
 				end
 
-				task:init(opts.ctx, list, {
+				task:mount(opts.ctx, list, {
 					task_win = task_win,
 					visible_index = not is_list_space_full and task_index or nil,
 				})
@@ -87,8 +87,12 @@ function M.new(opts, conf)
 end
 
 ---@param ctx superkanban.Ctx
-function M:init(ctx)
+function M:mount(ctx)
 	self.win:show()
+end
+
+function M:exit()
+	self.win:close()
 end
 
 ---@param ctx superkanban.Ctx
@@ -204,12 +208,16 @@ function M:bottom()
 	if #list.tasks == 0 then
 		return
 	end
-	local task_can_fit = self:task_can_fit()
 
-	if list.tasks[#list.tasks]:has_visual_index() then
+	if not list.tasks[#list.tasks]:closed() then
 		list.tasks[#list.tasks]:focus()
 		-- list:update_scroll_info(0, 0)
 		return
+	end
+
+	local task_can_fit = self:task_can_fit()
+	if #list.tasks < task_can_fit then
+		task_can_fit = #list.tasks
 	end
 
 	for index = #list.tasks, 1, -1 do
@@ -227,6 +235,45 @@ function M:bottom()
 	local bot = 0
 	local top = #list.tasks - self:task_can_fit()
 	list:update_scroll_info(top, bot)
+end
+
+---@param space_index number
+---@param visible_index number
+function M:fill_space(space_index, visible_index)
+	local list = self.ctx.lists[self.index]
+	if not list then
+		return
+	end
+	if #list.tasks == 0 then
+		return
+	end
+	local tasks = list.tasks
+
+	local scroll = false
+	if #tasks >= list:task_can_fit() and not tasks[#tasks]:closed() then
+		scroll = true
+		dd("last item is visible", tasks[#tasks].data.title)
+	end
+
+	-- Update prev_list task positions (ex: index & visible_index)
+	local found_new_task_will_be_in_view = nil
+	local last_visual_index_in_use = nil
+	for index = space_index, #tasks, 1 do
+		local tk = tasks[index]
+		tk.index = tk.index - 1
+
+		if type(tk.visible_index) == "number" then
+			last_visual_index_in_use = tk.visible_index - 1
+			tk:update_visible_position(last_visual_index_in_use)
+		elseif found_new_task_will_be_in_view == nil and type(last_visual_index_in_use) == "number" then
+			tk:update_visible_position(last_visual_index_in_use + 1)
+			found_new_task_will_be_in_view = true
+		end
+	end
+
+	if scroll then
+		list:scroll_task(-1)
+	end
 end
 
 function M:top()

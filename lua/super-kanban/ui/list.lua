@@ -19,6 +19,8 @@ local M = setmetatable({}, {
 	end,
 })
 M.__index = M
+---@type superkanban.Config
+local config
 
 ---@param opts superkanban.TaskList.Opts
 ---@param conf superkanban.Config
@@ -33,29 +35,26 @@ function M.new(opts, conf)
 			self:set_keymaps(opts.ctx)
 			self:set_events(opts.ctx)
 
-			local filled_space = 0
-			local list_height = list.win:size().height - 1
+			local task_can_fit = self:task_can_fit()
+			local first_hidden_task_index = 0
 
-			local task_hidden_start_index = 0
-
-			for task_index, task in ipairs(list.tasks) do
+			for index, task in ipairs(list.tasks) do
 				-- calcuate available space for list
-				local task_win = task:setup_win(list, opts.ctx)
-				filled_space = filled_space + task_win:size().height - 1
-				local is_list_space_full = filled_space >= list_height
+				local task_win = task:setup_win(list)
+				local space_available = task_can_fit >= index
 
-				if is_list_space_full and task_hidden_start_index == 0 then
-					task_hidden_start_index = task_index
+				if not space_available and first_hidden_task_index == 0 then
+					first_hidden_task_index = index
 				end
 
-				task:mount(opts.ctx, list, {
+				task:mount(list, {
 					task_win = task_win,
-					visible_index = not is_list_space_full and task_index or nil,
+					visible_index = space_available and index or nil,
 				})
 			end
 
 			-- Set footer
-			self:update_scroll_info(0, task_hidden_start_index > 0 and #list.tasks + 1 - task_hidden_start_index or 0)
+			self:update_scroll_info(0, first_hidden_task_index > 0 and #list.tasks + 1 - first_hidden_task_index or 0)
 		end,
 		title = opts.data.title,
 		title_pos = "center",
@@ -80,14 +79,15 @@ function M.new(opts, conf)
 	self.win = list_win
 	self.data = opts.data
 	self.index = opts.index
-	self.type = "list"
 	self.scroll_info = { top = 0, bot = 0 }
+
+	self.type = "list"
+	config = conf
 
 	return self
 end
 
----@param ctx superkanban.Ctx
-function M:mount(ctx)
+function M:mount()
 	self.win:show()
 end
 
@@ -109,9 +109,9 @@ end
 
 ---@param ctx superkanban.Ctx
 function M:set_events(ctx)
-	self.win:on("WinClosed", function(_, ev)
+	self.win:on("WinClosed", function()
 		for _, tk in ipairs(ctx.lists[self.index].tasks) do
-			tk.win:close()
+			tk:exit()
 		end
 	end, { win = true })
 
@@ -237,45 +237,6 @@ function M:bottom()
 	list:update_scroll_info(top, bot)
 end
 
----@param space_index number
----@param visible_index number
-function M:fill_space(space_index, visible_index)
-	local list = self.ctx.lists[self.index]
-	if not list then
-		return
-	end
-	if #list.tasks == 0 then
-		return
-	end
-	local tasks = list.tasks
-
-	local scroll = false
-	if #tasks >= list:task_can_fit() and not tasks[#tasks]:closed() then
-		scroll = true
-		dd("last item is visible", tasks[#tasks].data.title)
-	end
-
-	-- Update prev_list task positions (ex: index & visible_index)
-	local found_new_task_will_be_in_view = nil
-	local last_visual_index_in_use = nil
-	for index = space_index, #tasks, 1 do
-		local tk = tasks[index]
-		tk.index = tk.index - 1
-
-		if type(tk.visible_index) == "number" then
-			last_visual_index_in_use = tk.visible_index - 1
-			tk:update_visible_position(last_visual_index_in_use)
-		elseif found_new_task_will_be_in_view == nil and type(last_visual_index_in_use) == "number" then
-			tk:update_visible_position(last_visual_index_in_use + 1)
-			found_new_task_will_be_in_view = true
-		end
-	end
-
-	if scroll then
-		list:scroll_task(-1)
-	end
-end
-
 function M:top()
 	local list = self.ctx.lists[self.index]
 	if not list then
@@ -336,7 +297,7 @@ function M:get_actions(ctx)
 		-- end,
 
 		close = function()
-			ctx.root:exit(ctx)
+			ctx.root:exit()
 		end,
 
 		jump_horizontal = function(direction)

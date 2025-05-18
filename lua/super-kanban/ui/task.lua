@@ -3,14 +3,14 @@ local hl = require("super-kanban.highlights")
 ---@class superkanban.Task.Opts
 ---@field data superkanban.TaskData
 ---@field index number
----@field list_index number
----@field list_win snacks.win
+---@field ctx superkanban.Ctx
 
 ---@class superkanban.TaskUI
 ---@field data superkanban.TaskData
 ---@field index number
 ---@field win snacks.win
 ---@field list_index number
+---@field ctx superkanban.Ctx
 ---@field config superkanban.Config
 ---@field type "task"
 ---@overload fun(opts:superkanban.Task.Opts,config :{}): superkanban.TaskUI
@@ -20,6 +20,8 @@ local M = setmetatable({}, {
 	end,
 })
 M.__index = M
+---@type superkanban.Config
+local config
 
 local task_height = 4
 
@@ -50,23 +52,23 @@ function M.new(opts, conf)
 
 	self.data = opts.data
 	self.index = opts.index
-	self.list_index = opts.list_index
-	self.config = conf
+	self.ctx = opts.ctx
+
 	self.type = "task"
+	config = conf
 
 	return self
 end
 
 ---@param list superkanban.TaskListUI
----@param ctx superkanban.Ctx
 ---@return snacks.win
-function M:setup_win(list, ctx)
+function M:setup_win(list)
 	local task_win = Snacks.win({
 		show = false,
 		enter = false,
 		on_win = function()
-			self:set_events(ctx)
-			self:set_keymaps(ctx)
+			self:set_events()
+			self:set_keymaps()
 		end,
 		text = function()
 			return self:render_lines()
@@ -86,25 +88,25 @@ function M:setup_win(list, ctx)
 	})
 
 	self.win = task_win
-	self.ctx = ctx
+	self.list_index = list.index
 	return task_win
 end
 
----@param ctx superkanban.Ctx
 ---@param list superkanban.TaskListUI
 ---@param opts? {task_win?:snacks.win,visible_index?:number}
-function M:mount(ctx, list, opts)
+function M:mount(list, opts)
 	opts = opts or {}
 
 	local task_win = opts.task_win
 	if not task_win then
-		task_win = self:setup_win(list, ctx)
+		task_win = self:setup_win(list)
 	end
 
 	if type(opts.visible_index) == "number" then
 		self.visible_index = opts.visible_index
 		task_win:show()
 	end
+
 	return self
 end
 
@@ -125,11 +127,6 @@ function M:render_lines()
 		end
 	end
 	return lines
-end
-
-function M:update_index_position()
-	self.win.opts.row = calculate_row_pos(self.index)
-	self.win:update()
 end
 
 function M:closed()
@@ -232,12 +229,19 @@ function M:delete_task(should_focus)
 	local list = self.ctx.lists[self.list_index]
 	local target_index = self.index
 
-	-- Remove task
-	self.win:close()
-	table.remove(list.tasks, target_index)
-
 	-- Select next or prev task
-	local focus_task = list.tasks[target_index + 1] or list.tasks[target_index - 1]
+	local focus_task = nil
+	if list.tasks[target_index + 1] then
+		focus_task = list.tasks[target_index + 1]
+	elseif list.tasks[target_index - 1] then
+		focus_task = list.tasks[target_index - 1]
+	else
+		focus_task = list:focus()
+	end
+
+	-- Remove task
+	self:exit()
+	table.remove(list.tasks, target_index)
 
 	-- Update current list task position & index
 	local found_task_will_be_in_view_from_bottom = nil
@@ -263,10 +267,11 @@ function M:delete_task(should_focus)
 		end
 	end
 
-	if should_focus ~= false and focus_task:has_visual_index() then
+	if should_focus ~= false and focus_task then
+		if focus_task.type == "task" and not focus_task:has_visual_index() then
+			return
+		end
 		focus_task:focus()
-	elseif should_focus ~= false and #list.tasks == 0 then
-		list:focus()
 	end
 end
 
@@ -294,8 +299,12 @@ function M:save()
 	self.data.due = dates
 end
 
----@param ctx superkanban.Ctx
-function M:get_actions(ctx)
+function M:exit()
+	self.win:close()
+end
+
+function M:get_actions()
+	local ctx = self.ctx
 	local actions = {}
 
 	-- FIXME: update swap actions
@@ -358,9 +367,8 @@ function M:get_actions(ctx)
 			local new_task = self.new({
 				data = self.data,
 				index = target_index,
-				list_index = target_list.index,
-				list_win = target_list.win,
-			}, self.config):mount(ctx, target_list)
+				ctx = self.ctx,
+			}, config):mount(target_list)
 			target_list.tasks[target_index] = new_task
 			target_list:bottom()
 		end
@@ -446,7 +454,7 @@ function M:get_actions(ctx)
 	end
 
 	actions.close = function()
-		ctx.root:exit(ctx)
+		ctx.root:exit()
 	end
 	actions.create = function()
 		local list = ctx.lists[self.list_index]
@@ -463,9 +471,10 @@ function M:get_actions(ctx)
 				due = {},
 			},
 			index = target_index,
-			list_index = self.list_index,
-			list_win = list.win,
-		}, self.config):mount(ctx, list, { visible_index = list_space_available and #list.tasks + 1 or nil })
+			ctx = self.ctx,
+		}, config):mount(list, {
+			visible_index = list_space_available and #list.tasks + 1 or nil,
+		})
 		list.tasks[target_index] = new_task
 
 		list:bottom()
@@ -479,11 +488,10 @@ function M:get_actions(ctx)
 	return actions
 end
 
----@param ctx superkanban.Ctx
-function M:set_keymaps(ctx)
+function M:set_keymaps()
 	local buf = self.win.buf
 	local map = vim.keymap.set
-	local act = self:get_actions(ctx)
+	local act = self:get_actions()
 
 	map("n", "q", act.close, { buffer = buf })
 	map("n", "gn", act.create, { buffer = buf })
@@ -507,8 +515,7 @@ function M:set_keymaps(ctx)
 	map("n", "<tab>", act.jump_verticaly(1), { buffer = buf })
 end
 
----@param ctx superkanban.Ctx
-function M:set_events(ctx)
+function M:set_events()
 	self.win:on({ "BufEnter", "WinEnter" }, function()
 		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
 	end, { buf = true })
@@ -518,7 +525,7 @@ function M:set_events(ctx)
 	end, { buf = true })
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
-		self:save(ctx)
+		self:save()
 	end, { buf = true })
 end
 

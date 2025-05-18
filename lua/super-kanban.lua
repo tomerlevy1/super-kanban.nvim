@@ -1,5 +1,7 @@
 local hl = require("super-kanban.highlights")
-local ui = require("super-kanban.ui")
+local Root = require("super-kanban.ui.root")
+local List = require("super-kanban.ui.list")
+local Task = require("super-kanban.ui.task")
 
 local M = {}
 
@@ -47,7 +49,7 @@ function M.open(source_path)
 
 	---@type superkanban.Ctx
 	local ctx = {
-		root = ui.root(config),
+		root = Root(config),
 		source_path = source_path,
 		lists = {},
 	}
@@ -60,7 +62,7 @@ function M.open(source_path)
 
 	-- Setup lists & tasks windows then generate ctx
 	for list_index, list_md in ipairs(parsed_data and parsed_data.lists or default_list) do
-		local list = ui.list({
+		local list = List({
 			data = { title = list_md.title },
 			index = list_index,
 			ctx = ctx,
@@ -73,18 +75,16 @@ function M.open(source_path)
 				if first_task_loc == nil then
 					first_task_loc = { list_index, task_index }
 				end
-				local task = ui.task({
+				local task = Task({
 					data = task_md,
 					index = task_index,
-					list_index = list_index,
-					list_win = list.win,
 					ctx = ctx,
 				}, config)
 				tasks[task_index] = task
 			end
 		end
 
-		lists[list_index] = ui.list.gen_list_ctx(list, tasks)
+		lists[list_index] = List.gen_list_ctx(list, tasks)
 	end
 
 	ctx.lists = lists

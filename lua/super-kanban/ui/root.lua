@@ -3,6 +3,7 @@ local hl = require("super-kanban.highlights")
 ---@class superkanban.RootUI
 ---@field win snacks.win
 ---@field ctx superkanban.Ctx
+---@field type "root"
 ---@overload fun(config :{}): superkanban.RootUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
@@ -10,7 +11,6 @@ local M = setmetatable({}, {
 	end,
 })
 M.__index = M
-
 ---@type superkanban.Config
 local config
 
@@ -38,17 +38,19 @@ function M.new(conf)
 		bo = { modifiable = false, filetype = "superkanban_board" },
 	})
 
+	self.type = "root"
 	config = conf
+
 	return self
 end
 
 ---@param ctx superkanban.Ctx
 function M:mount(ctx)
-	self:set_actions(ctx)
-	self:set_events(ctx)
+	self:set_actions()
+	self:set_events()
 
 	for _, list in ipairs(ctx.lists) do
-		list:mount(ctx)
+		list:mount()
 	end
 
 	local focus_loc = ctx.focus_location
@@ -73,11 +75,9 @@ function M:on_exit()
 	self:exit()
 end
 
----@param ctx superkanban.Ctx
-function M:set_actions(ctx) end
+function M:set_actions() end
 
----@param ctx superkanban.Ctx
-function M:set_events(ctx)
+function M:set_events()
 	self.win:on("WinClosed", function()
 		self:on_exit()
 	end, { win = true })

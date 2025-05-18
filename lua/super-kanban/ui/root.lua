@@ -65,7 +65,11 @@ function M:init(ctx)
 end
 
 function M:exit(ctx)
-	require("super-kanban.markdown.writer").write(ctx, config)
+	self.win:close()
+end
+
+function M:on_exit(ctx)
+	require("super-kanban.parser.markdown").write_file(ctx, config)
 	for _, li in ipairs(ctx.lists) do
 		li.win:close()
 	end
@@ -78,7 +82,7 @@ function M:set_actions(ctx) end
 ---@param ctx kanban.Ctx
 function M:set_events(ctx)
 	self.win:on("WinClosed", function(_, ev)
-		self:exit(ctx)
+		self:on_exit(ctx)
 	end, { win = true })
 
 	self.win:on("BufEnter", function()

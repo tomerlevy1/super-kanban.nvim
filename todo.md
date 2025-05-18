@@ -1,10 +1,3 @@
----
-
-kanban-plugin: basic
-
----
-
-
 ## TODO
 
 - [ ] Add description
@@ -19,6 +12,8 @@ kanban-plugin: basic
 
 - [ ] Date picker
 
+- [ ] creat task in top/bot/next/prev
+
 ## Work in progress
 
 - [ ] If possible use treesitter for reader
@@ -27,9 +22,3 @@ kanban-plugin: basic
 
 ## Completed
 
-
-%% kanban:settings
-```
-{"kanban-plugin":"basic"}
-```
-%%

@@ -43,7 +43,7 @@ M.setup()
 --- Open super-kanban
 ---@param source_path string
 function M.open(source_path)
-	local source = require("super-kanban.markdown").read(source_path)
+	local source = require("super-kanban.parser.markdown").parse_file(source_path)
 
 	---@type kanban.Ctx
 	local ctx = {

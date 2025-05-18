@@ -51,11 +51,7 @@ function M:setup_win(list, ctx)
 			self:set_keymaps(ctx)
 		end,
 		text = function()
-			return {
-				self.data.title or nil,
-				#self.data.tag > 0 and table.concat(self.data.tag, " ") or nil,
-				#self.data.due > 0 and table.concat(self.data.due, " ") or nil,
-			}
+			return self:render_lines()
 		end,
 		win = list.win.win,
 		width = 0,
@@ -82,6 +78,25 @@ function M:setup_win(list, ctx)
 	self.win = task_win
 	self.ctx = ctx
 	return task_win
+end
+
+function M:render_lines()
+	local lines = {
+		self.data.title or "",
+	}
+
+	if #self.data.tag > 0 then
+		lines[2] = table.concat(self.data.tag, " ")
+	end
+
+	if #self.data.due > 0 then
+		if lines[2] then
+			lines[2] = lines[2] .. " " .. table.concat(self.data.due, " ")
+		else
+			lines[2] = table.concat(self.data.due, " ")
+		end
+	end
+	return lines
 end
 
 function M:update_index_position()
@@ -491,7 +506,7 @@ function M:set_keymaps(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
 	map("n", "gn", act.create, { buffer = buf })
-	map("n", "D", act.delete, { buffer = buf })
+	map("n", "X", act.delete, { buffer = buf })
 
 	map("n", "x", act.info, { buffer = buf })
 

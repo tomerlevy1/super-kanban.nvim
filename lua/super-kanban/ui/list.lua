@@ -107,8 +107,37 @@ function M:mount(opts)
 	end
 end
 
+function M:find_first_visible_task()
+	for _, task in ipairs(self.ctx.lists[self.index].tasks) do
+		if task:has_visual_index() then
+			return task
+		end
+	end
+
+	return nil
+end
+
+function M:find_a_visible_task(visible_index)
+	local tasks = self.ctx.lists[self.index].tasks
+	for index = visible_index, #tasks, 1 do
+		local task = tasks[index]
+		if task.visible_index == visible_index then
+			return task
+		end
+	end
+
+	return nil
+end
+
 function M:focus()
+	local tasks = self.ctx.lists[self.index].tasks
+	if #tasks > 0 then
+		(self:find_first_visible_task() or tasks[1]):focus()
+		return false
+	end
+
 	self.win:focus()
+	return true
 end
 
 function M:exit()
@@ -210,6 +239,23 @@ function M:update_visible_position(new_index)
 	else
 		self.win:hide()
 		self.visible_index = nil
+	end
+end
+
+function M:jump_horizontal(direction)
+	if direction == nil then
+		direction = 1
+	end
+	return function()
+		local target_list = self.ctx.lists[self.index + direction]
+		if not target_list then
+			return
+		end
+
+		if not target_list:has_visual_index() or target_list:closed() then
+			self.ctx.root:scroll_list(direction, self.index)
+		end
+		target_list:focus()
 	end
 end
 
@@ -340,15 +386,11 @@ function M:get_actions(ctx)
 				if not target_list then
 					return
 				end
-				if #target_list.tasks == 0 then
-					target_list:focus()
-				end
 
-				-- Updating index
-				local target_index = 1
-				if target_list.tasks[target_index] then
-					target_list.tasks[target_index]:focus()
+				if not target_list:has_visual_index() or target_list:closed() then
+					self.ctx.root:scroll_list(direction, self.index)
 				end
+				target_list:focus()
 			end
 		end,
 	}

@@ -328,11 +328,13 @@ function M:get_actions()
 			direction = 1
 		end
 		return function()
-			-- local cur_list = ctx.lists[self.list_index]
-			-- local cur_index = self.index
 			local target_list = ctx.lists[self.list_index + direction]
 			if not target_list then
 				return
+			end
+
+			if not target_list:has_visual_index() or target_list:closed() then
+				self.ctx.root:scroll_list(direction, self.list_index)
 			end
 
 			self:delete_task(false)
@@ -379,26 +381,27 @@ function M:get_actions()
 			direction = 1
 		end
 		return function()
-			local list = ctx.lists[self.list_index + direction]
-			if not list then
+			local target_list = ctx.lists[self.list_index + direction]
+			if not target_list then
 				return
 			end
-			if #list.tasks == 0 then
-				list:focus()
+
+			if not target_list:has_visual_index() or target_list:closed() then
+				self.ctx.root:scroll_list(direction, self.list_index)
+			end
+
+			if #target_list.tasks == 0 then
+				target_list:focus()
 			end
 
 			-- Focus same visual_index task
-			local target_index = self.visible_index
-			if #list.tasks >= target_index then
-				for index = target_index, #list.tasks, 1 do
-					local tk = list.tasks[index]
-					if tk.visible_index == self.visible_index then
-						tk:focus()
-						break
-					end
+			if #target_list.tasks >= self.visible_index then
+				local target_task = target_list:find_a_visible_task(self.visible_index)
+				if target_task then
+					target_task:focus()
 				end
-			elseif list.tasks[#list.tasks] then
-				list.tasks[#list.tasks]:focus()
+			elseif target_list.tasks[#target_list.tasks] then
+				target_list.tasks[#target_list.tasks]:focus()
 			end
 		end
 	end

@@ -105,8 +105,8 @@ function M.create_winhighlights()
     KanbanTaksNormalNC          = { fg = c.fg, bg = c.none },
     KanbanTaksSeparator         = { fg = c.cyan, bg = c.none },
     KanbanTaksSeparatorActive   = { fg = c.cyan, bg = float_bg },
-    KanbanTaksWinbar            = { fg = c.muted, bg = c.none },
-    KanbanTaksWinBarActive      = { fg = c.green, bg = float_bg },
+    KanbanTaksWinbar            = { fg = c.grey, bg = c.none },
+    KanbanTaksWinBarActive      = { fg = c.light_grey, bg = float_bg },
   }
 
 	for hl_name, option in pairs(highlights) do

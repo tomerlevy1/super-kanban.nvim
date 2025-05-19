@@ -1,4 +1,5 @@
 local hl = require("super-kanban.highlights")
+local utils = require("super-kanban.utils")
 
 ---@class superkanban.Task.Opts
 ---@field data superkanban.TaskData
@@ -83,7 +84,7 @@ function M:setup_win(list)
 		focusable = true,
 		zindex = 20,
 		keys = { q = false },
-		wo = { winbar = "%=+", winhighlight = hl.task, wrap = true },
+		wo = { winbar = " ", winhighlight = hl.task, wrap = true },
 		bo = { modifiable = true, filetype = "superkanban_task" },
 	})
 
@@ -107,6 +108,7 @@ function M:mount(list, opts)
 		task_win:show()
 	end
 
+	self:update_winbar()
 	return self
 end
 
@@ -146,6 +148,28 @@ function M:render_lines()
 	return lines
 end
 
+function M:update_winbar()
+	local f_str = "%%=%s"
+	vim.api.nvim_set_option_value("winbar", f_str:format(self:get_relative_date()), { win = self.win.win })
+end
+
+function M:get_relative_date()
+	if #self.data.due == 0 then
+		return ""
+	end
+	local date_str = self.data.due[1]
+	if not date_str then
+		return ""
+	end
+	local ok, result = pcall(utils.get_relative_time, utils.extract_date(date_str))
+
+	if ok then
+		return result
+	end
+
+	return ""
+end
+
 function M:has_visual_index()
 	return type(self.visible_index) == "number" and self.visible_index > 0
 end
@@ -161,6 +185,7 @@ function M:update_visible_position(new_index)
 
 		self.visible_index = new_index
 		self.win:update()
+		self:update_winbar()
 	else
 		self.win:hide()
 		self.visible_index = nil
@@ -465,6 +490,7 @@ function M:set_events()
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
 		self:extract_buffer()
+		self:update_winbar()
 	end, { buf = true })
 end
 

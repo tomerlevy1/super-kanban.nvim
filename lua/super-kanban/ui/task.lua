@@ -25,7 +25,7 @@ local config
 
 local task_height = 4
 
-local function parse_tags(text)
+local function extract_tags(text)
 	local tags = {}
 	for tag in text:gmatch("#%w+") do
 		table.insert(tags, tag)
@@ -33,9 +33,9 @@ local function parse_tags(text)
 	return tags
 end
 
-local function parse_dates(text)
+local function extract_dates(text)
 	local dates = {}
-	for date in text:gmatch("(@%d%d%d%d/%d?%d/%d?%d)") do
+	for date in text:gmatch("(@{%d+[,-/]%d%d?[,-/]%d%d?})") do
 		table.insert(dates, date)
 	end
 	return dates
@@ -110,6 +110,23 @@ function M:mount(list, opts)
 	return self
 end
 
+function M:focus()
+	if self:closed() then
+		self.win:show()
+	end
+
+	self.win:focus()
+	vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
+end
+
+function M:exit()
+	self.win:close()
+end
+
+function M:closed()
+	return self.win.closed ~= false
+end
+
 function M:render_lines()
 	local lines = {
 		self.data.title or "",
@@ -127,10 +144,6 @@ function M:render_lines()
 		end
 	end
 	return lines
-end
-
-function M:closed()
-	return self.win.closed ~= false
 end
 
 function M:has_visual_index()
@@ -151,76 +164,6 @@ function M:update_visible_position(new_index)
 	else
 		self.win:hide()
 		self.visible_index = nil
-	end
-end
-
----@param from_location? number[]
----@param opts? {only_move_into_view?:boolean}
-function M:focus(from_location, opts)
-	opts = opts or {}
-
-	if self:closed() then
-		if not from_location then
-			return
-		end
-
-		local direction = self.index > from_location[2] and 1 or -1
-		local is_downward = direction == 1
-		local jump_difference = is_downward and self.index - from_location[2] or from_location[2] - self.index
-
-		local list = self.ctx.lists[self.list_index]
-		local tasks = list.tasks
-
-		local list_height = list.win:size().height - 2
-		local task_can_fit = math.floor(list_height / 5)
-		if #tasks < task_can_fit then
-			task_can_fit = #tasks
-		end
-
-		-- Set loop incremental or decremental
-		local loop_step = is_downward and -1 or 1
-		local loop_ending = is_downward and 1 or jump_difference == 1 and self.index + task_can_fit or #tasks
-		local visual_index = is_downward and task_can_fit or 1
-
-		for cur_index = self.index, loop_ending, loop_step do
-			local cur_task = tasks[cur_index]
-
-			if (is_downward and visual_index <= 0) or visual_index > task_can_fit then
-				cur_task:update_visible_position(nil)
-			else
-				cur_task:update_visible_position(visual_index)
-				if self:closed() then
-					cur_task.win:show()
-				end
-			end
-
-			visual_index = visual_index + loop_step
-		end
-
-		local info = { top = 0, bottom = 0 }
-		-- if #tasks <= task_can_fit then
-		-- 	dd("zero")
-		if is_downward then
-			local bot = #tasks - self.index
-			local top = #tasks - (bot + task_can_fit)
-			info.top = top
-			info.bottom = bot
-		elseif not is_downward then
-			local top = self.index - 1
-			local bot = #tasks - (top + task_can_fit)
-			info.top = top
-			info.bottom = bot
-		end
-
-		list:update_scroll_info(info.top, info.bottom)
-	end
-
-	if not opts.only_move_into_view then
-		if self:closed() then
-			self.win:show()
-		end
-		self.win:focus()
-		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
 	end
 end
 
@@ -275,7 +218,7 @@ function M:delete_task(should_focus)
 	end
 end
 
-function M:save()
+function M:extract_buffer()
 	local lines = self.win:lines()
 
 	local title = lines[1]
@@ -283,12 +226,12 @@ function M:save()
 	local dates = {}
 
 	for i = 2, #lines, 1 do
-		local found_tags = parse_tags(lines[i])
+		local found_tags = extract_tags(lines[i])
 		if #found_tags >= 1 then
 			vim.list_extend(tags, found_tags)
 		end
 
-		local found_dates = parse_dates(lines[i])
+		local found_dates = extract_dates(lines[i])
 		if #found_dates >= 1 then
 			vim.list_extend(dates, found_dates)
 		end
@@ -297,10 +240,6 @@ function M:save()
 	self.data.title = title
 	self.data.tag = tags
 	self.data.due = dates
-end
-
-function M:exit()
-	self.win:close()
 end
 
 function M:get_actions()
@@ -525,7 +464,7 @@ function M:set_events()
 	end, { buf = true })
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
-		self:save()
+		self:extract_buffer()
 	end, { buf = true })
 end
 

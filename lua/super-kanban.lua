@@ -84,7 +84,7 @@ function M.open(source_path)
 			end
 		end
 
-		lists[list_index] = List.gen_list_ctx(list, tasks)
+		lists[list_index] = List.generate_list_ctx(list, tasks)
 	end
 
 	ctx.lists = lists

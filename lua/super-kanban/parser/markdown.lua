@@ -39,7 +39,7 @@ function parser.parse_data_from_task_text(raw)
 	end)
 
 	-- extract dates
-	title = title:gsub("(@%d%d%d%d/%d%d?/%d%d?)", function(date)
+	title = title:gsub("(@{%d+[,-/]%d%d?[,-/]%d%d?})", function(date)
 		table.insert(due, date)
 		return ""
 	end)

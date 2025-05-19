@@ -91,36 +91,12 @@ function M:mount()
 	self.win:show()
 end
 
+function M:focus()
+	self.win:focus()
+end
+
 function M:exit()
 	self.win:close()
-end
-
----@param ctx superkanban.Ctx
-function M:set_keymaps(ctx)
-	local buf = self.win.buf
-	local map = vim.keymap.set
-	local act = self:get_actions(ctx)
-
-	map("n", "q", act.close, { buffer = buf })
-
-	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
-	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
-end
-
----@param ctx superkanban.Ctx
-function M:set_events(ctx)
-	self.win:on("WinClosed", function()
-		for _, tk in ipairs(ctx.lists[self.index].tasks) do
-			tk:exit()
-		end
-	end, { win = true })
-
-	self.win:on("BufEnter", function()
-		local tk = ctx.lists[self.index].tasks[1]
-		if tk then
-			tk:focus()
-		end
-	end, { buf = true })
 end
 
 function M:update_scroll_info(top, bottom)
@@ -131,10 +107,6 @@ function M:update_scroll_info(top, bottom)
 		footer = string.format("↑%d-↓%d", self.scroll_info.top, self.scroll_info.bot),
 		footer_pos = "center",
 	})
-end
-
-function M:focus()
-	self.win:focus()
 end
 
 function M:task_can_fit()
@@ -275,9 +247,21 @@ end
 ---@param list table
 ---@param tasks superkanban.TaskUI
 ---@return superkanban.TaskList.Ctx
-function M.gen_list_ctx(list, tasks)
+function M.generate_list_ctx(list, tasks)
 	list.tasks = tasks
 	return list
+end
+
+---@param ctx superkanban.Ctx
+function M:set_keymaps(ctx)
+	local buf = self.win.buf
+	local map = vim.keymap.set
+	local act = self:get_actions(ctx)
+
+	map("n", "q", act.close, { buffer = buf })
+
+	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
+	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
 end
 
 ---@param ctx superkanban.Ctx
@@ -313,7 +297,7 @@ function M:get_actions(ctx)
 					target_list:focus()
 				end
 
-				-- -- Updating index
+				-- Updating index
 				local target_index = 1
 				if target_list.tasks[target_index] then
 					target_list.tasks[target_index]:focus()
@@ -323,6 +307,22 @@ function M:get_actions(ctx)
 	}
 
 	return act
+end
+
+---@param ctx superkanban.Ctx
+function M:set_events(ctx)
+	self.win:on("WinClosed", function()
+		for _, tk in ipairs(ctx.lists[self.index].tasks) do
+			tk:exit()
+		end
+	end, { win = true })
+
+	self.win:on("BufEnter", function()
+		local tk = ctx.lists[self.index].tasks[1]
+		if tk then
+			tk:focus()
+		end
+	end, { buf = true })
 end
 
 return M

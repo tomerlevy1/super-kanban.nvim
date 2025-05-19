@@ -8,6 +8,7 @@ local hl = require("super-kanban.highlights")
 ---@class superkanban.TaskListUI
 ---@field data {title: string}
 ---@field index number
+---@field visible_index number
 ---@field win snacks.win
 ---@field ctx superkanban.Ctx
 ---@field type "list"
@@ -22,10 +23,20 @@ M.__index = M
 ---@type superkanban.Config
 local config
 
+---@param list_min_width number
+---@param index number
+---@return {row:number,col:number}
+local function get_list_position(list_min_width, index)
+	return { row = 1, col = config.board.padding.left + (list_min_width + 3) * (index - 1) }
+end
+
 ---@param opts superkanban.TaskList.Opts
 ---@param conf superkanban.Config
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
+	config = conf
+
+	local pos = get_list_position(conf.list_min_width, opts.index)
 
 	local list_win = Snacks.win({
 		enter = false,
@@ -61,8 +72,8 @@ function M.new(opts, conf)
 		win = opts.ctx.root.win.win,
 		height = 0.9,
 		width = conf.list_min_width,
-		row = 1,
-		col = 10 + (conf.list_min_width + 3) * (opts.index - 1),
+		row = pos.row,
+		col = pos.col,
 		relative = "win",
 		border = "rounded",
 		focusable = true,
@@ -82,13 +93,18 @@ function M.new(opts, conf)
 	self.scroll_info = { top = 0, bot = 0 }
 
 	self.type = "list"
-	config = conf
 
 	return self
 end
 
-function M:mount()
-	self.win:show()
+---@param opts? {visible_index?:number}
+function M:mount(opts)
+	opts = opts or {}
+
+	if type(opts.visible_index) == "number" then
+		self.visible_index = opts.visible_index
+		self.win:show()
+	end
 end
 
 function M:focus()
@@ -170,6 +186,31 @@ function M:scroll_task(direction, cur_task_index)
 	end
 
 	return true
+end
+
+function M:closed()
+	return self.win.closed ~= false
+end
+
+function M:has_visual_index()
+	return type(self.visible_index) == "number" and self.visible_index > 0
+end
+
+---@param new_index? number
+function M:update_visible_position(new_index)
+	if type(new_index) == "number" and new_index > 0 then
+		self.win.opts.col = get_list_position(config.list_min_width, new_index).col
+
+		if self:closed() then
+			self.win:show()
+		end
+
+		self.visible_index = new_index
+		self.win:update()
+	else
+		self.win:hide()
+		self.visible_index = nil
+	end
 end
 
 function M:bottom()
@@ -259,9 +300,15 @@ function M:set_keymaps(ctx)
 	local act = self:get_actions(ctx)
 
 	map("n", "q", act.close, { buffer = buf })
+	map("n", "<C-p>", function()
+		self.ctx.root:scroll_list(-1, self.index)
+	end, { buffer = buf })
+	map("n", "<C-n>", function()
+		self.ctx.root:scroll_list(1, self.index)
+	end, { buffer = buf })
 
-	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
+	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
 end
 
 ---@param ctx superkanban.Ctx

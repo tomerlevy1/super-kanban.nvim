@@ -10,6 +10,11 @@ local M = {}
 ---@field markdown superkanban.MarkdownConfig
 local config = {
 	list_min_width = 32,
+	board = {
+		padding = {
+			left = 8,
+		},
+	},
 	markdown = {
 		description_folder = "./tasks/", -- "./"
 		list_head = "## ",
@@ -88,7 +93,6 @@ function M.open(source_path)
 	end
 
 	ctx.lists = lists
-	ctx.focus_location = first_task_loc
 	ctx.root:mount(ctx)
 end
 

@@ -18,7 +18,6 @@
 ---@field root superkanban.RootUI
 ---@field lists superkanban.TaskList.Ctx[]
 ---@field source_path string
----@field focus_location? number[]
 
 ---@class superkanban.MarkdownConfig
 ---@field description_folder string

@@ -9,6 +9,7 @@ local utils = require("super-kanban.utils")
 ---@class superkanban.TaskUI
 ---@field data superkanban.TaskData
 ---@field index number
+---@field visible_index number
 ---@field win snacks.win
 ---@field list_index number
 ---@field ctx superkanban.Ctx
@@ -50,13 +51,13 @@ end
 ---@param conf superkanban.Config
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
+	config = conf
 
 	self.data = opts.data
 	self.index = opts.index
 	self.ctx = opts.ctx
 
 	self.type = "task"
-	config = conf
 
 	return self
 end
@@ -64,7 +65,7 @@ end
 ---@param list superkanban.TaskListUI
 ---@return snacks.win
 function M:setup_win(list)
-	local task_win = Snacks.win({
+	self.win = Snacks.win({
 		show = false,
 		enter = false,
 		on_win = function()
@@ -84,13 +85,16 @@ function M:setup_win(list)
 		focusable = true,
 		zindex = 20,
 		keys = { q = false },
-		wo = { winbar = " ", winhighlight = hl.task, wrap = true },
+		wo = {
+			winbar = self:generate_winbar(),
+			winhighlight = hl.task,
+			wrap = true,
+		},
 		bo = { modifiable = true, filetype = "superkanban_task" },
 	})
 
-	self.win = task_win
 	self.list_index = list.index
-	return task_win
+	return self.win
 end
 
 ---@param list superkanban.TaskListUI
@@ -108,7 +112,6 @@ function M:mount(list, opts)
 		task_win:show()
 	end
 
-	self:update_winbar()
 	return self
 end
 
@@ -148,9 +151,17 @@ function M:render_lines()
 	return lines
 end
 
-function M:update_winbar()
+function M:generate_winbar()
 	local f_str = "%%=%s"
-	vim.api.nvim_set_option_value("winbar", f_str:format(self:get_relative_date()), { win = self.win.win })
+	return f_str:format(self:get_relative_date())
+end
+
+function M:update_winbar()
+	local ft = vim.api.nvim_get_option_value("filetype", { buf = self.win.buf })
+
+	if ft == "superkanban_task" then
+		vim.api.nvim_set_option_value("winbar", self:generate_winbar(), { win = self.win.win })
+	end
 end
 
 function M:get_relative_date()
@@ -215,7 +226,7 @@ function M:delete_task(should_focus)
 	local found_task_will_be_in_view_from_bottom = nil
 	for cur_index = target_index, #list.tasks, 1 do
 		local tk = list.tasks[cur_index]
-		tk.index = cur_index
+		tk.index = tk.index - 1
 
 		if type(tk.visible_index) == "number" then
 			tk:update_visible_position(tk.visible_index - 1)

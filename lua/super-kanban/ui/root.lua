@@ -1,5 +1,6 @@
 local hl = require("super-kanban.highlights")
 local Config = require("super-kanban.config")
+local List = require("super-kanban.ui.list")
 
 ---@class superkanban.RootUI
 ---@field win snacks.win
@@ -107,7 +108,7 @@ function M:scroll_list(direction, cur_list_index)
 	local hide_task_index = nil
 
 	for index, item in ipairs(lists) do
-		if item:has_visual_index() then
+		if item:in_view() then
 			item:update_visible_position(item.visible_index + (is_right and -1 or 1))
 
 			if is_right and type(item.visible_index) == "number" then
@@ -144,6 +145,71 @@ function M:scroll_list(direction, cur_list_index)
 	return true
 end
 
+function M:scroll_to_top()
+	local lists = self.ctx.lists
+	if #lists == 0 then
+		return
+	end
+
+	local list_can_fit = self:list_can_fit()
+
+	if lists[1]:has_visual_index() or not lists[1]:closed() then
+		lists[1]:focus()
+		-- list:update_scroll_info(0, 0)
+		return
+	end
+
+	for index = 1, #lists, 1 do
+		local list = lists[index]
+		if list_can_fit >= index then
+			list:update_visible_position(index)
+		else
+			list:update_visible_position(nil)
+		end
+	end
+
+	lists[1]:focus()
+
+	local top = 0
+	local bot = #lists - list_can_fit
+	self:update_scroll_info(top, bot)
+end
+
+function M:scroll_to_bottom()
+	local lists = self.ctx.lists
+	if #lists == 0 then
+		return
+	end
+
+	if lists[#lists]:has_visual_index() or not lists[#lists]:closed() then
+		lists[#lists]:focus()
+		-- list:update_scroll_info(0, 0)
+		return
+	end
+
+	local list_can_fit = self:list_can_fit()
+
+	if #lists < list_can_fit then
+		list_can_fit = #lists
+	end
+
+	for index = #lists, 1, -1 do
+		local tk = lists[index]
+		if list_can_fit > 0 then
+			tk:update_visible_position(list_can_fit)
+			list_can_fit = list_can_fit - 1
+		else
+			tk:update_visible_position(nil)
+		end
+	end
+
+	lists[#lists]:focus()
+
+	local bot = 0
+	local top = #lists - self:list_can_fit()
+	self:update_scroll_info(top, bot)
+end
+
 function M:update_scroll_info(first, last)
 	self.scroll_info.first = first > 0 and first or 0
 	self.scroll_info.last = last > 0 and last or 0
@@ -152,6 +218,38 @@ function M:update_scroll_info(first, last)
 		title = string.format("← %d | %d →  ", self.scroll_info.first, self.scroll_info.last),
 		title_pos = "right",
 	})
+end
+
+---@param opts {from:number,to:number}
+function M:fill_empty_space(opts)
+	local lists = self.ctx.lists
+
+	local list_can_fit = self:list_can_fit()
+
+	local empty_spaces = opts.to - opts.from
+	local last_used_visible_index = 0
+
+	for index = opts.to, #lists, 1 do
+		local item = lists[index]
+		item.index = item.index - 1
+
+		if item:in_view() then
+			last_used_visible_index = item.visible_index - 1
+			item:update_visible_position(last_used_visible_index)
+		elseif empty_spaces > 0 and last_used_visible_index < list_can_fit then
+			last_used_visible_index = last_used_visible_index == 0 and list_can_fit or last_used_visible_index + 1
+			item:update_visible_position(last_used_visible_index)
+
+			-- Update scroll info for right side
+			self:update_scroll_info(self.scroll_info.first, self.scroll_info.last - 1)
+			empty_spaces = empty_spaces - 1
+		end
+	end
+
+	while empty_spaces > 0 do
+		self:scroll_list(-1, 0)
+		empty_spaces = empty_spaces - 1
+	end
 end
 
 function M:exit()
@@ -164,6 +262,28 @@ function M:on_exit()
 		li:exit()
 	end
 	self:exit()
+end
+
+function M:create_list()
+	local lists = self.ctx.lists
+	local target_index = #lists + 1
+
+	local list_can_fit = self:list_can_fit()
+	local space_available = #lists < list_can_fit
+
+	local new_list = List({
+		data = { title = "New List " .. target_index },
+		index = target_index,
+		ctx = self.ctx,
+	}, config)
+
+	local tasks = {}
+	lists[target_index] = List.generate_list_ctx(new_list, tasks)
+	new_list:mount({ visible_index = space_available and target_index or nil })
+
+	-- TODO: add rename list ui
+	self:scroll_to_bottom()
+	-- vim.cmd.startinsert()
 end
 
 function M:set_actions() end

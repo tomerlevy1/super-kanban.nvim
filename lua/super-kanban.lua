@@ -45,7 +45,7 @@ local config = {
 function M.setup()
 	hl.create_winhighlights()
 end
-M.setup()
+-- M.setup()
 
 --- Open super-kanban
 ---@param source_path string

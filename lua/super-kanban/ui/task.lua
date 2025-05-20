@@ -215,6 +215,7 @@ function M:delete_task(should_focus)
 	elseif list.tasks[target_index - 1] then
 		focus_task = list.tasks[target_index - 1]
 	else
+    -- TODO: simplify this delete_task
 		focus_task = list:focus()
 	end
 
@@ -435,30 +436,8 @@ function M:get_actions()
 		ctx.root:exit()
 	end
 	actions.create = function()
-		local list = ctx.lists[self.list_index]
-		local target_index = #list.tasks + 1
-
-		local task_can_fit = list:task_can_fit()
-		local list_space_available = #list.tasks < task_can_fit
-
-		local new_task = self.new({
-			data = {
-				title = "",
-				check = " ",
-				tag = {},
-				due = {},
-			},
-			index = target_index,
-			ctx = self.ctx,
-		}, config):mount(list, {
-			visible_index = list_space_available and #list.tasks + 1 or nil,
-		})
-		list.tasks[target_index] = new_task
-
-		list:bottom()
-		vim.cmd.startinsert()
+		ctx.lists[self.list_index]:create_task()
 	end
-
 	actions.delete = function()
 		self:delete_task()
 	end
@@ -473,7 +452,7 @@ function M:set_keymaps()
 
 	map("n", "q", act.close, { buffer = buf })
 	map("n", "gn", act.create, { buffer = buf })
-	map("n", "X", act.delete, { buffer = buf })
+	map("n", "gD", act.delete, { buffer = buf })
 
 	map("n", "x", act.info, { buffer = buf })
 
@@ -484,6 +463,26 @@ function M:set_keymaps()
 
 	map("n", "gg", act.top, { buffer = buf })
 	map("n", "G", act.bottom, { buffer = buf })
+
+	map("n", "<C-n>", function()
+		self.ctx.root:scroll_list(1, self.index)
+	end, { buffer = buf })
+	map("n", "<C-p>", function()
+		self.ctx.root:scroll_list(-1, self.index)
+	end, { buffer = buf })
+
+	map("n", "zn", function()
+		self.ctx.root:create_list()
+	end, { buffer = buf })
+	map("n", "D", function()
+		self.ctx.lists[self.list_index]:delete_list()
+	end, { buffer = buf })
+	map("n", "z0", function()
+		self.ctx.root:scroll_to_top()
+	end, { buffer = buf })
+	map("n", "z$", function()
+		self.ctx.root:scroll_to_bottom()
+	end, { buffer = buf })
 
 	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })

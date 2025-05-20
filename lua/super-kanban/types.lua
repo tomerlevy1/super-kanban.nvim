@@ -15,7 +15,7 @@
 ---@field tasks superkanban.TaskUI[]
 
 ---@class superkanban.Ctx
----@field root superkanban.RootUI
+---@field board superkanban.BoardUI
 ---@field lists superkanban.TaskList.Ctx[]
 ---@field source_path string
 

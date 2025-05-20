@@ -1,5 +1,5 @@
 local hl = require("super-kanban.highlights")
-local Root = require("super-kanban.ui.root")
+local Board = require("lua.super-kanban.ui.board")
 local List = require("super-kanban.ui.list")
 local Task = require("super-kanban.ui.task")
 
@@ -54,7 +54,7 @@ function M.open(source_path)
 
 	---@type superkanban.Ctx
 	local ctx = {
-		root = Root(config),
+		board = Board(config),
 		source_path = source_path,
 		lists = {},
 	}
@@ -93,7 +93,7 @@ function M.open(source_path)
 	end
 
 	ctx.lists = lists
-	ctx.root:mount(ctx)
+	ctx.board:mount(ctx)
 end
 
 -- lua require("super-kanban").open()

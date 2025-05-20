@@ -2,12 +2,12 @@ local hl = require("super-kanban.highlights")
 local Config = require("super-kanban.config")
 local List = require("super-kanban.ui.list")
 
----@class superkanban.RootUI
+---@class superkanban.BoardUI
 ---@field win snacks.win
 ---@field ctx superkanban.Ctx
----@field type "root"
+---@field type "board"
 ---@field scroll_info {first:number,last:number}
----@overload fun(config :{}): superkanban.RootUI
+---@overload fun(config :{}): superkanban.BoardUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -38,11 +38,11 @@ function M.new(conf)
 		col = 0,
 		row = 0,
 		border = { "", " ", "", "", "", "", "", "" },
-		wo = { winhighlight = hl.root, winbar = winbar("Kanban") },
+		wo = { winhighlight = hl.board, winbar = winbar("Kanban") },
 		bo = { modifiable = false, filetype = "superkanban_board" },
 	})
 
-	self.type = "root"
+	self.type = "board"
 	self.scroll_info = { first = 0, last = 0 }
 
 	return self
@@ -103,7 +103,7 @@ function M:scroll_list(direction, cur_list_index)
 		return false
 	end
 
-	local list_can_fit = self.ctx.root:list_can_fit()
+	local list_can_fit = self.ctx.board:list_can_fit()
 	local new_item_index, new_item_visual_index = nil, nil
 	local hide_task_index = nil
 

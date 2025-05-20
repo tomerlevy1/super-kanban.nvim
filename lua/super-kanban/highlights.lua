@@ -60,7 +60,7 @@ local make_winhighlight = function(highlight)
 end
 
 local M = {
-	root = make_winhighlight({
+	board = make_winhighlight({
 		Normal = "KanbanNormal",
 		NormalNC = "KanbanNormal",
 	}),

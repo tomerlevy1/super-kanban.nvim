@@ -56,7 +56,7 @@ function M:setup_win()
 		show = false,
 		title = self.data.title,
 		title_pos = "center",
-		win = self.ctx.root.win.win,
+		win = self.ctx.board.win.win,
 		height = 0.9,
 		width = config.list_min_width,
 		relative = "win",
@@ -271,7 +271,7 @@ function M:jump_horizontal(direction)
 		end
 
 		if not target_list:has_visual_index() or target_list:closed() then
-			self.ctx.root:scroll_list(direction, self.index)
+			self.ctx.board:scroll_list(direction, self.index)
 		end
 		target_list:focus()
 	end
@@ -378,14 +378,14 @@ function M:delete_list()
 	self:exit()
 	table.remove(self.ctx.lists, target_index)
 
-	self.ctx.root:fill_empty_space({ from = target_index - 1, to = target_index })
+	self.ctx.board:fill_empty_space({ from = target_index - 1, to = target_index })
 
 	if self.ctx.lists[target_index] then
 		self.ctx.lists[target_index]:focus()
 	elseif self.ctx.lists[target_index - 1] then
 		self.ctx.lists[target_index - 1]:focus()
 	else
-		self.ctx.root:exit()
+		self.ctx.board:exit()
 	end
 end
 
@@ -410,30 +410,30 @@ function M:set_keymaps(ctx)
 	end, { buffer = buf })
 
 	map("n", "<C-n>", function()
-		self.ctx.root:scroll_list(1, self.index)
+		self.ctx.board:scroll_list(1, self.index)
 	end, { buffer = buf })
 	map("n", "<C-p>", function()
-		self.ctx.root:scroll_list(-1, self.index)
+		self.ctx.board:scroll_list(-1, self.index)
 	end, { buffer = buf })
 
 	map("n", "zn", function()
-		self.ctx.root:create_list()
+		self.ctx.board:create_list()
 	end, { buffer = buf })
 	map("n", "D", function()
 		self:delete_list()
 	end, { buffer = buf })
 	map("n", "z0", function()
-		self.ctx.root:scroll_to_top()
+		self.ctx.board:scroll_to_top()
 	end, { buffer = buf })
 	map("n", "z$", function()
-		self.ctx.root:scroll_to_bottom()
+		self.ctx.board:scroll_to_bottom()
 	end, { buffer = buf })
 
 	map("n", "<C-p>", function()
-		self.ctx.root:scroll_list(-1, self.index)
+		self.ctx.board:scroll_list(-1, self.index)
 	end, { buffer = buf })
 	map("n", "<C-n>", function()
-		self.ctx.root:scroll_list(1, self.index)
+		self.ctx.board:scroll_list(1, self.index)
 	end, { buffer = buf })
 
 	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
@@ -457,7 +457,7 @@ function M:get_actions(ctx)
 		-- end,
 
 		close = function()
-			ctx.root:exit()
+			ctx.board:exit()
 		end,
 
 		jump_horizontal = function(direction)
@@ -471,7 +471,7 @@ function M:get_actions(ctx)
 				end
 
 				if not target_list:has_visual_index() or target_list:closed() then
-					self.ctx.root:scroll_list(direction, self.index)
+					self.ctx.board:scroll_list(direction, self.index)
 				end
 				target_list:focus()
 			end

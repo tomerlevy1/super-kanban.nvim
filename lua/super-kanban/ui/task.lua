@@ -335,7 +335,7 @@ function M:get_actions()
 			end
 
 			if not target_list:has_visual_index() or target_list:closed() then
-				self.ctx.root:scroll_list(direction, self.list_index)
+				self.ctx.board:scroll_list(direction, self.list_index)
 			end
 
 			self:delete_task(false)
@@ -388,7 +388,7 @@ function M:get_actions()
 			end
 
 			if not target_list:has_visual_index() or target_list:closed() then
-				self.ctx.root:scroll_list(direction, self.list_index)
+				self.ctx.board:scroll_list(direction, self.list_index)
 			end
 
 			if #target_list.tasks == 0 then
@@ -433,7 +433,7 @@ function M:get_actions()
 	end
 
 	actions.close = function()
-		ctx.root:exit()
+		ctx.board:exit()
 	end
 	actions.create = function()
 		ctx.lists[self.list_index]:create_task()
@@ -465,23 +465,23 @@ function M:set_keymaps()
 	map("n", "G", act.bottom, { buffer = buf })
 
 	map("n", "<C-n>", function()
-		self.ctx.root:scroll_list(1, self.index)
+		self.ctx.board:scroll_list(1, self.index)
 	end, { buffer = buf })
 	map("n", "<C-p>", function()
-		self.ctx.root:scroll_list(-1, self.index)
+		self.ctx.board:scroll_list(-1, self.index)
 	end, { buffer = buf })
 
 	map("n", "zn", function()
-		self.ctx.root:create_list()
+		self.ctx.board:create_list()
 	end, { buffer = buf })
 	map("n", "D", function()
 		self.ctx.lists[self.list_index]:delete_list()
 	end, { buffer = buf })
 	map("n", "z0", function()
-		self.ctx.root:scroll_to_top()
+		self.ctx.board:scroll_to_top()
 	end, { buffer = buf })
 	map("n", "z$", function()
-		self.ctx.root:scroll_to_bottom()
+		self.ctx.board:scroll_to_bottom()
 	end, { buffer = buf })
 
 	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })

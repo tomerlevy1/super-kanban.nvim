@@ -156,6 +156,7 @@ end
 
 function M:exit()
 	self.win:close()
+	self.visible_index = nil
 end
 
 function M:update_scroll_info(top, bottom)
@@ -169,8 +170,8 @@ function M:update_scroll_info(top, bottom)
 end
 
 function M:task_can_fit()
-	local list_height = self.win:size().height - 2
-	return math.floor(list_height / 5)
+	local height = self.win:size().height - 2
+	return math.floor(height / 5)
 end
 
 ---@param direction number
@@ -410,6 +411,7 @@ function M:create_task()
 			tag = {},
 			due = {},
 		},
+		list_index = list.index,
 		index = target_index,
 		ctx = self.ctx,
 	}, config):mount(list, {
@@ -490,6 +492,10 @@ function M:set_keymaps(ctx)
 	map("n", "gn", function()
 		self:create_task()
 	end, { buffer = buf })
+
+	map("n", "/", function()
+		self.ctx.board:search(self)
+	end, { buffer = buf, nowait = true })
 
 	map("n", "<C-n>", function()
 		self.ctx.board:scroll_list(1, self.index)

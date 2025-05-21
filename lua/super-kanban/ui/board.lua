@@ -1,5 +1,4 @@
 local hl = require("super-kanban.highlights")
-local Config = require("super-kanban.config")
 local List = require("super-kanban.ui.list")
 
 ---@class superkanban.BoardUI
@@ -82,7 +81,7 @@ function M:mount(ctx)
 end
 
 function M:list_can_fit()
-	local width = self.win:size().width - 2 - Config.board.padding.left
+	local width = self.win:size().width - 2 - config.board.padding.left
 	return math.floor(width / config.list_min_width)
 end
 
@@ -266,6 +265,11 @@ function M:update_scroll_info(first, last)
 		title = string.format("← %d | %d →  ", self.scroll_info.first, self.scroll_info.last),
 		title_pos = "right",
 	})
+end
+
+---@param current_item superkanban.TaskUI|superkanban.TaskListUI
+function M:search(current_item)
+	require("lua.super-kanban.pickers.snacks").search_tasks({}, self.ctx, current_item)
 end
 
 ---@param opts {from:number,to:number}

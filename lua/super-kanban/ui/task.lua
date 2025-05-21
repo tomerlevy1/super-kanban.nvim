@@ -4,6 +4,7 @@ local utils = require("super-kanban.utils")
 ---@class superkanban.Task.Opts
 ---@field data superkanban.TaskData
 ---@field index number
+---@field list_index number
 ---@field ctx superkanban.Ctx
 
 ---@class superkanban.TaskUI
@@ -56,6 +57,7 @@ function M.new(opts, conf)
 	self.data = opts.data
 	self.index = opts.index
 	self.ctx = opts.ctx
+	self.list_index = opts.list_index
 
 	self.type = "task"
 
@@ -73,7 +75,7 @@ function M:setup_win(list)
 			self:set_keymaps()
 		end,
 		text = function()
-			return self:render_lines()
+			return utils.get_lines_from_task(self.data)
 		end,
 		relative = "win",
 		win = list.win.win,
@@ -93,7 +95,6 @@ function M:setup_win(list)
 		bo = { modifiable = true, filetype = "superkanban_task" },
 	})
 
-	self.list_index = list.index
 	return self.win
 end
 
@@ -126,6 +127,7 @@ end
 
 function M:exit()
 	self.win:close()
+  self.visible_index = nil
 end
 
 function M:closed()
@@ -138,25 +140,6 @@ end
 
 function M:in_view()
 	return self:has_visual_index() and not self:closed()
-end
-
-function M:render_lines()
-	local lines = {
-		self.data.title or "",
-	}
-
-	if #self.data.tag > 0 then
-		lines[2] = table.concat(self.data.tag, " ")
-	end
-
-	if #self.data.due > 0 then
-		if lines[2] then
-			lines[2] = lines[2] .. " " .. table.concat(self.data.due, " ")
-		else
-			lines[2] = table.concat(self.data.due, " ")
-		end
-	end
-	return lines
 end
 
 function M:generate_winbar()
@@ -433,6 +416,10 @@ function M:set_keymaps()
 
 	map("n", "gg", act.top, { buffer = buf })
 	map("n", "G", act.bottom, { buffer = buf })
+
+	map("n", "/", function()
+		self.ctx.board:search(self)
+	end, { buffer = buf, nowait = true })
 
 	map("n", "<C-n>", function()
 		self.ctx.board:scroll_list(1, self.index)

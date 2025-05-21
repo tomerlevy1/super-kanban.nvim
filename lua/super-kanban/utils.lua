@@ -18,6 +18,25 @@ function M.msg(msg, level)
 	vim.notify(msg, level, { title = "Super Kanban" })
 end
 
+---@param data superkanban.TaskData
+function M.get_lines_from_task(data)
+	local lines = { data.title or "" }
+
+	if #data.tag > 0 then
+		lines[2] = table.concat(data.tag, " ")
+	end
+
+	if #data.due > 0 then
+		if lines[2] then
+			lines[2] = lines[2] .. " " .. table.concat(data.due, " ")
+		else
+			lines[2] = table.concat(data.due, " ")
+		end
+	end
+
+	return lines
+end
+
 ---@param date {year:number,month:number,day:number}
 ---@return string
 ---@return boolean

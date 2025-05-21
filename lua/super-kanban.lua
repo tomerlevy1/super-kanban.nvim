@@ -1,5 +1,5 @@
 local hl = require("super-kanban.highlights")
-local Board = require("lua.super-kanban.ui.board")
+local Board = require("super-kanban.ui.board")
 local List = require("super-kanban.ui.list")
 local Task = require("super-kanban.ui.task")
 
@@ -84,6 +84,7 @@ function M.open(source_path)
 					data = task_md,
 					index = task_index,
 					ctx = ctx,
+					list_index = list_index,
 				}, config)
 				tasks[task_index] = task
 			end

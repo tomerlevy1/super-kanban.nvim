@@ -231,6 +231,54 @@ function M:scroll_task(direction, cur_task_index)
 	return true
 end
 
+---@param target_index number
+---@param should_focus? boolean
+function M:scroll_to_a_task(target_index, should_focus)
+	if should_focus == nil then
+		should_focus = true
+	end
+	local tasks = self.ctx.lists[self.index].tasks
+	local target_item = tasks[target_index]
+	if not target_item then
+		return
+	end
+
+	-- All tasks alrady in view so just focus on the task
+	local item_can_fit = self:task_can_fit()
+	if should_focus and item_can_fit >= #tasks and target_item:in_view() then
+		target_item:focus()
+		return
+	end
+
+	local top_item_index = target_index
+	local items_count_from_target = #tasks - (target_index - 1)
+	local target_can_fit_top = items_count_from_target >= item_can_fit
+
+	if not target_can_fit_top then
+		-- Info: top_item_index can be negative
+		top_item_index = target_index - (item_can_fit - items_count_from_target)
+	end
+	local bottom_item_index = top_item_index + (item_can_fit - 1)
+
+	local visual_index = 0
+	for index, task in ipairs(tasks) do
+		if index >= top_item_index and index <= bottom_item_index then
+			visual_index = visual_index + 1
+			task:update_visible_position(visual_index)
+		else
+			task:update_visible_position(nil)
+		end
+	end
+
+	-- Update scroll info
+	local top, bot = top_item_index - 1, #tasks - bottom_item_index
+	self:update_scroll_info(top, bot)
+
+	if should_focus then
+		target_item:focus()
+	end
+end
+
 function M:closed()
 	return self.win.closed ~= false
 end

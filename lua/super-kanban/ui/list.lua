@@ -373,19 +373,53 @@ function M:create_task()
 	vim.cmd.startinsert()
 end
 
-function M:delete_list()
+---@param should_focus? boolean
+function M:delete_list(should_focus)
 	local target_index = self.index
 	self:exit()
 	table.remove(self.ctx.lists, target_index)
 
 	self.ctx.board:fill_empty_space({ from = target_index - 1, to = target_index })
 
-	if self.ctx.lists[target_index] then
-		self.ctx.lists[target_index]:focus()
-	elseif self.ctx.lists[target_index - 1] then
-		self.ctx.lists[target_index - 1]:focus()
-	else
-		self.ctx.board:exit()
+	if should_focus ~= false then
+		local focus_target = self.ctx.lists[target_index] or self.ctx.lists[target_index - 1]
+		if focus_target then
+			focus_target:focus()
+		else
+			self.ctx.board:exit()
+		end
+	end
+end
+
+---@param opts {from:number,to:number}
+function M:fill_empty_space(opts)
+	local tasks = self.ctx.lists[self.index].tasks
+	local item_can_fit = self:task_can_fit()
+
+	local empty_spaces = opts.to - opts.from
+	local last_used_visible_index = 0
+
+	for index = opts.to, #tasks, 1 do
+		local item = tasks[index]
+		item.index = item.index - 1
+
+		if item:in_view() then
+			last_used_visible_index = item.visible_index - 1
+			item:update_visible_position(last_used_visible_index)
+		elseif empty_spaces > 0 and last_used_visible_index < item_can_fit then
+			-- dd(item.data.title)
+			last_used_visible_index = last_used_visible_index == 0 and item_can_fit or last_used_visible_index + 1
+			item:update_visible_position(last_used_visible_index)
+
+			-- Update scroll info for bottom
+			self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1)
+			empty_spaces = empty_spaces - 1
+		end
+	end
+
+	while empty_spaces > 0 do
+		self:scroll_task(-1, 0)
+		empty_spaces = empty_spaces - 1
 	end
 end
 
@@ -419,7 +453,7 @@ function M:set_keymaps(ctx)
 	map("n", "zn", function()
 		self.ctx.board:create_list()
 	end, { buffer = buf })
-	map("n", "D", function()
+	map("n", "zD", function()
 		self:delete_list()
 	end, { buffer = buf })
 	map("n", "z0", function()

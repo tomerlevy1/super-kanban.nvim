@@ -132,6 +132,14 @@ function M:closed()
 	return self.win.closed ~= false
 end
 
+function M:has_visual_index()
+	return type(self.visible_index) == "number" and self.visible_index > 0
+end
+
+function M:in_view()
+	return self:has_visual_index() and not self:closed()
+end
+
 function M:render_lines()
 	local lines = {
 		self.data.title or "",
@@ -181,10 +189,6 @@ function M:get_relative_date()
 	return ""
 end
 
-function M:has_visual_index()
-	return type(self.visible_index) == "number" and self.visible_index > 0
-end
-
 ---@param new_index? number
 function M:update_visible_position(new_index)
 	if type(new_index) == "number" and new_index > 0 then
@@ -208,50 +212,16 @@ function M:delete_task(should_focus)
 	local list = self.ctx.lists[self.list_index]
 	local target_index = self.index
 
-	-- Select next or prev task
-	local focus_task = nil
-	if list.tasks[target_index + 1] then
-		focus_task = list.tasks[target_index + 1]
-	elseif list.tasks[target_index - 1] then
-		focus_task = list.tasks[target_index - 1]
-	else
-    -- TODO: simplify this delete_task
-		focus_task = list:focus()
-	end
-
 	-- Remove task
 	self:exit()
 	table.remove(list.tasks, target_index)
 
-	-- Update current list task position & index
-	local found_task_will_be_in_view_from_bottom = nil
-	for cur_index = target_index, #list.tasks, 1 do
-		local tk = list.tasks[cur_index]
-		tk.index = tk.index - 1
+	list:fill_empty_space({ from = target_index - 1, to = target_index })
 
-		if type(tk.visible_index) == "number" then
-			tk:update_visible_position(tk.visible_index - 1)
-		elseif found_task_will_be_in_view_from_bottom == nil then
-			found_task_will_be_in_view_from_bottom = true
-			tk:update_visible_position(list:task_can_fit())
-			-- Update scroll info for bottom
-			list:update_scroll_info(list.scroll_info.top, list.scroll_info.bot - 1)
-		end
-	end
-
-	-- There is no hidden task in bottom so try to show new task from top.
-	if found_task_will_be_in_view_from_bottom == nil then
-		local scrolled = list:scroll_task(-1)
-		if scrolled then
-			focus_task = list.tasks[target_index - 1] or focus_task
-		end
-	end
-
-	if should_focus ~= false and focus_task then
-		if focus_task.type == "task" and not focus_task:has_visual_index() then
-			return
-		end
-		focus_task:focus()
+	-- focus on task or list
+	if should_focus ~= false then
+		local focus_target = list.tasks[target_index] or list.tasks[target_index - 1] or list
+		focus_target:focus()
 	end
 end
 
@@ -474,7 +444,7 @@ function M:set_keymaps()
 	map("n", "zn", function()
 		self.ctx.board:create_list()
 	end, { buffer = buf })
-	map("n", "D", function()
+	map("n", "zD", function()
 		self.ctx.lists[self.list_index]:delete_list()
 	end, { buffer = buf })
 	map("n", "z0", function()

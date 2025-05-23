@@ -84,6 +84,12 @@ local M = {
 		WinBarNC = "KanbanTaksWinbar",
 		FloatBorder = "KanbanTaksSeparatorActive",
 	}),
+	date_picker = make_winhighlight({
+		Normal = "KanbanDatePickerNormal",
+		NormalNC = "KanbanDatePickerNormal",
+		FloatBorder = "KanbanDatePickerBorder",
+		Title = "KanbanDatePickerTitle",
+	}),
 }
 
 function M.create_winhighlights()
@@ -107,6 +113,13 @@ function M.create_winhighlights()
     KanbanTaksSeparatorActive   = { fg = c.cyan, bg = float_bg },
     KanbanTaksWinbar            = { fg = c.grey, bg = c.none },
     KanbanTaksWinBarActive      = { fg = c.light_grey, bg = float_bg },
+
+    KanbanDatePickerDateHL      = { fg = c.bg_d, bg = c.blue },
+    KanbanDatePickerNormal      = { link = 'KanbanNormal' },
+    KanbanDatePickerBorder      = { link = 'FloatBorder' },
+    KanbanDatePickerTitle       = { link = 'Title' },
+    KanbanDatePickerWeekDays    = { fg = c.green, italic = true },
+    KanbanDatePickerSeparator   = { link = 'Comment' },
   }
 
 	for hl_name, option in pairs(highlights) do

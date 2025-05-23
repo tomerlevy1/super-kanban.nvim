@@ -1,3 +1,13 @@
+---@class superkanban.DatePickerDataOpts
+---@field year? integer
+---@field month? integer
+---@field day? integer
+
+---@class superkanban.DatePickerData
+---@field year integer
+---@field month integer
+---@field day integer
+
 ---@class superkanban.TaskData
 ---@field title string
 ---@field check string

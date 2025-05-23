@@ -1,4 +1,5 @@
 local hl = require("super-kanban.highlights")
+local DatePicker = require("super-kanban.ui.date_picker")
 local utils = require("super-kanban.utils")
 
 ---@class superkanban.Task.Opts
@@ -50,6 +51,7 @@ end
 
 ---@param opts superkanban.Task.Opts
 ---@param conf superkanban.Config
+---@return superkanban.TaskUI
 function M.new(opts, conf)
 	local self = setmetatable({}, M)
 	config = conf
@@ -71,8 +73,10 @@ function M:setup_win(list)
 		show = false,
 		enter = false,
 		on_win = function()
-			self:set_events()
-			self:set_keymaps()
+			vim.schedule(function()
+				self:set_events()
+				self:set_keymaps()
+			end)
 		end,
 		text = function()
 			return utils.get_lines_from_task(self.data)
@@ -127,7 +131,7 @@ end
 
 function M:exit()
 	self.win:close()
-  self.visible_index = nil
+	self.visible_index = nil
 end
 
 function M:closed()
@@ -155,15 +159,46 @@ function M:update_winbar()
 	end
 end
 
+function M:update_buffer_text()
+	local lines = utils.get_lines_from_task(self.data)
+	vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, lines)
+end
+
+function M:pick_date(create_new_date)
+	local data = create_new_date and {} or utils.get_date_data_from_str(self.data.due[#self.data.due])
+	local picker = DatePicker.new({ data = data })
+	picker:mount({
+		on_select = function(selected_date)
+			if not selected_date then
+				self:focus()
+				return
+			end
+
+			local f_date = utils.format_to_date_str(selected_date)
+			if #self.data.due > 0 then
+				self.data.due[#self.data.due] = f_date
+			else
+				self.data.due[1] = f_date
+			end
+
+			self:update_buffer_text()
+			self:focus()
+		end,
+		on_close = function()
+			self:focus()
+		end,
+	})
+end
+
 function M:get_relative_date()
 	if #self.data.due == 0 then
 		return ""
 	end
-	local date_str = self.data.due[1]
+	local date_str = self.data.due[#self.data.due]
 	if not date_str then
 		return ""
 	end
-	local ok, result = pcall(utils.get_relative_time, utils.extract_date(date_str))
+	local ok, result = pcall(utils.get_relative_time, utils.get_date_data_from_str(date_str))
 
 	if ok then
 		return result
@@ -299,6 +334,7 @@ function M:get_actions()
 				data = self.data,
 				index = target_index,
 				ctx = self.ctx,
+				list_index = target_list.index,
 			}, config):mount(target_list)
 			target_list.tasks[target_index] = new_task
 			target_list:bottom()
@@ -406,6 +442,9 @@ function M:set_keymaps()
 	map("n", "q", act.close, { buffer = buf })
 	map("n", "gn", act.create, { buffer = buf })
 	map("n", "gD", act.delete, { buffer = buf })
+	map("n", "zi", function()
+		self:pick_date()
+	end, { buffer = buf })
 
 	map("n", "x", act.info, { buffer = buf })
 
@@ -462,6 +501,27 @@ function M:set_events()
 		self:extract_buffer()
 		self:update_winbar()
 	end, { buf = true })
+
+	local function found_at_sign_before_cursor()
+		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+		if col == 0 then
+			return false
+		end
+
+		local line = vim.api.nvim_get_current_line()
+		local char_before = line:sub(col, col) -- Lua strings are 1-based
+
+		return char_before == "@"
+	end
+
+	self.win:on({ "TextChangedI" }, function()
+		local found = found_at_sign_before_cursor()
+		if found then
+			dd("found")
+		end
+	end, { buf = true })
+
+	--end
 end
 
 return M

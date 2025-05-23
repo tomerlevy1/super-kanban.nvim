@@ -155,4 +155,41 @@ function M.format_to_date_str(date)
 	return f_date:format(date.year, date.month, date.day)
 end
 
+function M.is_cursor_at_last_column(col)
+	local line = vim.api.nvim_get_current_line()
+	return col >= #line
+end
+
+function M.remove_char_at(str, col)
+	return str:sub(1, col - 1) .. str:sub(col + 1)
+end
+
+function M.find_at_sign_before_cursor()
+		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+		if col == 0 then
+			return false
+		end
+
+		local line = vim.api.nvim_get_current_line()
+		local char_before = line:sub(col - 1, col) -- Lua strings are 1-based
+		if char_before == " @" or col == 1 and char_before == "@" then
+			return { row = row, col = col }
+		end
+
+		return false
+	end
+
+local function remove_trailing_or_lonely_at_sign(str)
+	-- Remove @ at the end of a word (e.g., "word@ "), but not emails
+	str = str:gsub("(%w+)@(%s)", "%1%2")
+	str = str:gsub("(%w+)@$", "%1")
+
+	-- Remove lone @ (surrounded by spaces or at start/end)
+	str = str:gsub("^[%s]*@[%s]*$", "") -- line is only "@"
+	str = str:gsub("(%s)@(%s)", "%1%2") -- space @ space
+	str = str:gsub("^@(%s)", "%1") -- starts with "@ "
+	str = str:gsub("(%s)@$", "%1") -- ends with " @"
+	return str
+end
+
 return M

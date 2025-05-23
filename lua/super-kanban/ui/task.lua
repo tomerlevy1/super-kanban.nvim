@@ -162,9 +162,10 @@ end
 function M:update_buffer_text()
 	local lines = utils.get_lines_from_task(self.data)
 	vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, lines)
+	return lines
 end
 
-function M:pick_date(create_new_date)
+function M:pick_date(create_new_date, at_sign_pos)
 	local data = create_new_date and {} or utils.get_date_data_from_str(self.data.due[#self.data.due])
 	local picker = DatePicker.new({ data = data })
 	picker:mount({
@@ -174,18 +175,34 @@ function M:pick_date(create_new_date)
 				return
 			end
 
+			-- Update task date
 			local f_date = utils.format_to_date_str(selected_date)
 			if #self.data.due > 0 then
 				self.data.due[#self.data.due] = f_date
 			else
 				self.data.due[1] = f_date
 			end
-
+			if at_sign_pos and at_sign_pos.row == 1 then
+				self.data.title = utils.remove_char_at(self.data.title, at_sign_pos.col)
+			end
 			self:update_buffer_text()
+
 			self:focus()
+			if at_sign_pos then
+				vim.schedule(function()
+					local use_bang = at_sign_pos.row == 2 or utils.is_cursor_at_last_column(at_sign_pos.col)
+					vim.cmd.startinsert({ bang = use_bang })
+				end)
+			end
 		end,
 		on_close = function()
 			self:focus()
+			if at_sign_pos then
+				vim.schedule(function()
+					local use_bang = utils.is_cursor_at_last_column(at_sign_pos.col)
+					vim.cmd.startinsert({ bang = use_bang })
+				end)
+			end
 		end,
 	})
 end
@@ -243,7 +260,7 @@ function M:delete_task(should_focus)
 	end
 end
 
-function M:extract_buffer()
+function M:extract_buffer_and_update_task_data()
 	local lines = self.win:lines()
 
 	local title = lines[1]
@@ -498,30 +515,19 @@ function M:set_events()
 	end, { buf = true })
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
-		self:extract_buffer()
+		self:extract_buffer_and_update_task_data()
 		self:update_winbar()
 	end, { buf = true })
 
-	local function found_at_sign_before_cursor()
-		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-		if col == 0 then
-			return false
-		end
-
-		local line = vim.api.nvim_get_current_line()
-		local char_before = line:sub(col, col) -- Lua strings are 1-based
-
-		return char_before == "@"
-	end
-
 	self.win:on({ "TextChangedI" }, function()
-		local found = found_at_sign_before_cursor()
-		if found then
-			dd("found")
+		local found_pos = utils.find_at_sign_before_cursor()
+		if found_pos then
+			vim.cmd.stopinsert()
+			vim.schedule(function()
+				self:pick_date(false, found_pos)
+			end)
 		end
 	end, { buf = true })
-
-	--end
 end
 
 return M

@@ -1,5 +1,6 @@
 local hl = require("super-kanban.highlights")
 local utils = require("super-kanban.utils")
+local Task = require("super-kanban.ui.task")
 
 ---@class superkanban.TaskList.Opts
 ---@field data {title: string}
@@ -44,7 +45,7 @@ function M.new(opts)
 end
 
 function M:setup_win()
-  local conf = self.ctx.config
+	local conf = self.ctx.config
 	local pos = get_list_position(conf.list_min_width, self.index, conf.board.padding.left)
 
 	self.win = Snacks.win({
@@ -78,7 +79,7 @@ function M:setup_win()
 				return
 			end
 
-			local task_can_fit = self:task_can_fit()
+			local task_can_fit = self:item_can_fit()
 			local first_hidden_task_index = 0
 
 			for index, task in ipairs(list.tasks) do
@@ -169,115 +170,9 @@ function M:update_scroll_info(top, bottom)
 	})
 end
 
-function M:task_can_fit()
+function M:item_can_fit()
 	local height = self.win:size().height - 2
 	return math.floor(height / 5)
-end
-
----@param direction number
----@param cur_task_index? number
-function M:scroll_list(direction, cur_task_index)
-	local is_downward = direction == 1
-	local list = self.ctx.lists[self.index]
-	if #list.tasks == 0 then
-		return false
-	end
-
-	-- exit if top or bottom task already in view
-	if is_downward and list.tasks[#list.tasks]:has_visual_index() then
-		return false
-	elseif not is_downward and list.tasks[1]:has_visual_index() then
-		return false
-	end
-
-	local task_can_fit = list:task_can_fit()
-	local new_task_index, new_task_visual_index = nil, nil
-	local hide_task_index = nil
-
-	for index, tk in ipairs(list.tasks) do
-		if tk:has_visual_index() then
-			tk:update_visible_position(tk.visible_index + (is_downward and -1 or 1))
-
-			if is_downward and type(tk.visible_index) == "number" then
-				new_task_index, new_task_visual_index = index + 1, tk.visible_index + 1
-			elseif not is_downward and new_task_visual_index == nil then
-				new_task_index, new_task_visual_index = index - 1, 1
-				hide_task_index = new_task_index + task_can_fit
-			end
-		elseif is_downward and type(new_task_visual_index) == "number" then
-			break
-		end
-
-		if not is_downward and index == hide_task_index then
-			tk:update_visible_position(nil)
-			break
-		end
-	end
-
-	local new_task_in_view = list.tasks[new_task_index]
-	if new_task_in_view then
-		new_task_in_view:update_visible_position(new_task_visual_index)
-	end
-
-	if is_downward then
-		local bot = #list.tasks - new_task_index
-		local top = #list.tasks - (bot + task_can_fit)
-		list:update_scroll_info(top, bot)
-	elseif not is_downward then
-		local top = new_task_index - 1
-		local bot = #list.tasks - (top + task_can_fit)
-		list:update_scroll_info(top, bot)
-	end
-
-	return true
-end
-
----@param target_index number
----@param should_focus? boolean
-function M:scroll_to_a_task(target_index, should_focus)
-	if should_focus == nil then
-		should_focus = true
-	end
-	local tasks = self.ctx.lists[self.index].tasks
-	local target_item = tasks[target_index]
-	if not target_item then
-		return
-	end
-
-	-- All tasks alrady in view so just focus on the task
-	local item_can_fit = self:task_can_fit()
-	if should_focus and item_can_fit >= #tasks and target_item:in_view() then
-		target_item:focus()
-		return
-	end
-
-	local top_item_index = target_index
-	local items_count_from_target = #tasks - (target_index - 1)
-	local target_can_fit_top = items_count_from_target >= item_can_fit
-
-	if not target_can_fit_top then
-		-- Info: top_item_index can be negative
-		top_item_index = target_index - (item_can_fit - items_count_from_target)
-	end
-	local bottom_item_index = top_item_index + (item_can_fit - 1)
-
-	local visual_index = 0
-	for index, task in ipairs(tasks) do
-		if index >= top_item_index and index <= bottom_item_index then
-			visual_index = visual_index + 1
-			task:update_visible_position(visual_index)
-		else
-			task:update_visible_position(nil)
-		end
-	end
-
-	-- Update scroll info
-	local top, bot = top_item_index - 1, #tasks - bottom_item_index
-	self:update_scroll_info(top, bot)
-
-	if should_focus then
-		target_item:focus()
-	end
 end
 
 function M:closed()
@@ -295,11 +190,8 @@ end
 ---@param new_index? number
 function M:update_visible_position(new_index)
 	if type(new_index) == "number" and new_index > 0 then
-		self.win.opts.col = get_list_position(
-      self.ctx.config.list_min_width,
-      new_index,
-      self.ctx.config.board.padding.left
-    ).col
+		self.win.opts.col =
+			get_list_position(self.ctx.config.list_min_width, new_index, self.ctx.config.board.padding.left).col
 
 		if self:closed() then
 			self.win:show()
@@ -316,7 +208,7 @@ end
 ---@param opts {from:number,to:number}
 function M:fill_empty_space(opts)
 	local tasks = self.ctx.lists[self.index].tasks
-	local item_can_fit = self:task_can_fit()
+	local item_can_fit = self:item_can_fit()
 
 	local empty_spaces = opts.to - opts.from
 	local last_used_visible_index = 0
@@ -380,6 +272,32 @@ function M:set_keymaps()
 	end
 end
 
+function M:create_task()
+	local list = self.ctx.lists[self.index]
+	local target_index = #list.tasks + 1
+
+	local task_can_fit = list:item_can_fit()
+	local list_space_available = #list.tasks < task_can_fit
+
+	local new_task = Task({
+		data = {
+			title = "",
+			check = " ",
+			tag = {},
+			due = {},
+		},
+		list_index = list.index,
+		index = target_index,
+		ctx = self.ctx,
+	}):mount(list, {
+		visible_index = list_space_available and target_index or nil,
+	})
+	list.tasks[target_index] = new_task
+
+	list:jump_to_last_task()
+	vim.cmd.startinsert()
+end
+
 ---@param should_focus? boolean
 function M:delete_list(should_focus)
 	local target_index = self.index
@@ -413,7 +331,7 @@ function M:jump_horizontal(direction)
 	target_list:focus()
 end
 
-function M:jump_top()
+function M:jump_to_first_task()
 	local list = self.ctx.lists[self.index]
 	if not list then
 		return
@@ -422,7 +340,7 @@ function M:jump_top()
 		return
 	end
 
-	local task_can_fit = self:task_can_fit()
+	local task_can_fit = self:item_can_fit()
 
 	if list.tasks[1]:has_visual_index() then
 		list.tasks[1]:focus()
@@ -447,7 +365,7 @@ function M:jump_top()
 	list:update_scroll_info(top, bot)
 end
 
-function M:jump_bottom()
+function M:jump_to_last_task()
 	local list = self.ctx.lists[self.index]
 	if not list then
 		return false
@@ -462,7 +380,7 @@ function M:jump_bottom()
 		return
 	end
 
-	local task_can_fit = self:task_can_fit()
+	local task_can_fit = self:item_can_fit()
 	if #list.tasks < task_can_fit then
 		task_can_fit = #list.tasks
 	end
@@ -480,8 +398,114 @@ function M:jump_bottom()
 	list.tasks[#list.tasks]:focus()
 
 	local bot = 0
-	local top = #list.tasks - self:task_can_fit()
+	local top = #list.tasks - self:item_can_fit()
 	list:update_scroll_info(top, bot)
+end
+
+---@param direction number
+---@param cur_task_index? number
+function M:scroll_list(direction, cur_task_index)
+	local is_downward = direction == 1
+	local list = self.ctx.lists[self.index]
+	if #list.tasks == 0 then
+		return false
+	end
+
+	-- exit if top or bottom task already in view
+	if is_downward and list.tasks[#list.tasks]:has_visual_index() then
+		return false
+	elseif not is_downward and list.tasks[1]:has_visual_index() then
+		return false
+	end
+
+	local task_can_fit = list:item_can_fit()
+	local new_task_index, new_task_visual_index = nil, nil
+	local hide_task_index = nil
+
+	for index, tk in ipairs(list.tasks) do
+		if tk:has_visual_index() then
+			tk:update_visible_position(tk.visible_index + (is_downward and -1 or 1))
+
+			if is_downward and type(tk.visible_index) == "number" then
+				new_task_index, new_task_visual_index = index + 1, tk.visible_index + 1
+			elseif not is_downward and new_task_visual_index == nil then
+				new_task_index, new_task_visual_index = index - 1, 1
+				hide_task_index = new_task_index + task_can_fit
+			end
+		elseif is_downward and type(new_task_visual_index) == "number" then
+			break
+		end
+
+		if not is_downward and index == hide_task_index then
+			tk:update_visible_position(nil)
+			break
+		end
+	end
+
+	local new_task_in_view = list.tasks[new_task_index]
+	if new_task_in_view then
+		new_task_in_view:update_visible_position(new_task_visual_index)
+	end
+
+	if is_downward then
+		local bot = #list.tasks - new_task_index
+		local top = #list.tasks - (bot + task_can_fit)
+		list:update_scroll_info(top, bot)
+	elseif not is_downward then
+		local top = new_task_index - 1
+		local bot = #list.tasks - (top + task_can_fit)
+		list:update_scroll_info(top, bot)
+	end
+
+	return true
+end
+
+---@param target_index number
+---@param should_focus? boolean
+function M:scroll_to_a_task(target_index, should_focus)
+	if should_focus == nil then
+		should_focus = true
+	end
+	local tasks = self.ctx.lists[self.index].tasks
+	local target_item = tasks[target_index]
+	if not target_item then
+		return
+	end
+
+	-- All tasks alrady in view so just focus on the task
+	local item_can_fit = self:item_can_fit()
+	if should_focus and item_can_fit >= #tasks and target_item:in_view() then
+		target_item:focus()
+		return
+	end
+
+	local top_item_index = target_index
+	local items_count_from_target = #tasks - (target_index - 1)
+	local target_can_fit_top = items_count_from_target >= item_can_fit
+
+	if not target_can_fit_top then
+		-- Info: top_item_index can be negative
+		top_item_index = target_index - (item_can_fit - items_count_from_target)
+	end
+	local bottom_item_index = top_item_index + (item_can_fit - 1)
+
+	local visual_index = 0
+	for index, task in ipairs(tasks) do
+		if index >= top_item_index and index <= bottom_item_index then
+			visual_index = visual_index + 1
+			task:update_visible_position(visual_index)
+		else
+			task:update_visible_position(nil)
+		end
+	end
+
+	-- Update scroll info
+	local top, bot = top_item_index - 1, #tasks - bottom_item_index
+	self:update_scroll_info(top, bot)
+
+	if should_focus then
+		target_item:focus()
+	end
 end
 
 return M

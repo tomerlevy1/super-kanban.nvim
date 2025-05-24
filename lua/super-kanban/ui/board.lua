@@ -52,7 +52,7 @@ function M:mount(ctx)
 	self:set_keymaps()
 	self:set_events()
 
-	local list_can_fit = self:list_can_fit()
+	local list_can_fit = self:item_can_fit()
 	local focus_item = nil
 	local first_hidden_task_index = 0
 
@@ -80,7 +80,7 @@ function M:mount(ctx)
 	self.ctx = ctx
 end
 
-function M:list_can_fit()
+function M:item_can_fit()
 	local width = self.win:size().width - 2 - config.board.padding.left
 	return math.floor(width / config.list_min_width)
 end
@@ -99,7 +99,7 @@ end
 function M:fill_empty_space(opts)
 	local lists = self.ctx.lists
 
-	local list_can_fit = self:list_can_fit()
+	local list_can_fit = self:item_can_fit()
 
 	local empty_spaces = opts.to - opts.from
 	local last_used_visible_index = 0
@@ -157,7 +157,7 @@ function M:create_list()
 	local lists = self.ctx.lists
 	local target_index = #lists + 1
 
-	local list_can_fit = self:list_can_fit()
+	local list_can_fit = self:item_can_fit()
 	local space_available = #lists < list_can_fit
 
 	local new_list = List({
@@ -171,7 +171,7 @@ function M:create_list()
 	new_list:mount({ visible_index = space_available and target_index or nil })
 
 	-- TODO: add rename list ui
-	self:jump_bottom()
+	self:jump_to_last_list()
 	-- vim.cmd.startinsert()
 end
 
@@ -192,7 +192,7 @@ function M:scroll_board(direction, cur_list_index)
 		return false
 	end
 
-	local list_can_fit = self.ctx.board:list_can_fit()
+	local list_can_fit = self.ctx.board:item_can_fit()
 	local new_item_index, new_item_visual_index = nil, nil
 	local hide_task_index = nil
 
@@ -247,7 +247,7 @@ function M:scroll_to_a_list(target_index, should_focus)
 	end
 
 	-- All items alrady in view so just focus on the item
-	local item_can_fit = self:list_can_fit()
+	local item_can_fit = self:item_can_fit()
 	if should_focus and item_can_fit >= #lists and target_item:in_view() then
 		target_item:focus()
 		return
@@ -282,13 +282,13 @@ function M:scroll_to_a_list(target_index, should_focus)
 	end
 end
 
-function M:jump_top()
+function M:jump_to_first_list()
 	local lists = self.ctx.lists
 	if #lists == 0 then
 		return
 	end
 
-	local list_can_fit = self:list_can_fit()
+	local list_can_fit = self:item_can_fit()
 
 	if lists[1]:has_visual_index() or not lists[1]:closed() then
 		lists[1]:focus()
@@ -312,7 +312,7 @@ function M:jump_top()
 	self:update_scroll_info(top, bot)
 end
 
-function M:jump_bottom()
+function M:jump_to_last_list()
 	local lists = self.ctx.lists
 	if #lists == 0 then
 		return
@@ -324,7 +324,7 @@ function M:jump_bottom()
 		return
 	end
 
-	local list_can_fit = self:list_can_fit()
+	local list_can_fit = self:item_can_fit()
 
 	if #lists < list_can_fit then
 		list_can_fit = #lists
@@ -343,7 +343,7 @@ function M:jump_bottom()
 	lists[#lists]:focus()
 
 	local bot = 0
-	local top = #lists - self:list_can_fit()
+	local top = #lists - self:item_can_fit()
 	self:update_scroll_info(top, bot)
 end
 

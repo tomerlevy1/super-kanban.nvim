@@ -388,7 +388,7 @@ function M:swap_horizontal(direction)
 		list_index = target_list.index,
 	}):mount(target_list)
 	target_list.tasks[target_index] = new_task
-	target_list:jump_bottom()
+	target_list:jump_to_last_task()
 end
 
 function M:pick_date(create_new_date, at_sign_pos)

@@ -47,20 +47,20 @@ local config = {
 		["zn"] = actions.create_list(),
 		["zD"] = actions.delete_list(),
 
-		["gg"] = actions.top_task(),
-		["G"] = actions.bottom_task(),
-		["z0"] = actions.top_list(),
-		["z$"] = actions.bottom_list(),
-
 		["q"] = actions.close(),
 		["/"] = actions.search(),
 		["zi"] = actions.pick_date(),
-		["X"] = actions.log(),
+		["X"] = actions.log_info(),
 
 		["<C-k>"] = actions.jump("up"),
 		["<C-j>"] = actions.jump("down"),
 		["<C-h>"] = actions.jump("left"),
 		["<C-l>"] = actions.jump("right"),
+
+		["gg"] = actions.jump("first"),
+		["G"] = actions.jump("last"),
+		["z0"] = actions.jump_list("first"),
+		["z$"] = actions.jump_list("last"),
 
 		["<A-k>"] = actions.swap("up"),
 		["<A-j>"] = actions.swap("down"),

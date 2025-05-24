@@ -1,5 +1,5 @@
 local hl = require("super-kanban.highlights")
-local Task = require("super-kanban.ui.task")
+local utils = require("super-kanban.utils")
 
 ---@class superkanban.TaskList.Opts
 ---@field data {title: string}
@@ -21,21 +21,18 @@ local M = setmetatable({}, {
 	end,
 })
 M.__index = M
----@type superkanban.Config
-local config
 
 ---@param list_min_width number
 ---@param index number
+---@param left_padding number
 ---@return {row:number,col:number}
-local function get_list_position(list_min_width, index)
-	return { row = 1, col = config.board.padding.left + (list_min_width + 3) * (index - 1) }
+local function get_list_position(list_min_width, index, left_padding)
+	return { row = 1, col = left_padding + (list_min_width + 3) * (index - 1) }
 end
 
 ---@param opts superkanban.TaskList.Opts
----@param conf superkanban.Config
-function M.new(opts, conf)
+function M.new(opts)
 	local self = setmetatable({}, M)
-	config = conf
 
 	self.ctx = opts.ctx
 	self.data = opts.data
@@ -47,7 +44,8 @@ function M.new(opts, conf)
 end
 
 function M:setup_win()
-	local pos = get_list_position(config.list_min_width, self.index)
+  local conf = self.ctx.config
+	local pos = get_list_position(conf.list_min_width, self.index, conf.board.padding.left)
 
 	self.win = Snacks.win({
 		row = pos.row,
@@ -58,7 +56,7 @@ function M:setup_win()
 		title_pos = "center",
 		win = self.ctx.board.win.win,
 		height = 0.9,
-		width = config.list_min_width,
+		width = conf.list_min_width,
 		relative = "win",
 		border = "rounded",
 		focusable = true,
@@ -70,8 +68,10 @@ function M:setup_win()
 			filetype = "superkanban_list",
 		},
 		on_win = function()
-			self:set_keymaps(self.ctx)
-			self:set_events(self.ctx)
+			vim.schedule(function()
+				self:set_keymaps()
+				self:set_events(self.ctx)
+			end)
 
 			local list = self.ctx.lists[self.index]
 			if not list then
@@ -176,7 +176,7 @@ end
 
 ---@param direction number
 ---@param cur_task_index? number
-function M:scroll_task(direction, cur_task_index)
+function M:scroll_list(direction, cur_task_index)
 	local is_downward = direction == 1
 	local list = self.ctx.lists[self.index]
 	if #list.tasks == 0 then
@@ -295,7 +295,11 @@ end
 ---@param new_index? number
 function M:update_visible_position(new_index)
 	if type(new_index) == "number" and new_index > 0 then
-		self.win.opts.col = get_list_position(config.list_min_width, new_index).col
+		self.win.opts.col = get_list_position(
+      self.ctx.config.list_min_width,
+      new_index,
+      self.ctx.config.board.padding.left
+    ).col
 
 		if self:closed() then
 			self.win:show()
@@ -309,24 +313,141 @@ function M:update_visible_position(new_index)
 	end
 end
 
+---@param opts {from:number,to:number}
+function M:fill_empty_space(opts)
+	local tasks = self.ctx.lists[self.index].tasks
+	local item_can_fit = self:task_can_fit()
+
+	local empty_spaces = opts.to - opts.from
+	local last_used_visible_index = 0
+
+	for index = opts.to, #tasks, 1 do
+		local item = tasks[index]
+		item.index = item.index - 1
+
+		if item:in_view() then
+			last_used_visible_index = item.visible_index - 1
+			item:update_visible_position(last_used_visible_index)
+		elseif empty_spaces > 0 and last_used_visible_index < item_can_fit then
+			-- dd(item.data.title)
+			last_used_visible_index = last_used_visible_index == 0 and item_can_fit or last_used_visible_index + 1
+			item:update_visible_position(last_used_visible_index)
+
+			-- Update scroll info for bottom
+			self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1)
+			empty_spaces = empty_spaces - 1
+		end
+	end
+
+	while empty_spaces > 0 do
+		self:scroll_list(-1, 0)
+		empty_spaces = empty_spaces - 1
+	end
+end
+
+---A hack to Combine list and tasks in a type safe way
+---@param list table
+---@param tasks superkanban.TaskUI
+---@return superkanban.TaskList.Ctx
+function M.generate_list_ctx(list, tasks)
+	list.tasks = tasks
+	return list
+end
+
+---@param ctx superkanban.Ctx
+function M:set_events(ctx)
+	self.win:on("WinClosed", function()
+		for _, tk in ipairs(ctx.lists[self.index].tasks) do
+			tk:exit()
+		end
+	end, { win = true })
+
+	self.win:on("BufEnter", function()
+		local tk = ctx.lists[self.index].tasks[1]
+		if tk then
+			tk:focus()
+		end
+	end, { buf = true })
+end
+
+function M:set_keymaps()
+	local buffer = self.win.buf
+
+	for lhs, rhs in pairs(self.ctx.config.mappinngs) do
+		vim.keymap.set("n", lhs, function()
+			rhs.callback(nil, self.ctx.lists[self.index], self.ctx)
+		end, utils.merge({ buffer = buffer }, rhs))
+	end
+end
+
+---@param should_focus? boolean
+function M:delete_list(should_focus)
+	local target_index = self.index
+	self:exit()
+	table.remove(self.ctx.lists, target_index)
+
+	self.ctx.board:fill_empty_space({ from = target_index - 1, to = target_index })
+
+	if should_focus ~= false then
+		local focus_target = self.ctx.lists[target_index] or self.ctx.lists[target_index - 1]
+		if focus_target then
+			focus_target:focus()
+		else
+			self.ctx.board:exit()
+		end
+	end
+end
+
 function M:jump_horizontal(direction)
 	if direction == nil then
 		direction = 1
 	end
-	return function()
-		local target_list = self.ctx.lists[self.index + direction]
-		if not target_list then
-			return
-		end
-
-		if not target_list:has_visual_index() or target_list:closed() then
-			self.ctx.board:scroll_list(direction, self.index)
-		end
-		target_list:focus()
+	local target_list = self.ctx.lists[self.index + direction]
+	if not target_list then
+		return
 	end
+
+	if not target_list:has_visual_index() or target_list:closed() then
+		self.ctx.board:scroll_board(direction, self.index)
+	end
+	target_list:focus()
 end
 
-function M:bottom()
+function M:jump_top()
+	local list = self.ctx.lists[self.index]
+	if not list then
+		return
+	end
+	if #list.tasks == 0 then
+		return
+	end
+
+	local task_can_fit = self:task_can_fit()
+
+	if list.tasks[1]:has_visual_index() then
+		list.tasks[1]:focus()
+		-- list:update_scroll_info(0, 0)
+		return
+	end
+
+	for index = 1, #list.tasks, 1 do
+		local tk = list.tasks[index]
+		if task_can_fit >= index then
+			-- dd(tk.data.title)
+			tk:update_visible_position(index)
+		else
+			tk:update_visible_position(nil)
+		end
+	end
+
+	list.tasks[1]:focus()
+
+	local top = 0
+	local bot = #list.tasks - task_can_fit
+	list:update_scroll_info(top, bot)
+end
+
+function M:jump_bottom()
 	local list = self.ctx.lists[self.index]
 	if not list then
 		return false
@@ -361,228 +482,6 @@ function M:bottom()
 	local bot = 0
 	local top = #list.tasks - self:task_can_fit()
 	list:update_scroll_info(top, bot)
-end
-
-function M:top()
-	local list = self.ctx.lists[self.index]
-	if not list then
-		return
-	end
-	if #list.tasks == 0 then
-		return
-	end
-
-	local task_can_fit = self:task_can_fit()
-
-	if list.tasks[1]:has_visual_index() then
-		list.tasks[1]:focus()
-		-- list:update_scroll_info(0, 0)
-		return
-	end
-
-	for index = 1, #list.tasks, 1 do
-		local tk = list.tasks[index]
-		if task_can_fit >= index then
-			-- dd(tk.data.title)
-			tk:update_visible_position(index)
-		else
-			tk:update_visible_position(nil)
-		end
-	end
-
-	list.tasks[1]:focus()
-
-	local top = 0
-	local bot = #list.tasks - task_can_fit
-	list:update_scroll_info(top, bot)
-end
-
-function M:create_task()
-	local list = self.ctx.lists[self.index]
-	local target_index = #list.tasks + 1
-
-	local task_can_fit = list:task_can_fit()
-	local list_space_available = #list.tasks < task_can_fit
-
-	local new_task = Task({
-		data = {
-			title = "",
-			check = " ",
-			tag = {},
-			due = {},
-		},
-		list_index = list.index,
-		index = target_index,
-		ctx = self.ctx,
-	}, config):mount(list, {
-		visible_index = list_space_available and target_index or nil,
-	})
-	list.tasks[target_index] = new_task
-
-	list:bottom()
-	vim.cmd.startinsert()
-end
-
----@param should_focus? boolean
-function M:delete_list(should_focus)
-	local target_index = self.index
-	self:exit()
-	table.remove(self.ctx.lists, target_index)
-
-	self.ctx.board:fill_empty_space({ from = target_index - 1, to = target_index })
-
-	if should_focus ~= false then
-		local focus_target = self.ctx.lists[target_index] or self.ctx.lists[target_index - 1]
-		if focus_target then
-			focus_target:focus()
-		else
-			self.ctx.board:exit()
-		end
-	end
-end
-
----@param opts {from:number,to:number}
-function M:fill_empty_space(opts)
-	local tasks = self.ctx.lists[self.index].tasks
-	local item_can_fit = self:task_can_fit()
-
-	local empty_spaces = opts.to - opts.from
-	local last_used_visible_index = 0
-
-	for index = opts.to, #tasks, 1 do
-		local item = tasks[index]
-		item.index = item.index - 1
-
-		if item:in_view() then
-			last_used_visible_index = item.visible_index - 1
-			item:update_visible_position(last_used_visible_index)
-		elseif empty_spaces > 0 and last_used_visible_index < item_can_fit then
-			-- dd(item.data.title)
-			last_used_visible_index = last_used_visible_index == 0 and item_can_fit or last_used_visible_index + 1
-			item:update_visible_position(last_used_visible_index)
-
-			-- Update scroll info for bottom
-			self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1)
-			empty_spaces = empty_spaces - 1
-		end
-	end
-
-	while empty_spaces > 0 do
-		self:scroll_task(-1, 0)
-		empty_spaces = empty_spaces - 1
-	end
-end
-
----A hack to Combine list and tasks in a type safe way
----@param list table
----@param tasks superkanban.TaskUI
----@return superkanban.TaskList.Ctx
-function M.generate_list_ctx(list, tasks)
-	list.tasks = tasks
-	return list
-end
-
----@param ctx superkanban.Ctx
-function M:set_keymaps(ctx)
-	local buf = self.win.buf
-	local map = vim.keymap.set
-	local act = self:get_actions(ctx)
-
-	map("n", "q", act.close, { buffer = buf })
-	map("n", "gn", function()
-		self:create_task()
-	end, { buffer = buf })
-
-	map("n", "/", function()
-		self.ctx.board:search(self)
-	end, { buffer = buf, nowait = true })
-
-	map("n", "<C-n>", function()
-		self.ctx.board:scroll_list(1, self.index)
-	end, { buffer = buf })
-	map("n", "<C-p>", function()
-		self.ctx.board:scroll_list(-1, self.index)
-	end, { buffer = buf })
-
-	map("n", "zn", function()
-		self.ctx.board:create_list()
-	end, { buffer = buf })
-	map("n", "zD", function()
-		self:delete_list()
-	end, { buffer = buf })
-	map("n", "z0", function()
-		self.ctx.board:scroll_to_top()
-	end, { buffer = buf })
-	map("n", "z$", function()
-		self.ctx.board:scroll_to_bottom()
-	end, { buffer = buf })
-
-	map("n", "<C-p>", function()
-		self.ctx.board:scroll_list(-1, self.index)
-	end, { buffer = buf })
-	map("n", "<C-n>", function()
-		self.ctx.board:scroll_list(1, self.index)
-	end, { buffer = buf })
-
-	map("n", "<C-h>", act.jump_horizontal(-1), { buffer = buf })
-	map("n", "<C-l>", act.jump_horizontal(1), { buffer = buf })
-end
-
----@param ctx superkanban.Ctx
-function M:get_actions(ctx)
-	local act = {
-		-- swap_vertical = function(direction)
-		-- 	if direction == nil then
-		-- 		direction = 1
-		-- 	end
-		-- 	return function() end
-		-- end,
-		-- swap_horizontal = function(direction)
-		-- 	if direction == nil then
-		-- 		direction = 1
-		-- 	end
-		-- 	return function() end
-		-- end,
-
-		close = function()
-			ctx.board:exit()
-		end,
-
-		jump_horizontal = function(direction)
-			if direction == nil then
-				direction = 1
-			end
-			return function()
-				local target_list = ctx.lists[self.index + direction]
-				if not target_list then
-					return
-				end
-
-				if not target_list:has_visual_index() or target_list:closed() then
-					self.ctx.board:scroll_list(direction, self.index)
-				end
-				target_list:focus()
-			end
-		end,
-	}
-
-	return act
-end
-
----@param ctx superkanban.Ctx
-function M:set_events(ctx)
-	self.win:on("WinClosed", function()
-		for _, tk in ipairs(ctx.lists[self.index].tasks) do
-			tk:exit()
-		end
-	end, { win = true })
-
-	self.win:on("BufEnter", function()
-		local tk = ctx.lists[self.index].tasks[1]
-		if tk then
-			tk:focus()
-		end
-	end, { buf = true })
 end
 
 return M

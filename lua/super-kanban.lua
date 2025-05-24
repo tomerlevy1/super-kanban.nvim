@@ -2,6 +2,7 @@ local hl = require("super-kanban.highlights")
 local Board = require("super-kanban.ui.board")
 local List = require("super-kanban.ui.list")
 local Task = require("super-kanban.ui.task")
+local actions = require("super-kanban.actions")
 
 local M = {}
 
@@ -40,6 +41,32 @@ local config = {
 			"%%",
 		},
 	},
+	mappinngs = {
+		["gn"] = actions.create_task(),
+		["gD"] = actions.delete_task(),
+		["zn"] = actions.create_list(),
+		["zD"] = actions.delete_list(),
+
+		["gg"] = actions.top_task(),
+		["G"] = actions.bottom_task(),
+		["z0"] = actions.top_list(),
+		["z$"] = actions.bottom_list(),
+
+		["q"] = actions.close(),
+		["/"] = actions.search(),
+		["zi"] = actions.pick_date(),
+		["X"] = actions.log(),
+
+		["<C-k>"] = actions.jump("up"),
+		["<C-j>"] = actions.jump("down"),
+		["<C-h>"] = actions.jump("left"),
+		["<C-l>"] = actions.jump("right"),
+
+		["<A-k>"] = actions.swap("up"),
+		["<A-j>"] = actions.swap("down"),
+		["<A-h>"] = actions.swap("left"),
+		["<A-l>"] = actions.swap("right"),
+	},
 }
 
 function M.setup()
@@ -47,7 +74,7 @@ function M.setup()
 end
 -- M.setup()
 
---- Open super-kanban
+---Open super-kanban
 ---@param source_path string
 function M.open(source_path)
 	local parsed_data = require("super-kanban.parser.markdown").parse_file(source_path)
@@ -55,6 +82,7 @@ function M.open(source_path)
 	---@type superkanban.Ctx
 	local ctx = {
 		board = Board(config),
+		config = config,
 		source_path = source_path,
 		lists = {},
 	}
@@ -80,13 +108,12 @@ function M.open(source_path)
 				if first_task_loc == nil then
 					first_task_loc = { list_index, task_index }
 				end
-				local task = Task({
+				tasks[task_index] = Task({
 					data = task_md,
 					index = task_index,
-					ctx = ctx,
 					list_index = list_index,
-				}, config)
-				tasks[task_index] = task
+					ctx = ctx,
+				})
 			end
 		end
 

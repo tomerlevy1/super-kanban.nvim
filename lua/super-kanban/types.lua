@@ -28,6 +28,7 @@
 ---@field board superkanban.BoardUI
 ---@field lists superkanban.TaskList.Ctx[]
 ---@field source_path string
+---@field config superkanban.Config
 
 ---@class superkanban.MarkdownConfig
 ---@field description_folder string

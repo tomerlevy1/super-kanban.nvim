@@ -165,19 +165,23 @@ function M.remove_char_at(str, col)
 end
 
 function M.find_at_sign_before_cursor()
-		local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-		if col == 0 then
-			return false
-		end
-
-		local line = vim.api.nvim_get_current_line()
-		local char_before = line:sub(col - 1, col) -- Lua strings are 1-based
-		if char_before == " @" or col == 1 and char_before == "@" then
-			return { row = row, col = col }
-		end
-
+	local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+	if col == 0 then
 		return false
 	end
+
+	local line = vim.api.nvim_get_current_line()
+	local char_before = line:sub(col - 1, col) -- Lua strings are 1-based
+	if char_before == " @" or col == 1 and char_before == "@" then
+		return { row = row, col = col }
+	end
+
+	return false
+end
+
+function M.merge(default, override)
+	return vim.tbl_extend("force", default, override)
+end
 
 local function remove_trailing_or_lonely_at_sign(str)
 	-- Remove @ at the end of a word (e.g., "word@ "), but not emails

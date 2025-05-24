@@ -16,7 +16,7 @@ M.__index = M
 ---@type superkanban.Config
 local config
 
-local function winbar(title)
+local function generate_winbar(title)
 	return string.format(
 		"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
 		title
@@ -37,7 +37,7 @@ function M.new(conf)
 		col = 0,
 		row = 0,
 		border = { "", " ", "", "", "", "", "", "" },
-		wo = { winhighlight = hl.board, winbar = winbar("Kanban") },
+		wo = { winhighlight = hl.board, winbar = generate_winbar("Kanban") },
 		bo = { modifiable = false, filetype = "superkanban_board" },
 	})
 
@@ -49,7 +49,7 @@ end
 
 ---@param ctx superkanban.Ctx
 function M:mount(ctx)
-	self:set_actions()
+	self:set_keymaps()
 	self:set_events()
 
 	local list_can_fit = self:list_can_fit()
@@ -85,9 +85,99 @@ function M:list_can_fit()
 	return math.floor(width / config.list_min_width)
 end
 
+function M:update_scroll_info(first, last)
+	self.scroll_info.first = first > 0 and first or 0
+	self.scroll_info.last = last > 0 and last or 0
+
+	vim.api.nvim_win_set_config(self.win.win, {
+		title = string.format("← %d | %d →  ", self.scroll_info.first, self.scroll_info.last),
+		title_pos = "right",
+	})
+end
+
+---@param opts {from:number,to:number}
+function M:fill_empty_space(opts)
+	local lists = self.ctx.lists
+
+	local list_can_fit = self:list_can_fit()
+
+	local empty_spaces = opts.to - opts.from
+	local last_used_visible_index = 0
+
+	for index = opts.to, #lists, 1 do
+		local item = lists[index]
+		item.index = item.index - 1
+
+		if item:in_view() then
+			last_used_visible_index = item.visible_index - 1
+			item:update_visible_position(last_used_visible_index)
+		elseif empty_spaces > 0 and last_used_visible_index < list_can_fit then
+			last_used_visible_index = last_used_visible_index == 0 and list_can_fit or last_used_visible_index + 1
+			item:update_visible_position(last_used_visible_index)
+
+			-- Update scroll info for right side
+			self:update_scroll_info(self.scroll_info.first, self.scroll_info.last - 1)
+			empty_spaces = empty_spaces - 1
+		end
+	end
+
+	while empty_spaces > 0 do
+		self:scroll_board(-1, 0)
+		empty_spaces = empty_spaces - 1
+	end
+end
+
+function M:exit()
+	self.win:close()
+end
+
+function M:on_exit()
+	require("super-kanban.parser.markdown").write_file(self.ctx, config)
+	for _, li in ipairs(self.ctx.lists) do
+		li:exit()
+	end
+	self:exit()
+end
+
+function M:set_events()
+	self.win:on("WinClosed", function()
+		self:on_exit()
+	end, { win = true })
+
+	self.win:on("BufEnter", function()
+		vim.defer_fn(function()
+			self.win:destroy()
+		end, 10)
+	end, { buf = true })
+end
+
+function M:set_keymaps() end
+
+function M:create_list()
+	local lists = self.ctx.lists
+	local target_index = #lists + 1
+
+	local list_can_fit = self:list_can_fit()
+	local space_available = #lists < list_can_fit
+
+	local new_list = List({
+		data = { title = "New List " .. target_index },
+		index = target_index,
+		ctx = self.ctx,
+	}, config)
+
+	local tasks = {}
+	lists[target_index] = List.generate_list_ctx(new_list, tasks)
+	new_list:mount({ visible_index = space_available and target_index or nil })
+
+	-- TODO: add rename list ui
+	self:jump_bottom()
+	-- vim.cmd.startinsert()
+end
+
 ---@param direction number
 ---@param cur_list_index? number
-function M:scroll_list(direction, cur_list_index)
+function M:scroll_board(direction, cur_list_index)
 	local is_right = direction == 1
 
 	if #self.ctx.lists == 0 then
@@ -192,7 +282,7 @@ function M:scroll_to_a_list(target_index, should_focus)
 	end
 end
 
-function M:scroll_to_top()
+function M:jump_top()
 	local lists = self.ctx.lists
 	if #lists == 0 then
 		return
@@ -222,7 +312,7 @@ function M:scroll_to_top()
 	self:update_scroll_info(top, bot)
 end
 
-function M:scroll_to_bottom()
+function M:jump_bottom()
 	local lists = self.ctx.lists
 	if #lists == 0 then
 		return
@@ -255,101 +345,6 @@ function M:scroll_to_bottom()
 	local bot = 0
 	local top = #lists - self:list_can_fit()
 	self:update_scroll_info(top, bot)
-end
-
-function M:update_scroll_info(first, last)
-	self.scroll_info.first = first > 0 and first or 0
-	self.scroll_info.last = last > 0 and last or 0
-
-	vim.api.nvim_win_set_config(self.win.win, {
-		title = string.format("← %d | %d →  ", self.scroll_info.first, self.scroll_info.last),
-		title_pos = "right",
-	})
-end
-
----@param current_item superkanban.TaskUI|superkanban.TaskListUI
-function M:search(current_item)
-	require("lua.super-kanban.pickers.snacks").search_tasks({}, self.ctx, current_item)
-end
-
----@param opts {from:number,to:number}
-function M:fill_empty_space(opts)
-	local lists = self.ctx.lists
-
-	local list_can_fit = self:list_can_fit()
-
-	local empty_spaces = opts.to - opts.from
-	local last_used_visible_index = 0
-
-	for index = opts.to, #lists, 1 do
-		local item = lists[index]
-		item.index = item.index - 1
-
-		if item:in_view() then
-			last_used_visible_index = item.visible_index - 1
-			item:update_visible_position(last_used_visible_index)
-		elseif empty_spaces > 0 and last_used_visible_index < list_can_fit then
-			last_used_visible_index = last_used_visible_index == 0 and list_can_fit or last_used_visible_index + 1
-			item:update_visible_position(last_used_visible_index)
-
-			-- Update scroll info for right side
-			self:update_scroll_info(self.scroll_info.first, self.scroll_info.last - 1)
-			empty_spaces = empty_spaces - 1
-		end
-	end
-
-	while empty_spaces > 0 do
-		self:scroll_list(-1, 0)
-		empty_spaces = empty_spaces - 1
-	end
-end
-
-function M:exit()
-	self.win:close()
-end
-
-function M:on_exit()
-	require("super-kanban.parser.markdown").write_file(self.ctx, config)
-	for _, li in ipairs(self.ctx.lists) do
-		li:exit()
-	end
-	self:exit()
-end
-
-function M:create_list()
-	local lists = self.ctx.lists
-	local target_index = #lists + 1
-
-	local list_can_fit = self:list_can_fit()
-	local space_available = #lists < list_can_fit
-
-	local new_list = List({
-		data = { title = "New List " .. target_index },
-		index = target_index,
-		ctx = self.ctx,
-	}, config)
-
-	local tasks = {}
-	lists[target_index] = List.generate_list_ctx(new_list, tasks)
-	new_list:mount({ visible_index = space_available and target_index or nil })
-
-	-- TODO: add rename list ui
-	self:scroll_to_bottom()
-	-- vim.cmd.startinsert()
-end
-
-function M:set_actions() end
-
-function M:set_events()
-	self.win:on("WinClosed", function()
-		self:on_exit()
-	end, { win = true })
-
-	self.win:on("BufEnter", function()
-		vim.defer_fn(function()
-			self.win:destroy()
-		end, 10)
-	end, { buf = true })
 end
 
 return M

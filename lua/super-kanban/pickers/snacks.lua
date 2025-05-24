@@ -22,7 +22,7 @@ end
 
 ---@param opts snacks.picker.Config
 ---@param ctx superkanban.Ctx
----@param current_item superkanban.TaskUI|superkanban.TaskListUI
+---@param current_item superkanban.TaskUI|superkanban.TaskListUI|nil
 function M.search_tasks(opts, ctx, current_item)
 	local status_ok, snack_picker = pcall(require, "snacks.picker")
 	if not status_ok then

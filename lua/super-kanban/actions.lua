@@ -1,3 +1,4 @@
+local utils = require("super-kanban.utils")
 local actions = {}
 
 actions.close = function()
@@ -45,7 +46,14 @@ actions.create_list = function()
 	---@param listUI superkanban.TaskListUI|nil
 	---@param ctx superkanban.Ctx
 	local callback = function(taskUI, listUI, ctx)
-		ctx.board:create_list()
+		vim.api.nvim_exec_autocmds("BufLeave", {})
+		vim.ui.input({
+			prompt = "Enter a name for the new list:",
+		}, function(name)
+			if name then
+				ctx.board:create_list(name)
+			end
+		end)
 	end
 
 	return { callback = callback, desc = "Create list" }
@@ -63,6 +71,29 @@ actions.delete_list = function()
 	end
 
 	return { callback = callback, desc = "Delete list" }
+end
+
+actions.rename_list = function()
+	---@param taskUI superkanban.TaskUI|nil
+	---@param listUI superkanban.TaskListUI|nil
+	---@param ctx superkanban.Ctx
+	local callback = function(taskUI, listUI, ctx)
+		if not listUI then
+			return
+		end
+
+		vim.api.nvim_exec_autocmds("BufLeave", {})
+		vim.ui.input({
+			prompt = "Rename list:",
+			default = listUI.data.title,
+		}, function(name)
+			if name then
+				listUI:rename_list(name)
+			end
+		end)
+	end
+
+	return { callback = callback, desc = "Rename list" }
 end
 
 actions.pick_date = function()
@@ -88,10 +119,14 @@ actions.log_info = function()
 			dd(taskUI.data.title, string.format("index %s, visual_index %s", taskUI.index, taskUI.visible_index))
 		end
 
+		-- if listUI then
+		-- 	dd(listUI.data.title, string.format("index %s, visual_index %s", listUI.index, listUI.visible_index))
+		-- end
+
 		if listUI and _G.log then
 			local list = ctx.lists[listUI.index]
-			for _, tk in ipairs(list.tasks) do
-				log(tk.data.title, string.format("index %s, visual_index %s", tk.index, tk.visible_index))
+			for _, item in ipairs(list.tasks) do
+				log(item.data.title, string.format("index %s, visual_index %s", item.index, item.visible_index))
 			end
 		end
 	end
@@ -129,6 +164,33 @@ actions.swap = function(direction)
 	end
 
 	return { callback = callback, desc = "Swap task " .. direction }
+end
+
+---@param direction "left"|"right"
+actions.swap_list = function(direction)
+	direction = direction or "down"
+
+	---@param taskUI superkanban.TaskUI|nil
+	---@param listUI superkanban.TaskListUI|nil
+	---@param ctx superkanban.Ctx
+	local callback = function(taskUI, listUI, ctx)
+		if not listUI then
+			return
+		end
+
+		local swap_directions = {
+			left = function()
+				listUI:swap_horizontal(-1)
+			end,
+			right = function()
+				listUI:swap_horizontal(1)
+			end,
+		}
+
+		swap_directions[direction]()
+	end
+
+	return { callback = callback, desc = "Swap with " .. direction .. " list" }
 end
 
 ---@param direction "left"|"right"|"up"|"down"|"first"|"last"

@@ -24,8 +24,6 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
-local task_height = 4
-
 local function extract_tags(text)
 	local tags = {}
 	for tag in text:gmatch("#%w+") do
@@ -42,8 +40,10 @@ local function extract_dates(text)
 	return dates
 end
 
-local function calculate_row_pos(index)
-	return (task_height + 1) * (index - 1)
+---@param index number
+---@param conf superkanban.Config
+local function calculate_row_pos(index, conf)
+	return (conf.task.height + 1) * (index - 1)
 end
 
 ---@param opts superkanban.Task.Opts
@@ -64,9 +64,28 @@ end
 ---@param list superkanban.TaskListUI
 ---@return snacks.win
 function M:setup_win(list)
+	local conf = self.ctx.config
+
 	self.win = Snacks.win({
+		-- User cofig values
+		width = conf.task.width,
+		height = conf.task.height,
+		border = conf.task.border,
+		zindex = conf.task.zindex,
+		wo = utils.merge({
+			winbar = self:generate_winbar(),
+			winhighlight = hl.task,
+		}, conf.task.win_options),
+		-- Non cofig values
 		show = false,
 		enter = false,
+		relative = "win",
+		win = list.win.win,
+		col = 0,
+		row = calculate_row_pos(self.index, self.ctx.config),
+		focusable = true,
+		keys = { q = false },
+		bo = { modifiable = true, filetype = "superkanban_task" },
 		on_win = function()
 			vim.schedule(function()
 				self:set_events()
@@ -76,22 +95,6 @@ function M:setup_win(list)
 		text = function()
 			return utils.get_lines_from_task(self.data)
 		end,
-		relative = "win",
-		win = list.win.win,
-		width = 0,
-		height = task_height,
-		col = 0,
-		row = calculate_row_pos(self.index),
-		border = { "", "", "", " ", "▁", "▁", "▁", " " },
-		focusable = true,
-		zindex = 20,
-		keys = { q = false },
-		wo = {
-			winbar = self:generate_winbar(),
-			winhighlight = hl.task,
-			wrap = true,
-		},
-		bo = { modifiable = true, filetype = "superkanban_task" },
 	})
 
 	return self.win
@@ -180,7 +183,7 @@ end
 ---@param new_index? number
 function M:update_visible_position(new_index)
 	if type(new_index) == "number" and new_index > 0 then
-		self.win.opts.row = calculate_row_pos(new_index)
+		self.win.opts.row = calculate_row_pos(new_index, self.ctx.config)
 
 		if self:closed() then
 			self.win:show()

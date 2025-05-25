@@ -15,7 +15,7 @@ end
 ---@param msg string
 ---@param level? "trace"|"debug"|"info"|"warn"|"error"
 function M.msg(msg, level)
-	vim.notify(msg, level, { title = "Super Kanban" })
+	vim.notify(msg, level, { title = "SuperKanban" })
 end
 
 ---@param data superkanban.TaskData
@@ -181,6 +181,10 @@ end
 
 function M.merge(default, override)
 	return vim.tbl_extend("force", default, override)
+end
+
+function M.trim(str)
+	return string.gsub(str, "^%s*(.-)%s*$", "%1")
 end
 
 local function remove_trailing_or_lonely_at_sign(str)

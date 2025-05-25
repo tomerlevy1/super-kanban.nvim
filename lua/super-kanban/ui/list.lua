@@ -15,7 +15,7 @@ local Task = require("super-kanban.ui.task")
 ---@field ctx superkanban.Ctx
 ---@field type "list"
 ---@field scroll_info {top:number,bot:number}
----@overload fun(opts:superkanban.TaskList.Opts,config:{}): superkanban.TaskListUI
+---@overload fun(opts:superkanban.TaskList.Opts): superkanban.TaskListUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -23,12 +23,12 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@param list_min_width number
 ---@param index number
----@param left_padding number
+---@param conf superkanban.Config
 ---@return {row:number,col:number}
-local function get_list_position(list_min_width, index, left_padding)
-	return { row = 1, col = left_padding + (list_min_width + 3) * (index - 1) }
+local function get_list_position(index, conf)
+	local col = conf.board.padding.left + (conf.list.width + 3) * (index - 1)
+	return { row = conf.board.padding.top, col = col }
 end
 
 ---@param opts superkanban.TaskList.Opts
@@ -46,28 +46,29 @@ end
 
 function M:setup_win()
 	local conf = self.ctx.config
-	local pos = get_list_position(conf.list_min_width, self.index, conf.board.padding.left)
+	local pos = get_list_position(self.index, conf)
 
 	self.win = Snacks.win({
+		-- User cofig values
+		width = conf.list.width,
+		height = conf.list.height,
+		border = conf.list.border,
+		zindex = conf.list.zindex,
+		wo = utils.merge({
+			winhighlight = hl.list,
+		}, conf.list.win_options),
+		-- Non cofig values
+		title = self.data.title,
+		title_pos = "center",
+		win = self.ctx.board.win.win,
 		row = pos.row,
 		col = pos.col,
 		enter = false,
 		show = false,
-		title = self.data.title,
-		title_pos = "center",
-		win = self.ctx.board.win.win,
-		height = 0.9,
-		width = conf.list_min_width,
 		relative = "win",
-		border = "rounded",
 		focusable = true,
-		zindex = 15,
 		keys = { q = false },
-		wo = { winhighlight = hl.list },
-		bo = {
-			modifiable = false,
-			filetype = "superkanban_list",
-		},
+		bo = { modifiable = false, filetype = "superkanban_list" },
 		on_win = function()
 			vim.schedule(function()
 				self:set_keymaps()
@@ -172,7 +173,7 @@ end
 
 function M:item_can_fit()
 	local height = self.win:size().height - 2
-	return math.floor(height / 5)
+	return math.floor(height / (self.ctx.config.task.height + 1))
 end
 
 function M:closed()
@@ -190,8 +191,7 @@ end
 ---@param new_index? number
 function M:update_visible_position(new_index)
 	if type(new_index) == "number" and new_index > 0 then
-		self.win.opts.col =
-			get_list_position(self.ctx.config.list_min_width, new_index, self.ctx.config.board.padding.left).col
+		self.win.opts.col = get_list_position(new_index, self.ctx.config).col
 
 		if self:closed() then
 			self.win:show()
@@ -316,6 +316,17 @@ function M:delete_list(should_focus)
 	end
 end
 
+---@param new_name? string
+function M:rename_list(new_name)
+	new_name = utils.trim(new_name)
+	if not new_name or new_name == "" or new_name == self.data.title then
+		return
+	end
+
+	self.data.title = new_name
+	self.win:set_title({ { self.data.title } }, "center")
+end
+
 function M:jump_horizontal(direction)
 	if direction == nil then
 		direction = 1
@@ -329,6 +340,51 @@ function M:jump_horizontal(direction)
 		self.ctx.board:scroll_board(direction, self.index)
 	end
 	target_list:focus()
+end
+
+function M:swap_horizontal(direction)
+	if direction == nil then
+		direction = 1
+	end
+
+	if
+		(#self.ctx.lists == 1)
+		or (direction == 1 and self.index == #self.ctx.lists)
+		or (direction == -1 and self.index == 1)
+	then
+		return
+	end
+
+	-- Update index
+	local cur_index = self.index
+	local target_index = self.index + direction
+	local cur_list = self.ctx.lists[cur_index]
+	local target_list = self.ctx.lists[target_index]
+
+	if not target_list then
+		return
+	end
+
+	if target_list:closed() then
+		self.ctx.board:scroll_board(direction)
+	end
+
+	-- Swap index & list in ctx
+	local cur_v_index, target_v_index = target_list.visible_index, cur_list.visible_index
+	cur_list.index, target_list.index = target_index, cur_index
+	self.ctx.lists[target_index], self.ctx.lists[cur_index] = cur_list, target_list
+
+	cur_list:update_visible_position(cur_v_index)
+	target_list:update_visible_position(target_v_index)
+	cur_list:focus()
+
+	-- Update list_index of every tasks
+	for _, task in pairs(target_list.tasks) do
+		task.list_index = target_list.index
+	end
+	for _, task in pairs(cur_list.tasks) do
+		task.list_index = cur_list.index
+	end
 end
 
 function M:jump_to_first_task()

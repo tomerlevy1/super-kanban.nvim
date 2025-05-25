@@ -7,18 +7,11 @@ local actions = require("super-kanban.actions")
 local M = {}
 
 ---@class superkanban.Config
----@field list_min_width number
 ---@field markdown superkanban.MarkdownConfig
 local config = {
-	list_min_width = 32,
-	board = {
-		padding = {
-			left = 8,
-		},
-	},
 	markdown = {
 		description_folder = "./tasks/", -- "./"
-		list_head = "## ",
+		list_head = "##",
 		due_head = "@",
 		due_style = "{<due>}",
 		tag_head = "#",
@@ -41,31 +34,60 @@ local config = {
 			"%%",
 		},
 	},
+	task = {
+		width = 0,
+		height = 6,
+		zindex = 5,
+		border = { "", "", "", " ", "▁", "▁", "▁", " " }, -- add border at bottom
+		win_options = {
+			wrap = true,
+			-- spell = true, Uncomment this to enable spell checking
+		},
+	},
+	list = {
+		width = 32,
+		height = 0.9,
+		zindex = 5,
+		border = "rounded",
+		win_options = {},
+	},
+	board = {
+		width = 0,
+		height = vim.o.lines - 2,
+		zindex = 5,
+		border = { "", " ", "", "", "", "", "", "" }, -- add empty space on top border
+		win_options = {},
+		padding = { top = 1, left = 8 },
+	},
 	mappinngs = {
 		["gn"] = actions.create_task(),
 		["gD"] = actions.delete_task(),
+
 		["zn"] = actions.create_list(),
 		["zD"] = actions.delete_list(),
-
-		["q"] = actions.close(),
-		["/"] = actions.search(),
-		["zi"] = actions.pick_date(),
-		["X"] = actions.log_info(),
+		["zr"] = actions.rename_list(),
 
 		["<C-k>"] = actions.jump("up"),
 		["<C-j>"] = actions.jump("down"),
 		["<C-h>"] = actions.jump("left"),
 		["<C-l>"] = actions.jump("right"),
-
 		["gg"] = actions.jump("first"),
 		["G"] = actions.jump("last"),
-		["z0"] = actions.jump_list("first"),
-		["z$"] = actions.jump_list("last"),
 
 		["<A-k>"] = actions.swap("up"),
 		["<A-j>"] = actions.swap("down"),
 		["<A-h>"] = actions.swap("left"),
 		["<A-l>"] = actions.swap("right"),
+
+		["z0"] = actions.jump_list("first"),
+		["z$"] = actions.jump_list("last"),
+		["zh"] = actions.swap_list("left"),
+		["zl"] = actions.swap_list("right"),
+
+		["q"] = actions.close(),
+		["/"] = actions.search(),
+		["zi"] = actions.pick_date(),
+		["X"] = actions.log_info(),
 	},
 }
 
@@ -99,7 +121,7 @@ function M.open(source_path)
 			data = { title = list_md.title },
 			index = list_index,
 			ctx = ctx,
-		}, config)
+		})
 
 		---@type superkanban.TaskUI[]
 		local tasks = {}

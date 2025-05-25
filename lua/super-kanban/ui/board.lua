@@ -1,5 +1,6 @@
 local hl = require("super-kanban.highlights")
 local List = require("super-kanban.ui.list")
+local utils = require("super-kanban.utils")
 
 ---@class superkanban.BoardUI
 ---@field win snacks.win
@@ -29,15 +30,20 @@ function M.new(conf)
 	config = conf
 
 	self.win = Snacks.win({
-		zindex = 10,
-		width = 0,
-		height = vim.o.lines - 2,
-		enter = false,
-		focusable = true,
+		-- User cofig values
+		width = conf.board.width,
+		height = conf.board.height,
+		border = conf.board.border,
+		zindex = conf.board.zindex,
+		wo = utils.merge({
+			winhighlight = hl.board,
+			winbar = generate_winbar("Kanban"),
+		}, conf.list.win_options),
+		-- Non cofig values
 		col = 0,
 		row = 0,
-		border = { "", " ", "", "", "", "", "", "" },
-		wo = { winhighlight = hl.board, winbar = generate_winbar("Kanban") },
+		enter = false,
+		focusable = true,
 		bo = { modifiable = false, filetype = "superkanban_board" },
 	})
 
@@ -82,7 +88,7 @@ end
 
 function M:item_can_fit()
 	local width = self.win:size().width - 2 - config.board.padding.left
-	return math.floor(width / config.list_min_width)
+	return math.floor(width / config.list.width)
 end
 
 function M:update_scroll_info(first, last)
@@ -153,26 +159,29 @@ end
 
 function M:set_keymaps() end
 
-function M:create_list()
-	local lists = self.ctx.lists
-	local target_index = #lists + 1
+---@param list_name string
+function M:create_list(list_name)
+	local target_index = #self.ctx.lists + 1
+
+	list_name = utils.trim(list_name)
+	if not list_name or list_name == "" then
+		list_name = ("New List " .. target_index)
+	end
 
 	local list_can_fit = self:item_can_fit()
-	local space_available = #lists < list_can_fit
+	local space_available = #self.ctx.lists < list_can_fit
 
 	local new_list = List({
-		data = { title = "New List " .. target_index },
+		data = { title = list_name },
 		index = target_index,
 		ctx = self.ctx,
 	}, config)
 
 	local tasks = {}
-	lists[target_index] = List.generate_list_ctx(new_list, tasks)
+	self.ctx.lists[target_index] = List.generate_list_ctx(new_list, tasks)
 	new_list:mount({ visible_index = space_available and target_index or nil })
 
-	-- TODO: add rename list ui
 	self:jump_to_last_list()
-	-- vim.cmd.startinsert()
 end
 
 ---@param direction number

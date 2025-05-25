@@ -49,6 +49,7 @@ end
 ---@param opts superkanban.Task.Opts
 ---@return superkanban.TaskUI
 function M.new(opts)
+	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
 
 	self.data = opts.data
@@ -396,7 +397,7 @@ end
 
 function M:pick_date(create_new_date, at_sign_pos)
 	local data = create_new_date and {} or utils.get_date_data_from_str(self.data.due[#self.data.due])
-	local picker = DatePicker.new({ data = data })
+	local picker = DatePicker.new({ data = data }, self.ctx)
 	picker:mount({
 		on_select = function(selected_date)
 			if not selected_date then

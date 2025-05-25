@@ -33,6 +33,7 @@ end
 
 ---@param opts superkanban.TaskList.Opts
 function M.new(opts)
+	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
 
 	self.ctx = opts.ctx

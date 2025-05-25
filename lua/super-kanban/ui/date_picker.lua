@@ -20,8 +20,9 @@ local hl = require("super-kanban.highlights")
 ---@field win snacks.win
 ---@field border_win snacks.win
 ---@field win_opts {row:number,col:number,relative:string}
+---@field ctx superkanban.Ctx
 ---@field type "date_picker"
----@overload fun(opts?:superkanban.DatePicker.NewOpts,config?:superkanban.Config): superkanban.TaskUI
+---@overload fun(opts?:superkanban.DatePicker.NewOpts,ctx:superkanban.Ctx): superkanban.TaskUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -29,8 +30,6 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
----@type superkanban.Config
-local config
 local ns_date_picker = vim.api.nvim_create_namespace("super-kanban-date-picker")
 local ns_date_under_cursor = vim.api.nvim_create_namespace("super-kanban-date-picker-current-date")
 
@@ -50,12 +49,62 @@ local function get_days_in_month(year, month)
 	return tonumber(os.date("%d", last_day_of_month))
 end
 
+local weekday_map = {
+	Sunday = 0,
+	Monday = 1,
+	Tuesday = 2,
+	Wednesday = 3,
+	Thursday = 4,
+	Friday = 5,
+	Saturday = 6,
+}
+
 ---@param year number
 ---@param month number
----@return number -- returns weekday: 0=Sunday, 6=Saturday
-local function get_start_day(year, month)
-	---@diagnostic disable-next-line: return-type-mismatch
-	return tonumber(os.date("%w", os.time({ year = year, month = month, day = 1 })))
+---@param first_day_of_week WeekDay  -- e.g. "Sunday", "Monday", etc.
+---@return number -- returns weekday index: 0=first_day_of_week, 6=last_day_of_week
+local function get_start_day(year, month, first_day_of_week)
+	vim.validate({
+		year = { year, "number" },
+		month = { month, "number" },
+		first_day_of_week = {
+			first_day_of_week,
+			function(val)
+				return weekday_map[val] ~= nil
+			end,
+			'a valid day name (e.g. "Monday")',
+		},
+	})
+
+	local weekday = tonumber(os.date("%w", os.time({ year = year, month = month, day = 1 })))
+	local shift = weekday_map[first_day_of_week]
+	return (weekday - shift + 7) % 7
+end
+
+---@param first_day_of_week WeekDay -- e.g. "Sunday", "Monday"
+---@return string -- e.g. " Mo Tu We Th Fr Sa Su "
+local function make_calendar_title(first_day_of_week)
+	local days = { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" }
+
+	vim.validate({
+		first_day_of_week = {
+			first_day_of_week,
+			function(val)
+				return weekday_map[val] ~= nil
+			end,
+			'a valid day name (e.g. "Monday")',
+		},
+	})
+
+	local start_index = weekday_map[first_day_of_week] -- 0–6
+	local result = {}
+
+	for i = 0, 6 do
+		local idx = (start_index + i) % 7
+		table.insert(result, days[idx + 1])
+	end
+
+	return table.concat(result, " ")
 end
 
 local month_names = {
@@ -139,14 +188,15 @@ local function get_calendar_lines(days_in_month, start_day, find_day)
 end
 
 ---@param opts? superkanban.DatePicker.NewOpts
----@param conf? superkanban.Config
+---@param ctx superkanban.Ctx
 ---@return superkanban.DatePickerUI
-function M.new(opts, conf)
+function M.new(opts, ctx)
+	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
 
 	opts = opts or {}
 	opts.data = opts.data or {}
-	config = conf
+	self.ctx = ctx
 
 	---@diagnostic disable-next-line: assign-type-mismatch
 	self.current_year, self.current_month, self.current_day =
@@ -171,16 +221,9 @@ end
 ---@param opts superkanban.DatePicker.MountOpts
 function M:mount(opts)
 	opts = opts or {}
-	local days_in_month = get_days_in_month(self.data.year, self.data.month)
-	local start_day = get_start_day(self.data.year, self.data.month)
-	local lines, day_positions = get_calendar_lines(days_in_month, start_day, self.data.day)
-	local weekdays = {
-		{ { " Su Mo Tu We Th Fr Sa ", "KanbanDatePickerWeekDays" } },
-		{ { " ──────────────────── ", "KanbanDatePickerSeparator" } },
-	}
+	local conf = self.ctx.config
 
 	local date_selected = false
-
 	local function handle_on_select()
 		local date = self:insert_date()
 		if opts.on_select and date then
@@ -190,15 +233,38 @@ function M:mount(opts)
 		end
 	end
 
+	local days_in_month = get_days_in_month(self.data.year, self.data.month)
+	local start_day = get_start_day(self.data.year, self.data.month, self.ctx.config.date_picker.first_day_of_week)
+	local lines, day_positions = get_calendar_lines(days_in_month, start_day, self.data.day)
+
 	local width = 20
 	local height = #lines
+	local border_width = width + 2
+	local border_height = height + 2
+
+	local calender_title = make_calendar_title(self.ctx.config.date_picker.first_day_of_week)
+	local weekdays = {
+		{ { utils.center_string(calender_title, border_width), "KanbanDatePickerWeekDays" } },
+		{ { utils.center_string(string.rep("─", width), border_width), "KanbanDatePickerSeparator" } },
+	}
 
 	self.border_win = Snacks.win({
-		relative = self.win_opts.relative,
-		enter = false,
-		zindex = 49,
+		-- User cofig values
+		border = conf.date_picker.border,
+		zindex = conf.date_picker.zindex,
+		wo = utils.merge({
+			winhighlight = hl.date_picker,
+		}, conf.date_picker.win_options),
+
+		width = border_width,
+		height = border_height,
 		col = self.win_opts.col,
 		row = self.win_opts.row,
+		-- Non cofig values
+		title = get_calander_title(self.data.year, self.data.month),
+		title_pos = "center",
+		relative = self.win_opts.relative,
+		enter = false,
 		on_win = function()
 			vim.schedule(function()
 				self:render_border_win_lines(weekdays)
@@ -207,25 +273,21 @@ function M:mount(opts)
 		on_close = function()
 			self:exit()
 		end,
-		border = "rounded",
-		width = width + 2,
-		height = height + 2,
-		title = get_calander_title(self.data.year, self.data.month),
-		title_pos = "center",
-		wo = {
-			winhighlight = hl.date_picker,
-		},
 	})
 
 	self.win = Snacks.win({
-		relative = "win",
-		win = self.border_win.win,
-		zindex = 50,
-		col = 1,
-		row = #weekdays,
-		border = "none",
+		zindex = conf.date_picker.zindex,
+		wo = utils.merge({
+			winhighlight = hl.date_picker,
+		}, conf.date_picker.win_options),
+
 		width = width,
 		height = height,
+		border = "none",
+		relative = "win",
+		-- col = "0",
+		row = #weekdays,
+		win = self.border_win.win,
 		text = function()
 			return lines
 		end,
@@ -262,9 +324,6 @@ function M:mount(opts)
 			i = handle_on_select,
 			o = handle_on_select,
 		},
-		wo = {
-			winhighlight = hl.date_picker,
-		},
 	})
 end
 
@@ -287,7 +346,7 @@ end
 ---@param find_a_day? integer
 function M:update_month(year, month, focus, find_a_day)
 	local days_in_month = get_days_in_month(year, month)
-	local start_day = get_start_day(year, month)
+	local start_day = get_start_day(year, month, self.ctx.config.date_picker.first_day_of_week)
 	local lines, day_positions = get_calendar_lines(days_in_month, start_day, find_a_day)
 
 	-- update height
@@ -419,7 +478,7 @@ function M:set_events()
 end
 
 -- local function open_date()
--- 	local picker = M.new()
+-- 	local picker = M.new({}, _G.foo)
 -- 	picker:mount({
 -- 		on_select = function(date)
 -- 			dd(date)

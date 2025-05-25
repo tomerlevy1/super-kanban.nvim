@@ -59,6 +59,12 @@ local config = {
 		win_options = {},
 		padding = { top = 1, left = 8 },
 	},
+	date_picker = {
+		zindex = 5,
+		border = "rounded",
+		win_options = {},
+		first_day_of_week = "Sunday",
+	},
 	mappinngs = {
 		["gn"] = actions.create_task(),
 		["gD"] = actions.delete_task(),

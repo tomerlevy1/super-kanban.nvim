@@ -200,4 +200,25 @@ local function remove_trailing_or_lonely_at_sign(str)
 	return str
 end
 
+---@param str string
+---@param width number
+---@param end_paddig? boolean
+---@return string
+function M.center_string(str, width, end_paddig)
+	local str_len = vim.fn.strdisplaywidth(str)
+	if str_len >= width then
+		return str
+	end
+
+	local left_pad = math.floor((width - str_len) / 2)
+	local centered_str = string.rep(" ", left_pad) .. str
+
+	if end_paddig then
+		local right_pad = width - str_len - left_pad
+		centered_str = centered_str .. string.rep(" ", right_pad)
+	end
+
+	return centered_str
+end
+
 return M

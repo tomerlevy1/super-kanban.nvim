@@ -26,6 +26,7 @@ end
 
 ---@param conf superkanban.Config
 function M.new(conf)
+	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
 	config = conf
 
@@ -175,7 +176,7 @@ function M:create_list(list_name)
 		data = { title = list_name },
 		index = target_index,
 		ctx = self.ctx,
-	}, config)
+	})
 
 	local tasks = {}
 	self.ctx.lists[target_index] = List.generate_list_ctx(new_list, tasks)

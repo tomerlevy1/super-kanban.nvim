@@ -39,3 +39,5 @@
 ---@field tag_style string
 ---@field header string[]
 ---@field footer string[]
+
+---@alias WeekDay "Sunday"|"Monday"|"Tuesday"|"Wednesday"|"Thursday"|"Friday"|"Saturday"

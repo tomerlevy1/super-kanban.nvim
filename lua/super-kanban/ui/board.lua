@@ -1,6 +1,7 @@
 local hl = require("super-kanban.highlights")
 local List = require("super-kanban.ui.list")
 local utils = require("super-kanban.utils")
+local text = require("super-kanban.utils.text")
 
 ---@class superkanban.BoardUI
 ---@field win snacks.win
@@ -164,7 +165,7 @@ function M:set_keymaps() end
 function M:create_list(list_name)
 	local target_index = #self.ctx.lists + 1
 
-	list_name = utils.trim(list_name)
+	list_name = text.trim(list_name)
 	if not list_name or list_name == "" then
 		list_name = ("New List " .. target_index)
 	end

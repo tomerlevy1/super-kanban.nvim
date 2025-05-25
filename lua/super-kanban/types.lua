@@ -41,3 +41,6 @@
 ---@field footer string[]
 
 ---@alias WeekDay "Sunday"|"Monday"|"Tuesday"|"Wednesday"|"Thursday"|"Friday"|"Saturday"
+
+---@alias HighlightedText { [1]: string, [2]: string }
+---@alias HighlightLine HighlightedText[]

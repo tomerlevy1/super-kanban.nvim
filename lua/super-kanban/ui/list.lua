@@ -1,6 +1,7 @@
 local hl = require("super-kanban.highlights")
 local utils = require("super-kanban.utils")
 local Task = require("super-kanban.ui.task")
+local text = require("super-kanban.utils.text")
 
 ---@class superkanban.TaskList.Opts
 ---@field data {title: string}
@@ -319,7 +320,7 @@ end
 
 ---@param new_name? string
 function M:rename_list(new_name)
-	new_name = utils.trim(new_name)
+	new_name = text.trim(new_name)
 	if not new_name or new_name == "" or new_name == self.data.title then
 		return
 	end

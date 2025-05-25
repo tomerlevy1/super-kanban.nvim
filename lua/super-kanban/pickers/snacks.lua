@@ -1,4 +1,4 @@
-local utils = require("super-kanban.utils")
+local text = require("super-kanban.utils.text")
 
 local M = {}
 
@@ -6,15 +6,15 @@ local M = {}
 ---@param ctx superkanban.Ctx
 local function focus_task_on_confirm(item, ctx)
 	local list = ctx.lists[item.value.list_index]
-  local list_was_in_view = true
+	local list_was_in_view = true
 	if not list:in_view() then
-    list_was_in_view = false
+		list_was_in_view = false
 		ctx.board:scroll_to_a_list(list.index, false)
 	end
 
 	local task = list.tasks[item.value.index]
 	if list_was_in_view and task:in_view() then
-    task:focus()
+		task:focus()
 	else
 		list:scroll_to_a_task(task.index, true)
 	end
@@ -43,7 +43,7 @@ function M.search_tasks(opts, ctx, current_item)
 		end,
 		on_close = function()
 			vim.schedule(function()
-				if not found_item then
+				if not found_item and current_item then
 					current_item:focus()
 				end
 			end)
@@ -74,7 +74,7 @@ function M.search_tasks(opts, ctx, current_item)
 					items[#items + 1] = {
 						text = task.data.title,
 						preview = {
-							text = table.concat(utils.get_lines_from_task(task.data), "\n"),
+							text = table.concat(text.get_lines_from_task(task.data), "\n"),
 							ft = "superkanban_task",
 						},
 						value = {

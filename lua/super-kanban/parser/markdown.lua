@@ -53,7 +53,7 @@ end
 ---@param text string
 ---@param checkbox string
 function parser.create_task_data(text, checkbox)
-	local title, tags, due = parser.parse_data_from_task_text(text)
+	local title, tags, due = require("super-kanban.utils.text").extract_task_data_from_str(text)
 
 	local task = {
 		raw = text,

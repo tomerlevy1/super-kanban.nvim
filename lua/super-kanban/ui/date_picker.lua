@@ -1,5 +1,6 @@
 -- vim.api.nvim_create_user_command("DatePicker", open_calendar, {})
 local utils = require("super-kanban.utils")
+local text = require("super-kanban.utils.text")
 local hl = require("super-kanban.highlights")
 
 ---@class superkanban.DatePicker.NewOpts
@@ -244,8 +245,8 @@ function M:mount(opts)
 
 	local calender_title = make_calendar_title(self.ctx.config.date_picker.first_day_of_week)
 	local weekdays = {
-		{ { utils.center_string(calender_title, border_width), "KanbanDatePickerWeekDays" } },
-		{ { utils.center_string(string.rep("─", width), border_width), "KanbanDatePickerSeparator" } },
+		{ { text.center_str(calender_title, border_width), "KanbanDatePickerWeekDays" } },
+		{ { text.center_str(string.rep("─", width), border_width), "KanbanDatePickerSeparator" } },
 	}
 
 	self.border_win = Snacks.win({
@@ -408,7 +409,7 @@ function M:focus()
 end
 
 function M:render_border_win_lines(weekdays)
-	utils.render_lines(self.border_win.buf, ns_date_picker, weekdays, 0)
+	text.render_lines(self.border_win.buf, ns_date_picker, weekdays, 0)
 end
 
 function M:extract_day_under_cursor()

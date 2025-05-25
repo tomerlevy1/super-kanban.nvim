@@ -1,6 +1,8 @@
 local hl = require("super-kanban.highlights")
 local DatePicker = require("super-kanban.ui.date_picker")
 local utils = require("super-kanban.utils")
+local text = require("super-kanban.utils.text")
+local date = require("super-kanban.utils.date")
 
 ---@class superkanban.Task.Opts
 ---@field data superkanban.TaskData
@@ -23,22 +25,6 @@ local M = setmetatable({}, {
 	end,
 })
 M.__index = M
-
-local function extract_tags(text)
-	local tags = {}
-	for tag in text:gmatch("#%w+") do
-		table.insert(tags, tag)
-	end
-	return tags
-end
-
-local function extract_dates(text)
-	local dates = {}
-	for date in text:gmatch("(@{%d+[,-/]%d%d?[,-/]%d%d?})") do
-		table.insert(dates, date)
-	end
-	return dates
-end
 
 ---@param index number
 ---@param conf superkanban.Config
@@ -94,7 +80,7 @@ function M:setup_win(list)
 			end)
 		end,
 		text = function()
-			return utils.get_lines_from_task(self.data)
+			return text.get_lines_from_task(self.data)
 		end,
 	})
 
@@ -159,7 +145,7 @@ function M:update_winbar()
 end
 
 function M:update_buffer_text()
-	local lines = utils.get_lines_from_task(self.data)
+	local lines = text.get_lines_from_task(self.data)
 	vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, lines)
 	return lines
 end
@@ -172,7 +158,7 @@ function M:get_relative_date()
 	if not date_str then
 		return ""
 	end
-	local ok, result = pcall(utils.get_relative_time, utils.get_date_data_from_str(date_str))
+	local ok, result = pcall(date.get_relative_time, date.extract_date_obj_from_str(date_str))
 
 	if ok then
 		return result
@@ -202,25 +188,12 @@ end
 function M:extract_buffer_and_update_task_data()
 	local lines = self.win:lines()
 
-	local title = lines[1]
-	local tags = {}
-	local dates = {}
-
-	for i = 2, #lines, 1 do
-		local found_tags = extract_tags(lines[i])
-		if #found_tags >= 1 then
-			vim.list_extend(tags, found_tags)
-		end
-
-		local found_dates = extract_dates(lines[i])
-		if #found_dates >= 1 then
-			vim.list_extend(dates, found_dates)
-		end
-	end
+	local raw = table.concat(lines, " ")
+	local title, tags, due = text.extract_task_data_from_str(raw)
 
 	self.data.title = title
 	self.data.tag = tags
-	self.data.due = dates
+	self.data.due = due
 end
 
 function M:set_events()
@@ -238,7 +211,7 @@ function M:set_events()
 	end, { buf = true })
 
 	self.win:on({ "TextChangedI" }, function()
-		local found_pos = utils.find_at_sign_before_cursor()
+		local found_pos = text.find_at_sign_before_cursor()
 		if found_pos then
 			vim.cmd.stopinsert()
 			vim.schedule(function()
@@ -396,7 +369,7 @@ function M:swap_horizontal(direction)
 end
 
 function M:pick_date(create_new_date, at_sign_pos)
-	local data = create_new_date and {} or utils.get_date_data_from_str(self.data.due[#self.data.due])
+	local data = create_new_date and {} or date.extract_date_obj_from_str(self.data.due[#self.data.due])
 	local picker = DatePicker.new({ data = data }, self.ctx)
 	picker:mount({
 		on_select = function(selected_date)
@@ -406,14 +379,14 @@ function M:pick_date(create_new_date, at_sign_pos)
 			end
 
 			-- Update task date
-			local f_date = utils.format_to_date_str(selected_date)
+			local f_date = date.format_to_date_str(selected_date)
 			if #self.data.due > 0 then
 				self.data.due[#self.data.due] = f_date
 			else
 				self.data.due[1] = f_date
 			end
 			if at_sign_pos and at_sign_pos.row == 1 then
-				self.data.title = utils.remove_char_at(self.data.title, at_sign_pos.col)
+				self.data.title = text.remove_char_at(self.data.title, at_sign_pos.col)
 			end
 			self:update_buffer_text()
 

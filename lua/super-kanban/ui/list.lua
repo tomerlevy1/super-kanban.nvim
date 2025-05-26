@@ -344,7 +344,7 @@ function M:jump_horizontal(direction)
 	target_list:focus()
 end
 
-function M:swap_horizontal(direction)
+function M:move_horizontal(direction)
 	if direction == nil then
 		direction = 1
 	end

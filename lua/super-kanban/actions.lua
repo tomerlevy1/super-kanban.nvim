@@ -135,7 +135,7 @@ actions.log_info = function()
 end
 
 ---@param direction "left"|"right"|"up"|"down"
-actions.swap = function(direction)
+actions.move = function(direction)
 	direction = direction or "down"
 	---@param taskUI superkanban.TaskUI|nil
 	---@param listUI superkanban.TaskListUI|nil
@@ -145,29 +145,29 @@ actions.swap = function(direction)
 			return
 		end
 
-		local swap_directions = {
+		local move_directions = {
 			left = function()
-				taskUI:swap_horizontal(-1)
+				taskUI:move_horizontal(-1)
 			end,
 			right = function()
-				taskUI:swap_horizontal(1)
+				taskUI:move_horizontal(1)
 			end,
 			up = function()
-				taskUI:swap_vertical(-1)
+				taskUI:move_vertical(-1)
 			end,
 			down = function()
-				taskUI:swap_vertical(1)
+				taskUI:move_vertical(1)
 			end,
 		}
 
-		swap_directions[direction]()
+		move_directions[direction]()
 	end
 
-	return { callback = callback, desc = "Swap task " .. direction }
+	return { callback = callback, desc = "Move task to " .. direction }
 end
 
 ---@param direction "left"|"right"
-actions.swap_list = function(direction)
+actions.move_list = function(direction)
 	direction = direction or "down"
 
 	---@param taskUI superkanban.TaskUI|nil
@@ -178,19 +178,19 @@ actions.swap_list = function(direction)
 			return
 		end
 
-		local swap_directions = {
+		local move_directions = {
 			left = function()
-				listUI:swap_horizontal(-1)
+				listUI:move_horizontal(-1)
 			end,
 			right = function()
-				listUI:swap_horizontal(1)
+				listUI:move_horizontal(1)
 			end,
 		}
 
-		swap_directions[direction]()
+		move_directions[direction]()
 	end
 
-	return { callback = callback, desc = "Swap with " .. direction .. " list" }
+	return { callback = callback, desc = "Move list to " .. direction }
 end
 
 ---@param direction "left"|"right"|"up"|"down"|"first"|"last"
@@ -201,7 +201,7 @@ actions.jump = function(direction)
 	---@param listUI superkanban.TaskListUI|nil
 	---@param ctx superkanban.Ctx
 	local callback = function(taskUI, listUI, ctx)
-		local swap_directions = {
+		local move_directions = {
 			left = function()
 				if taskUI then
 					taskUI:jump_horizontal(-1)
@@ -238,7 +238,7 @@ actions.jump = function(direction)
 			end,
 		}
 
-		swap_directions[direction]()
+		move_directions[direction]()
 	end
 
 	return { callback = callback, desc = "Jump to " .. direction .. "task" }
@@ -256,7 +256,7 @@ actions.jump_list = function(direction)
 			return
 		end
 
-		local swap_directions = {
+		local move_directions = {
 			left = function()
 				listUI:jump_horizontal(-1)
 			end,
@@ -271,7 +271,7 @@ actions.jump_list = function(direction)
 			end,
 		}
 
-		swap_directions[direction]()
+		move_directions[direction]()
 	end
 
 	return { callback = callback, desc = "Jump to " .. direction .. " list" }

@@ -301,7 +301,7 @@ function M:jump_horizontal(direction)
 end
 
 ---@param direction? number
-function M:swap_vertical(direction)
+function M:move_vertical(direction)
 	if direction == nil then
 		direction = 1
 	end
@@ -340,7 +340,9 @@ function M:swap_vertical(direction)
 end
 
 ---@param direction? number
-function M:swap_horizontal(direction)
+---@param placement? "first"|"last"
+function M:move_horizontal(direction, placement)
+	placement = placement or "first"
 	if direction == nil then
 		direction = 1
 	end
@@ -356,16 +358,27 @@ function M:swap_horizontal(direction)
 
 	self:delete_task(false)
 
+	if placement == "first" then
+		for _, task in pairs(target_list.tasks) do
+			task.index = task.index + 1
+		end
+	end
+
 	-- Update task+list index and parent win
-	local target_index = #target_list.tasks + 1
+	local target_index = placement == "last" and #target_list.tasks + 1 or 1
 	local new_task = self.new({
 		data = self.data,
 		index = target_index,
 		ctx = self.ctx,
 		list_index = target_list.index,
 	}):mount(target_list)
-	target_list.tasks[target_index] = new_task
-	target_list:jump_to_last_task()
+	table.insert(target_list.tasks, target_index, new_task)
+
+	if placement == "last" then
+		target_list:jump_to_last_task()
+	else
+		target_list:jump_to_first_task()
+	end
 end
 
 function M:pick_date(create_new_date, at_sign_pos)

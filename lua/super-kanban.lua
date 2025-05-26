@@ -80,15 +80,15 @@ local config = {
 		["gg"] = actions.jump("first"),
 		["G"] = actions.jump("last"),
 
-		["<A-k>"] = actions.swap("up"),
-		["<A-j>"] = actions.swap("down"),
-		["<A-h>"] = actions.swap("left"),
-		["<A-l>"] = actions.swap("right"),
+		["<A-k>"] = actions.move("up"),
+		["<A-j>"] = actions.move("down"),
+		["<A-h>"] = actions.move("left"),
+		["<A-l>"] = actions.move("right"),
 
 		["z0"] = actions.jump_list("first"),
 		["z$"] = actions.jump_list("last"),
-		["zh"] = actions.swap_list("left"),
-		["zl"] = actions.swap_list("right"),
+		["zh"] = actions.move_list("left"),
+		["zl"] = actions.move_list("right"),
 
 		["q"] = actions.close(),
 		["/"] = actions.search(),

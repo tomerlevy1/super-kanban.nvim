@@ -102,24 +102,27 @@ function M.setup()
 end
 -- M.setup()
 
----Open super-kanban
+M.is_opned = nil
+---@type superkanban.Ctx
+local ctx = {}
+
 ---@param source_path string
-function M.open(source_path)
-	local parsed_data = require("super-kanban.parser.markdown").parse_file(source_path)
+local function open_board(source_path)
+	if not vim.uv.fs_stat(source_path) then
+		require("super-kanban.utils").msg("File does not exist: " .. source_path, "error")
+		return nil
+	end
 
-	---@type superkanban.Ctx
-	local ctx = {
-		board = Board(config),
-		config = config,
-		source_path = source_path,
-		lists = {},
-	}
+	ctx.board = Board()
+	ctx.config = config
+	ctx.source_path = source_path
+	ctx.lists = {}
 
-	---@type superkanban.TaskList.Ctx[]
-	local lists = {}
 	local first_task_loc = nil
 
 	local default_list = { { tasks = {}, title = "todo" } }
+
+	local parsed_data = require("super-kanban.parser.markdown").parse_file(source_path)
 
 	-- Setup lists & tasks windows then generate ctx
 	for list_index, list_md in ipairs(parsed_data and parsed_data.lists or default_list) do
@@ -145,13 +148,38 @@ function M.open(source_path)
 			end
 		end
 
-		lists[list_index] = List.generate_list_ctx(list, tasks)
+		ctx.lists[list_index] = List.generate_list_ctx(list, tasks)
 	end
 
-	ctx.lists = lists
-	ctx.board:mount(ctx)
+	ctx.board:mount(ctx, {
+		on_open = function()
+			M.is_opned = true
+		end,
+		on_close = function()
+			M.is_opned = false
+		end,
+	})
 end
 
--- lua require("super-kanban").open()
+---Open super-kanban
+---@param source_path string
+function M.open(source_path)
+	if M.is_opned and ctx.source_path == source_path then
+		return
+	elseif M.is_opned and ctx.board then
+		if ctx.board then
+			ctx.board:exit()
+		end
+
+		vim.schedule(function()
+			open_board(source_path)
+		end)
+		return
+	end
+
+	open_board(source_path)
+end
+
+-- lua require("super-kanban").open("test.md")
 
 return M

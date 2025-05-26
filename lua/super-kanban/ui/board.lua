@@ -8,15 +8,13 @@ local text = require("super-kanban.utils.text")
 ---@field ctx superkanban.Ctx
 ---@field type "board"
 ---@field scroll_info {first:number,last:number}
----@overload fun(config :{}): superkanban.BoardUI
+---@overload fun(): superkanban.BoardUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
 	end,
 })
 M.__index = M
----@type superkanban.Config
-local config
 
 local function generate_winbar(title)
 	return string.format(
@@ -25,11 +23,20 @@ local function generate_winbar(title)
 	)
 end
 
----@param conf superkanban.Config
-function M.new(conf)
+function M.new()
 	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
-	config = conf
+
+	self.type = "board"
+	self.scroll_info = { first = 0, last = 0 }
+
+	return self
+end
+
+---@param ctx superkanban.Ctx
+---@param opts {on_close?:fun(),on_open?:fun()}
+function M:setup_win(ctx, opts)
+	local conf = ctx.config
 
 	self.win = Snacks.win({
 		-- User cofig values
@@ -45,52 +52,64 @@ function M.new(conf)
 		col = 0,
 		row = 0,
 		enter = false,
+		show = false,
 		focusable = true,
 		bo = { modifiable = false, filetype = "superkanban_board" },
+		on_win = function()
+			vim.schedule(function()
+				self:set_keymaps()
+				self:set_events()
+			end)
+
+			local list_can_fit = self:item_can_fit()
+			local focus_item = nil
+			local first_hidden_task_index = 0
+
+			for index, list in ipairs(ctx.lists) do
+				local space_available = list_can_fit >= index
+				if focus_item == nil and space_available and #list.tasks > 0 then
+					focus_item = list.tasks[1]
+				end
+
+				if not space_available and first_hidden_task_index == 0 then
+					first_hidden_task_index = index
+				end
+
+				list:mount({ visible_index = space_available and index or nil })
+			end
+
+			if focus_item then
+				focus_item:focus()
+			elseif ctx.lists[1] then
+				ctx.lists[1]:focus()
+			end
+
+			self:update_scroll_info(0, first_hidden_task_index > 0 and #ctx.lists + 1 - first_hidden_task_index or 0)
+
+			if opts and opts.on_open then
+				opts.on_open()
+			end
+		end,
+		on_close = function()
+			if opts and opts.on_close then
+				opts.on_close()
+			end
+		end,
 	})
-
-	self.type = "board"
-	self.scroll_info = { first = 0, last = 0 }
-
-	return self
 end
 
 ---@param ctx superkanban.Ctx
-function M:mount(ctx)
-	self:set_keymaps()
-	self:set_events()
-
-	local list_can_fit = self:item_can_fit()
-	local focus_item = nil
-	local first_hidden_task_index = 0
-
-	for index, list in ipairs(ctx.lists) do
-		local space_available = list_can_fit >= index
-		if focus_item == nil and space_available and #list.tasks > 0 then
-			focus_item = list.tasks[1]
-		end
-
-		if not space_available and first_hidden_task_index == 0 then
-			first_hidden_task_index = index
-		end
-
-		list:mount({ visible_index = space_available and index or nil })
-	end
-
-	if focus_item then
-		focus_item:focus()
-	elseif ctx.lists[1] then
-		ctx.lists[1]:focus()
-	end
-
-	self:update_scroll_info(0, first_hidden_task_index > 0 and #ctx.lists + 1 - first_hidden_task_index or 0)
-
+---@param opts {on_close?:fun(),on_open?:fun()}
+function M:mount(ctx, opts)
 	self.ctx = ctx
+
+	self:setup_win(ctx, opts)
+	self.win:show()
 end
 
 function M:item_can_fit()
-	local width = self.win:size().width - 2 - config.board.padding.left
-	return math.floor(width / config.list.width)
+	local width = self.win:size().width - 2 - self.ctx.config.board.padding.left
+	return math.floor(width / self.ctx.config.list.width)
 end
 
 function M:update_scroll_info(first, last)
@@ -140,7 +159,7 @@ function M:exit()
 end
 
 function M:on_exit()
-	require("super-kanban.parser.markdown").write_file(self.ctx, config)
+	require("super-kanban.parser.markdown").write_file(self.ctx)
 	for _, li in ipairs(self.ctx.lists) do
 		li:exit()
 	end

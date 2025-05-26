@@ -143,8 +143,7 @@ function writer.format_md_checklist(task)
 end
 
 ---@param ctx superkanban.Ctx
----@param config superkanban.Config
-function M.write_file(ctx, config)
+function M.write_file(ctx)
 	local file = io.open(ctx.source_path, "w")
 	if not file then
 		require("super-kanban.utils").msg("Can't open file.", "error")

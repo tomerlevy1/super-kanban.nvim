@@ -274,29 +274,41 @@ function M:set_keymaps()
 	end
 end
 
-function M:create_task()
-	local list = self.ctx.lists[self.index]
-	local target_index = #list.tasks + 1
+---@param placement? "first"|"last"
+function M:create_task(placement)
+	placement = placement or "first"
 
-	local task_can_fit = list:item_can_fit()
-	local list_space_available = #list.tasks < task_can_fit
+	local list = self.ctx.lists[self.index]
+	local target_index = 1
+	local visual_index = nil
+
+	if placement == "first" then
+		for _, task in pairs(list.tasks) do
+			task.index = task.index + 1
+		end
+	elseif placement == "last" then
+		target_index = #list.tasks + 1
+		local task_can_fit = list:item_can_fit()
+		local list_space_available = #list.tasks < task_can_fit
+
+		if list_space_available then
+			visual_index = target_index
+		end
+	end
 
 	local new_task = Task({
-		data = {
-			title = "",
-			check = " ",
-			tag = {},
-			due = {},
-		},
+		data = Task.empty_data(),
 		list_index = list.index,
 		index = target_index,
 		ctx = self.ctx,
-	}):mount(list, {
-		visible_index = list_space_available and target_index or nil,
-	})
-	list.tasks[target_index] = new_task
+	}):mount(list, { visible_index = visual_index })
+	table.insert(list.tasks, target_index, new_task)
 
-	list:jump_to_last_task()
+	if placement == "last" then
+		list:jump_to_last_task()
+	else
+		list:jump_to_first_task()
+	end
 	vim.cmd.startinsert()
 end
 

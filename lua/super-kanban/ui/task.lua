@@ -48,6 +48,10 @@ function M.new(opts)
 	return self
 end
 
+function M.empty_data()
+	return { title = "", check = " ", tag = {}, due = {} }
+end
+
 ---@param list superkanban.TaskListUI
 ---@return snacks.win
 function M:setup_win(list)

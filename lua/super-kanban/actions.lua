@@ -12,7 +12,8 @@ actions.close = function()
 	return { callback = callback, desc = "Close SuperKanban" }
 end
 
-actions.create_task = function()
+---@param placement? "first"|"last"
+actions.create_task = function(placement)
 	---@param taskUI superkanban.TaskUI|nil
 	---@param listUI superkanban.TaskListUI|nil
 	---@param ctx superkanban.Ctx
@@ -21,7 +22,7 @@ actions.create_task = function()
 			return
 		end
 
-		listUI:create_task()
+		listUI:create_task(placement)
 	end
 
 	return { callback = callback, desc = "Create a new task" }
@@ -41,7 +42,8 @@ actions.delete_task = function()
 	return { callback = callback, desc = "Delete task" }
 end
 
-actions.create_list = function()
+---@param placement? "first"|"last"
+actions.create_list = function(placement)
 	---@param taskUI superkanban.TaskUI|nil
 	---@param listUI superkanban.TaskListUI|nil
 	---@param ctx superkanban.Ctx
@@ -51,7 +53,7 @@ actions.create_list = function()
 			prompt = "Enter a name for the new list:",
 		}, function(name)
 			if name then
-				ctx.board:create_list(name)
+				ctx.board:create_list(name, placement)
 			end
 		end)
 	end

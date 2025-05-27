@@ -181,16 +181,31 @@ end
 function M:set_keymaps() end
 
 ---@param list_name string
-function M:create_list(list_name)
-	local target_index = #self.ctx.lists + 1
+---@param placement? "first"|"last"
+function M:create_list(list_name, placement)
+	placement = placement or "first"
+
+	local target_index = 1
+	local visual_index = nil
+
+	if placement == "first" then
+		for _, list in pairs(self.ctx.lists) do
+			list.index = list.index + 1
+		end
+	elseif placement == "last" then
+		target_index = #self.ctx.lists + 1
+		local list_can_fit = self:item_can_fit()
+		local space_available = #self.ctx.lists < list_can_fit
+
+		if space_available then
+			visual_index = target_index
+		end
+	end
 
 	list_name = text.trim(list_name)
 	if not list_name or list_name == "" then
-		list_name = ("New List " .. target_index)
+		list_name = ("New List " .. tostring(target_index))
 	end
-
-	local list_can_fit = self:item_can_fit()
-	local space_available = #self.ctx.lists < list_can_fit
 
 	local new_list = List({
 		data = { title = list_name },
@@ -199,10 +214,14 @@ function M:create_list(list_name)
 	})
 
 	local tasks = {}
-	self.ctx.lists[target_index] = List.generate_list_ctx(new_list, tasks)
-	new_list:mount({ visible_index = space_available and target_index or nil })
+	table.insert(self.ctx.lists, target_index, List.generate_list_ctx(new_list, tasks))
+	new_list:mount({ visible_index = visual_index })
 
-	self:jump_to_last_list()
+	if placement == "last" then
+		self:jump_to_last_list()
+	else
+		self:jump_to_first_list()
+	end
 end
 
 ---@param direction number

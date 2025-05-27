@@ -66,10 +66,12 @@ local config = {
 		first_day_of_week = "Sunday",
 	},
 	mappinngs = {
-		["gn"] = actions.create_task(),
+		["gn"] = actions.create_task("first"),
+		["gN"] = actions.create_task("last"),
 		["gD"] = actions.delete_task(),
 
-		["zn"] = actions.create_list(),
+		["zn"] = actions.create_list("first"),
+		["zN"] = actions.create_list("last"),
 		["zD"] = actions.delete_list(),
 		["zr"] = actions.rename_list(),
 

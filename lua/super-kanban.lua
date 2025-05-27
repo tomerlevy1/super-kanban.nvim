@@ -60,7 +60,7 @@ local config = {
 		padding = { top = 1, left = 8 },
 	},
 	date_picker = {
-		zindex = 5,
+		zindex = 10,
 		border = "rounded",
 		win_options = {},
 		first_day_of_week = "Sunday",

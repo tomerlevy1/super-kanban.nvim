@@ -398,15 +398,13 @@ function M:pick_date(create_new_date, at_sign_pos)
 			else
 				self.data.due[1] = f_date
 			end
-			if at_sign_pos and at_sign_pos.row == 1 then
-				self.data.title = text.remove_char_at(self.data.title, at_sign_pos.col)
-			end
+			self.data.title = text.remove_trailing_or_lonely_at_sign(self.data.title)
 			self:update_buffer_text()
 
 			self:focus()
 			if at_sign_pos then
 				vim.schedule(function()
-					local use_bang = at_sign_pos.row == 2 or utils.is_cursor_at_last_column(at_sign_pos.col)
+					local use_bang = at_sign_pos.row >= 2 or utils.is_cursor_at_last_column(at_sign_pos.col)
 					vim.cmd.startinsert({ bang = use_bang })
 				end)
 			end

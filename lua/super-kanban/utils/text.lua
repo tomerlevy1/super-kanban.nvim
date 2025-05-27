@@ -133,7 +133,7 @@ function M.find_at_sign_before_cursor()
 	return false
 end
 
-local function remove_trailing_or_lonely_at_sign(str)
+function M.remove_trailing_or_lonely_at_sign(str)
 	-- Remove @ at the end of a word (e.g., "word@ "), but not emails
 	str = str:gsub("(%w+)@(%s)", "%1%2")
 	str = str:gsub("(%w+)@$", "%1")

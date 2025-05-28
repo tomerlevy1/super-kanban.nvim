@@ -16,11 +16,20 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
-local function generate_winbar(title)
-	return string.format(
-		"%%#KanbanWinbar#%%= %%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar# %%=",
-		title
-	)
+---@param title string
+---@param start_count number
+---@param end_count number
+---@return string
+local function generate_winbar(title, start_count, end_count)
+	local segments = {
+		"%%#KanbanListTitleBottom# ← %s",
+		"%%=",
+		"%%#KanbanWinbar#%%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar#",
+		"%%=",
+		"%%#KanbanListTitleBottom#%s → ",
+	}
+	local f_str = table.concat(segments, " ")
+	return string.format(f_str, start_count, title, end_count)
 end
 
 function M.new()
@@ -46,7 +55,7 @@ function M:setup_win(ctx, opts)
 		zindex = conf.board.zindex,
 		wo = utils.merge({
 			winhighlight = hl.board,
-			winbar = generate_winbar("Kanban"),
+			winbar = generate_winbar("Kanban", 0, 0),
 		}, conf.list.win_options),
 		-- Non cofig values
 		col = 0,
@@ -116,10 +125,7 @@ function M:update_scroll_info(first, last)
 	self.scroll_info.first = first > 0 and first or 0
 	self.scroll_info.last = last > 0 and last or 0
 
-	vim.api.nvim_win_set_config(self.win.win, {
-		title = string.format("← %d | %d →  ", self.scroll_info.first, self.scroll_info.last),
-		title_pos = "right",
-	})
+	vim.api.nvim_set_option_value("winbar", generate_winbar("Kanban", first, last), { win = self.win.win })
 end
 
 ---@param opts {from:number,to:number}

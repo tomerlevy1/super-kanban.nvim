@@ -48,7 +48,9 @@ local config = {
 		width = 32,
 		height = 0.9,
 		zindex = 5,
-		border = "rounded",
+		-- border = { "", "", "", "│", "┘", "─", "└", "│" }, -- bottom single
+		border = { "", "", "", "│", "╯", "─", "╰", "│" }, -- bottom rounded
+		-- border = "rounded",
 		win_options = {},
 	},
 	board = {

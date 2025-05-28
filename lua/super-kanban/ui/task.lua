@@ -115,7 +115,7 @@ function M:focus()
 	end
 
 	self.win:focus()
-	vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
+	self:update_hl(true)
 end
 
 function M:exit()
@@ -200,13 +200,19 @@ function M:extract_buffer_and_update_task_data()
 	self.data.due = due
 end
 
+---@param is_active boolean
+---@param win number
+function M:update_hl(is_active, win)
+	vim.api.nvim_set_option_value("winhighlight", is_active and hl.taskActive or hl.task, { win = win })
+end
+
 function M:set_events()
 	self.win:on({ "BufEnter", "WinEnter" }, function()
-		vim.api.nvim_set_option_value("winhighlight", hl.taskActive, { win = self.win.win })
+		self:update_hl(true, self.win.win)
 	end, { buf = true })
 
 	self.win:on({ "BufLeave", "WinLeave" }, function()
-		vim.api.nvim_set_option_value("winhighlight", hl.task, { win = self.win.win })
+		self:update_hl(false, self.win.win)
 	end, { buf = true })
 
 	self.win:on({ "TextChanged", "TextChangedI", "TextChangedP" }, function()
@@ -243,6 +249,7 @@ function M:delete_task(should_focus)
 	-- Remove task
 	self:exit()
 	table.remove(list.tasks, target_index)
+  list:update_winbar(#list.tasks)
 
 	list:fill_empty_space({ from = target_index - 1, to = target_index })
 

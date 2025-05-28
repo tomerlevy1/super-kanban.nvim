@@ -58,10 +58,9 @@ function M:setup_win()
 		zindex = conf.list.zindex,
 		wo = utils.merge({
 			winhighlight = hl.list,
+			winbar = self:generate_winbar(self.data.title, ""),
 		}, conf.list.win_options),
 		-- Non cofig values
-		title = self.data.title,
-		title_pos = "center",
 		win = self.ctx.board.win.win,
 		row = pos.row,
 		col = pos.col,
@@ -101,7 +100,11 @@ function M:setup_win()
 			end
 
 			-- Set footer
-			self:update_scroll_info(0, first_hidden_task_index > 0 and #list.tasks + 1 - first_hidden_task_index or 0)
+			self:update_scroll_info(
+				0,
+				first_hidden_task_index > 0 and #list.tasks + 1 - first_hidden_task_index or 0,
+				#list.tasks
+			)
 		end,
 	})
 	return self.win
@@ -163,18 +166,23 @@ function M:exit()
 	self.visible_index = nil
 end
 
-function M:update_scroll_info(top, bottom)
+function M:update_scroll_info(top, bottom, total)
 	self.scroll_info.top = top > 0 and top or 0
 	self.scroll_info.bot = bottom > 0 and bottom or 0
+	self:update_winbar(total)
 
 	vim.api.nvim_win_set_config(self.win.win, {
-		footer = string.format("↑%d-↓%d", self.scroll_info.top, self.scroll_info.bot),
+		footer = {
+			{ "↑" .. tostring(self.scroll_info.top) },
+			{ "-", "KanbanListBorder" },
+			{ "↓" .. tostring(self.scroll_info.bot) },
+		},
 		footer_pos = "center",
 	})
 end
 
 function M:item_can_fit()
-	local height = self.win:size().height - 2
+	local height = self.win:size().height - 3
 	return math.floor(height / (self.ctx.config.task.height + 1))
 end
 
@@ -228,7 +236,7 @@ function M:fill_empty_space(opts)
 			item:update_visible_position(last_used_visible_index)
 
 			-- Update scroll info for bottom
-			self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1)
+			self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1, #tasks)
 			empty_spaces = empty_spaces - 1
 		end
 	end
@@ -341,6 +349,22 @@ function M:rename_list(new_name)
 	self.win:set_title({ { self.data.title } }, "center")
 end
 
+local f_winbar = "║ %s %%= %s ║"
+
+---@param title string
+---@param count string
+function M:generate_winbar(title, count)
+	return f_winbar:format(title, count)
+end
+
+---@param task_count number
+function M:update_winbar(task_count)
+	if type(task_count) == "number" then
+    local count = task_count == 0  and "" or tostring(task_count)
+		vim.api.nvim_set_option_value("winbar", self:generate_winbar(self.data.title, count), { win = self.win.win, })
+	end
+end
+
 function M:jump_horizontal(direction)
 	if direction == nil then
 		direction = 1
@@ -432,7 +456,7 @@ function M:jump_to_first_task()
 
 	local top = 0
 	local bot = #list.tasks - task_can_fit
-	list:update_scroll_info(top, bot)
+	list:update_scroll_info(top, bot, #list.tasks)
 end
 
 function M:jump_to_last_task()
@@ -469,7 +493,7 @@ function M:jump_to_last_task()
 
 	local bot = 0
 	local top = #list.tasks - self:item_can_fit()
-	list:update_scroll_info(top, bot)
+	list:update_scroll_info(top, bot, #list.tasks)
 end
 
 ---@param direction number
@@ -520,11 +544,11 @@ function M:scroll_list(direction, cur_task_index)
 	if is_downward then
 		local bot = #list.tasks - new_task_index
 		local top = #list.tasks - (bot + task_can_fit)
-		list:update_scroll_info(top, bot)
+		list:update_scroll_info(top, bot, #list.tasks)
 	elseif not is_downward then
 		local top = new_task_index - 1
 		local bot = #list.tasks - (top + task_can_fit)
-		list:update_scroll_info(top, bot)
+		list:update_scroll_info(top, bot, #list.tasks)
 	end
 
 	return true
@@ -571,7 +595,7 @@ function M:scroll_to_a_task(target_index, should_focus)
 
 	-- Update scroll info
 	local top, bot = top_item_index - 1, #tasks - bottom_item_index
-	self:update_scroll_info(top, bot)
+	self:update_scroll_info(top, bot, #tasks)
 
 	if should_focus then
 		target_item:focus()

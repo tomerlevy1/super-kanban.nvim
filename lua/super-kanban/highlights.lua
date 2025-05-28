@@ -67,22 +67,24 @@ local M = {
 	list = make_winhighlight({
 		Normal = "KanbanListNormal",
 		NormalNC = "KanbanListNormal",
+		WinBar = "KanbanListWinbar",
+		WinBarNC = "KanbanListWinbar",
 		FloatBorder = "KanbanListBorder",
-		FloatTitle = "KanbanListTitle",
+		FloatTitle = "KanbanListTitleBottom",
 	}),
 	task = make_winhighlight({
 		Normal = "KanbanTaksNormal",
 		NormalNC = "KanbanTaksNormalNC",
-		WinBar = "KanbanTaksWinbarActive",
-		WinBarNC = "KanbanTaksWinbar",
-		FloatBorder = "KanbanTaksSeparator",
+		WinBar = "KanbanTaksWinbar",
+		WinBarNC = "KanbanTaksWinbarNC",
+		FloatBorder = "KanbanTaksSeparatorNC",
 	}),
 	taskActive = make_winhighlight({
 		Normal = "KanbanTaksNormal",
 		NormalNC = "KanbanTaksNormalNC",
-		WinBar = "KanbanTaksWinbarActive",
-		WinBarNC = "KanbanTaksWinbar",
-		FloatBorder = "KanbanTaksSeparatorActive",
+		WinBar = "KanbanTaksWinbar",
+		WinBarNC = "KanbanTaksWinbarNC",
+		FloatBorder = "KanbanTaksSeparator",
 	}),
 	date_picker = make_winhighlight({
 		Normal = "KanbanDatePickerNormal",
@@ -94,25 +96,32 @@ local M = {
 
 function M.create_winhighlights()
 	local float_bg = "#21252B"
+	local border_fg = c.cyan
   -- stylua: ignore
   local highlights = {
     KanbanNormal                = { fg = c.fg, bg = c.none },
     KanbanWinbar                = { link = 'KanbanNormal' },
     KanbanFileTitle             = { fg = c.bg0, bg = c.orange },
     KanbanFileTitleAlt          = { fg = c.orange, bg = c.bg0 },
-    KanbanListNormal            = { link = 'KanbanNormal' },
-    KanbanListBorder            = { fg = c.cyan, bg = c.none },
-    KanbanListTitle             = { fg = c.green, bg = c.none },
 
+    -- List window
+    KanbanListNormal            = { link = 'KanbanNormal' },
+    KanbanListBorder            = { fg = border_fg, bg = c.none },
+    KanbanListWinbar            = { fg = c.bg0, bg = border_fg },
+    KanbanListTitleBottom       = { fg = c.green, bg = c.none },
+
+    -- Task window
+    KanbanTaksNormal            = { fg = c.fg, bg = float_bg },
+    KanbanTaksWinBar            = { fg = c.light_grey, bg = float_bg },
+    KanbanTaksSeparator         = { fg = border_fg, bg = float_bg },
+    KanbanTaksNormalNC          = { fg = c.fg, bg = c.none },
+    KanbanTaksWinbarNC          = { fg = c.grey, bg = c.none },
+    KanbanTaksSeparatorNC       = { fg = border_fg, bg = c.none },
+
+    -- Task cotent
     KanbanTaksTag               = { fg = c.yellow, bg = c.dim_yellow },
     KanbanDueDate               = { fg = '#8a5cf5' },
     KanbanDueDateShort          = { fg = '#8a5cf5'  },
-    KanbanTaksNormal            = { fg = c.fg, bg = float_bg },
-    KanbanTaksNormalNC          = { fg = c.fg, bg = c.none },
-    KanbanTaksSeparator         = { fg = c.cyan, bg = c.none },
-    KanbanTaksSeparatorActive   = { fg = c.cyan, bg = float_bg },
-    KanbanTaksWinbar            = { fg = c.grey, bg = c.none },
-    KanbanTaksWinBarActive      = { fg = c.light_grey, bg = float_bg },
 
     KanbanDatePickerDateHL      = { fg = c.bg_d, bg = c.blue },
     KanbanDatePickerNormal      = { link = 'KanbanNormal' },
@@ -126,5 +135,6 @@ function M.create_winhighlights()
 		vim.api.nvim_set_hl(0, hl_name, option)
 	end
 end
+M.create_winhighlights()
 
 return M

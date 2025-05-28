@@ -27,4 +27,15 @@ function M.merge(default, override)
 	return vim.tbl_extend("force", default, override)
 end
 
+-- _G.on_winbar_click = function(minwid, clicks, button, mods)
+-- 	vim.notify("Clicked winbar! Button: " .. button, vim.log.levels.INFO)
+-- end
+function M.with_click(text, lua_fn_name, arg)
+	arg = arg and arg or 0
+	return string.format("%%%s@v:lua.%s@%s%%X", arg, lua_fn_name, text)
+end
+function M.with_hl(text, hl)
+  return string.format('%%#%s#%s', hl, text)
+end
+
 return M

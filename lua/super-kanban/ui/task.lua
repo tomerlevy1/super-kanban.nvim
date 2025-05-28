@@ -115,7 +115,7 @@ function M:focus()
 	end
 
 	self.win:focus()
-	self:update_hl(true)
+	self:update_hl(true, self.win.win)
 end
 
 function M:exit()
@@ -193,11 +193,12 @@ function M:extract_buffer_and_update_task_data()
 	local lines = self.win:lines()
 
 	local raw = table.concat(lines, " ")
-	local title, tags, due = text.extract_task_data_from_str(raw)
+	local title, tags, due, date_obj = text.extract_task_data_from_str(raw)
 
 	self.data.title = title
 	self.data.tag = tags
 	self.data.due = due
+	self.data.date = date_obj
 end
 
 ---@param is_active boolean
@@ -249,7 +250,7 @@ function M:delete_task(should_focus)
 	-- Remove task
 	self:exit()
 	table.remove(list.tasks, target_index)
-  list:update_winbar(#list.tasks)
+	list:update_winbar(#list.tasks)
 
 	list:fill_empty_space({ from = target_index - 1, to = target_index })
 

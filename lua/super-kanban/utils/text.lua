@@ -1,3 +1,4 @@
+local Date = require("super-kanban.utils.date")
 local M = {}
 
 -- local function extract_dates(text)
@@ -19,6 +20,7 @@ local M = {}
 function M.extract_task_data_from_str(raw)
 	local tags = {}
 	local due = {}
+	local date_obj = nil
 
 	-- extract tags
 	local title = raw:gsub("#%S+", function(tag)
@@ -33,7 +35,11 @@ function M.extract_task_data_from_str(raw)
 	-- clean up spaces
 	title = title:gsub("%s+", " "):gsub("^%s*(.-)%s*$", "%1")
 
-	return title, tags, due
+	if #due > 0 then
+		date_obj = Date.extract_date_obj_from_str(due[#due])
+	end
+
+	return title, tags, due, date_obj
 end
 
 ---@param data superkanban.TaskData

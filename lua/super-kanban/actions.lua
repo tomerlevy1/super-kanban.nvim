@@ -98,6 +98,33 @@ actions.rename_list = function()
 	return { callback = callback, desc = "Rename list" }
 end
 
+---@param direction? '"newest_first"'|'"oldest_first"'
+actions.sort_tasks_by_due = function(direction)
+  direction = direction or "newest_first"
+	vim.validate({
+		direction = {
+			direction,
+			function(d)
+				return d == "newest_first" or d == "oldest_first"
+			end,
+			"must be 'newest_first' or 'oldest_first'",
+		},
+	})
+
+	---@param taskUI superkanban.TaskUI|nil
+	---@param listUI superkanban.TaskListUI|nil
+	---@param ctx superkanban.Ctx
+	local callback = function(taskUI, listUI, ctx)
+		if not listUI then
+			return
+		end
+
+		listUI:sort_tasks_by_due(direction)
+	end
+
+	return { callback = callback, desc = "Sort list" }
+end
+
 actions.pick_date = function()
 	---@param taskUI superkanban.TaskUI|nil
 	---@param listUI superkanban.TaskListUI|nil

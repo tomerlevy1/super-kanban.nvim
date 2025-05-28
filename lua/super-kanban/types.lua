@@ -12,6 +12,7 @@
 ---@field title string
 ---@field check string
 ---@field due string[]
+---@field date? superkanban.DatePickerData|nil
 ---@field tag string[]
 
 ---@class superkanban.TaskListData

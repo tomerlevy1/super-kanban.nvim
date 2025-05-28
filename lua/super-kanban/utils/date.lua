@@ -1,5 +1,20 @@
 local M = {}
 
+local current_century = math.floor(os.date("*t").year / 100) * 100
+---Normalize short years like 25 → 2025
+function M.normalize_year(year)
+	return (year < 100) and (current_century + year) or year
+end
+
+-- Helper to get comparable timestamp
+function M.get_due_timestamp(date)
+	if not date then
+		return nil
+	end
+
+	return os.time({ year = date.year, month = date.month, day = date.day })
+end
+
 ---@param date_str string
 ---@return superkanban.DatePickerData|nil
 function M.extract_date_obj_from_str(date_str)
@@ -8,7 +23,9 @@ function M.extract_date_obj_from_str(date_str)
 	end
 
 	local year, month, day = date_str:match("(%d+)[,-/](%d+)[,-/](%d+)")
-	return { year = tonumber(year), month = tonumber(month), day = tonumber(day) }
+	local y = M.normalize_year(tonumber(year))
+
+	return { year = y, month = tonumber(month), day = tonumber(day) }
 end
 
 ---@param date superkanban.DatePickerData
@@ -22,13 +39,8 @@ end
 ---@return string
 ---@return boolean
 function M.get_relative_time(date)
-	if date.year < 100 then
-		local current_year = os.date("*t").year
-		local current_century = math.floor(current_year / 100) * 100
-		date.year = current_century + date.year
-	end
-
-	local target_time = os.time({ year = date.year, month = date.month, day = date.day, hour = 0 })
+	local y = M.normalize_year(date.year)
+	local target_time = os.time({ year = y, month = date.month, day = date.day, hour = 0 })
 
 	local now = os.date("*t")
 	local current_time = os.time({ year = now.year, month = now.month, day = now.day, hour = 0 })

@@ -71,6 +71,8 @@ local config = {
 		["gn"] = actions.create_task("first"),
 		["gN"] = actions.create_task("last"),
 		["gD"] = actions.delete_task(),
+		["g."] = actions.sort_tasks_by_due("oldest_first"),
+		["g,"] = actions.sort_tasks_by_due("newest_first"),
 
 		["zn"] = actions.create_list("first"),
 		["zN"] = actions.create_list("last"),

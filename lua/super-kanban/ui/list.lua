@@ -2,6 +2,7 @@ local hl = require("super-kanban.highlights")
 local utils = require("super-kanban.utils")
 local Task = require("super-kanban.ui.task")
 local text = require("super-kanban.utils.text")
+local date = require("super-kanban.utils.date")
 
 ---@class superkanban.TaskList.Opts
 ---@field data {title: string}
@@ -215,6 +216,22 @@ function M:update_visible_position(new_index)
 	end
 end
 
+local f_winbar = "║ %s %%= %s ║"
+
+---@param title string
+---@param count string
+function M:generate_winbar(title, count)
+	return f_winbar:format(title, count)
+end
+
+---@param task_count number
+function M:update_winbar(task_count)
+	if type(task_count) == "number" then
+		local count = task_count == 0 and "" or tostring(task_count)
+		vim.api.nvim_set_option_value("winbar", self:generate_winbar(self.data.title, count), { win = self.win.win })
+	end
+end
+
 ---@param opts {from:number,to:number}
 function M:fill_empty_space(opts)
 	local tasks = self.ctx.lists[self.index].tasks
@@ -347,22 +364,6 @@ function M:rename_list(new_name)
 
 	self.data.title = new_name
 	self.win:set_title({ { self.data.title } }, "center")
-end
-
-local f_winbar = "║ %s %%= %s ║"
-
----@param title string
----@param count string
-function M:generate_winbar(title, count)
-	return f_winbar:format(title, count)
-end
-
----@param task_count number
-function M:update_winbar(task_count)
-	if type(task_count) == "number" then
-    local count = task_count == 0  and "" or tostring(task_count)
-		vim.api.nvim_set_option_value("winbar", self:generate_winbar(self.data.title, count), { win = self.win.win, })
-	end
 end
 
 function M:jump_horizontal(direction)
@@ -600,6 +601,53 @@ function M:scroll_to_a_task(target_index, should_focus)
 	if should_focus then
 		target_item:focus()
 	end
+end
+
+---@param direction '"newest_first"'|'"oldest_first"'
+function M:sort_tasks_by_due(direction)
+	local list = self.ctx.lists[self.index]
+	if not list then
+		return
+	end
+	if #list.tasks <= 1 then
+		return
+	end
+
+	local task_can_fit = self:item_can_fit()
+
+	table.sort(list.tasks, function(a, b)
+		local ta, tb = date.get_due_timestamp(a.data.date), date.get_due_timestamp(b.data.date)
+
+		-- Put nil dates at the end
+		if not ta then
+			return false
+		end
+		if not tb then
+			return true
+		end
+
+		if direction == "newest_first" then
+			return ta > tb
+		else
+			return ta < tb
+		end
+	end)
+
+	for index = 1, #list.tasks, 1 do
+		local tk = list.tasks[index]
+		tk.index = index
+		if task_can_fit >= index then
+			tk:update_visible_position(index)
+		else
+			tk:update_visible_position(nil)
+		end
+	end
+
+	list.tasks[1]:focus()
+
+	local top = 0
+	local bot = #list.tasks - task_can_fit
+	list:update_scroll_info(top, bot, #list.tasks)
 end
 
 return M

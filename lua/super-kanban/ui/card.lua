@@ -4,21 +4,21 @@ local utils = require("super-kanban.utils")
 local text = require("super-kanban.utils.text")
 local date = require("super-kanban.utils.date")
 
----@class superkanban.Task.Opts
+---@class superkanban.Card.Opts
 ---@field data superkanban.TaskData
 ---@field index number
 ---@field list_index number
 ---@field ctx superkanban.Ctx
 
----@class superkanban.TaskUI
+---@class superkanban.cardUI
 ---@field data superkanban.TaskData
 ---@field index number
 ---@field visible_index number
 ---@field win snacks.win
 ---@field list_index number
 ---@field ctx superkanban.Ctx
----@field type "task"
----@overload fun(opts:superkanban.Task.Opts): superkanban.TaskUI
+---@field type "card"
+---@overload fun(opts:superkanban.Card.Opts): superkanban.cardUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)
@@ -29,11 +29,11 @@ M.__index = M
 ---@param index number
 ---@param conf superkanban.Config
 local function calculate_row_pos(index, conf)
-	return (conf.task.height + 1) * (index - 1)
+	return (conf.card.height + 1) * (index - 1)
 end
 
----@param opts superkanban.Task.Opts
----@return superkanban.TaskUI
+---@param opts superkanban.Card.Opts
+---@return superkanban.cardUI
 function M.new(opts)
 	---@diagnostic disable-next-line: param-type-mismatch
 	local self = setmetatable({}, M)
@@ -43,7 +43,7 @@ function M.new(opts)
 	self.ctx = opts.ctx
 	self.list_index = opts.list_index
 
-	self.type = "task"
+	self.type = "card"
 
 	return self
 end
@@ -52,21 +52,21 @@ function M.empty_data()
 	return { title = "", check = " ", tag = {}, due = {} }
 end
 
----@param list superkanban.TaskListUI
+---@param list superkanban.ListUI
 ---@return snacks.win
 function M:setup_win(list)
 	local conf = self.ctx.config
 
 	self.win = Snacks.win({
 		-- User cofig values
-		width = conf.task.width,
-		height = conf.task.height,
-		border = conf.task.border,
-		zindex = conf.task.zindex,
+		width = conf.card.width,
+		height = conf.card.height,
+		border = conf.card.border,
+		zindex = conf.card.zindex,
 		wo = utils.merge({
 			winbar = self:generate_winbar(),
-			winhighlight = hl.task,
-		}, conf.task.win_options),
+			winhighlight = hl.card,
+		}, conf.card.win_options),
 		-- Non cofig values
 		show = false,
 		enter = false,
@@ -76,7 +76,7 @@ function M:setup_win(list)
 		row = calculate_row_pos(self.index, self.ctx.config),
 		focusable = true,
 		keys = { q = false },
-		bo = { modifiable = true, filetype = "superkanban_task" },
+		bo = { modifiable = true, filetype = "superkanban_card" },
 		on_win = function()
 			vim.schedule(function()
 				self:set_events()
@@ -84,26 +84,26 @@ function M:setup_win(list)
 			end)
 		end,
 		text = function()
-			return text.get_lines_from_task(self.data)
+			return text.get_buf_lines_from_task(self.data)
 		end,
 	})
 
 	return self.win
 end
 
----@param list superkanban.TaskListUI
----@param opts? {task_win?:snacks.win,visible_index?:number}
+---@param list superkanban.ListUI
+---@param opts? {win?:snacks.win,visible_index?:number}
 function M:mount(list, opts)
 	opts = opts or {}
 
-	local task_win = opts.task_win
-	if not task_win then
-		task_win = self:setup_win(list)
+	local win = opts.win
+	if not win then
+		win = self:setup_win(list)
 	end
 
 	if type(opts.visible_index) == "number" then
 		self.visible_index = opts.visible_index
-		task_win:show()
+		win:show()
 	end
 
 	return self
@@ -143,13 +143,13 @@ end
 function M:update_winbar()
 	local ft = vim.api.nvim_get_option_value("filetype", { buf = self.win.buf })
 
-	if ft == "superkanban_task" then
+	if ft == "superkanban_card" then
 		vim.api.nvim_set_option_value("winbar", self:generate_winbar(), { win = self.win.win })
 	end
 end
 
 function M:update_buffer_text()
-	local lines = text.get_lines_from_task(self.data)
+	local lines = text.get_buf_lines_from_task(self.data)
 	vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, lines)
 	return lines
 end
@@ -204,7 +204,7 @@ end
 ---@param is_active boolean
 ---@param win number
 function M:update_hl(is_active, win)
-	vim.api.nvim_set_option_value("winhighlight", is_active and hl.taskActive or hl.task, { win = win })
+	vim.api.nvim_set_option_value("winhighlight", is_active and hl.cardActive or hl.card, { win = win })
 end
 
 function M:set_events()
@@ -243,20 +243,20 @@ function M:set_keymaps()
 end
 
 ---@param should_focus? boolean
-function M:delete_task(should_focus)
+function M:delete_card(should_focus)
 	local list = self.ctx.lists[self.list_index]
 	local target_index = self.index
 
-	-- Remove task
+	-- Remove card
 	self:exit()
-	table.remove(list.tasks, target_index)
-	list:update_winbar(#list.tasks)
+	table.remove(list.cards, target_index)
+	list:update_winbar(#list.cards)
 
 	list:fill_empty_space({ from = target_index - 1, to = target_index })
 
-	-- focus on task or list
+	-- focus on card or list
 	if should_focus ~= false then
-		local focus_target = list.tasks[target_index] or list.tasks[target_index - 1] or list
+		local focus_target = list.cards[target_index] or list.cards[target_index - 1] or list
 		focus_target:focus()
 	end
 end
@@ -270,16 +270,16 @@ function M:jump_vertical(direction)
 	if not list then
 		return
 	end
-	if #list.tasks == 0 then
+	if #list.cards == 0 then
 		return
 	end
 
-	local target_task = list.tasks[self.index + direction]
-	if target_task and target_task:has_visual_index() then
-		target_task:focus()
-	elseif target_task and not target_task:has_visual_index() then
+	local target_card = list.cards[self.index + direction]
+	if target_card and target_card:has_visual_index() then
+		target_card:focus()
+	elseif target_card and not target_card:has_visual_index() then
 		list:scroll_list(direction, self.index)
-		target_task:focus()
+		target_card:focus()
 	end
 end
 
@@ -297,18 +297,18 @@ function M:jump_horizontal(direction)
 		self.ctx.board:scroll_board(direction, self.list_index)
 	end
 
-	if #target_list.tasks == 0 then
+	if #target_list.cards == 0 then
 		target_list:focus()
 	end
 
-	-- Focus same visual_index task
-	if #target_list.tasks >= self.visible_index then
-		local target_task = target_list:find_a_visible_task(self.visible_index)
-		if target_task then
-			target_task:focus()
+	-- Focus same visual_index card
+	if #target_list.cards >= self.visible_index then
+		local target_card = target_list:find_a_visible_card(self.visible_index)
+		if target_card then
+			target_card:focus()
 		end
-	elseif target_list.tasks[#target_list.tasks] then
-		target_list.tasks[#target_list.tasks]:focus()
+	elseif target_list.cards[#target_list.cards] then
+		target_list.cards[#target_list.cards]:focus()
 	end
 end
 
@@ -323,8 +323,8 @@ function M:move_vertical(direction)
 	end
 
 	if
-		(#list.tasks == 1)
-		or (direction == 1 and self.index == #list.tasks)
+		(#list.cards == 1)
+		or (direction == 1 and self.index == #list.cards)
 		or (direction == -1 and self.index == 1)
 	then
 		return
@@ -333,22 +333,22 @@ function M:move_vertical(direction)
 	-- Update index
 	local cur_index = self.index
 	local target_index = self.index + direction
-	local cur_task = list.tasks[cur_index]
-	local target_task = list.tasks[target_index]
+	local cur_card = list.cards[cur_index]
+	local target_card = list.cards[target_index]
 
-	if target_task:closed() then
+	if target_card:closed() then
 		list:scroll_list(direction)
 	end
 
 	-- swap index
-	local cur_v_index, target_v_index = target_task.visible_index, cur_task.visible_index
-	cur_task.index, target_task.index = target_index, cur_index
-	-- swap task in ctx
-	list.tasks[target_index], list.tasks[cur_index] = cur_task, target_task
+	local cur_v_index, target_v_index = target_card.visible_index, cur_card.visible_index
+	cur_card.index, target_card.index = target_index, cur_index
+	-- swap card in ctx
+	list.cards[target_index], list.cards[cur_index] = cur_card, target_card
 
-	cur_task:update_visible_position(cur_v_index)
-	target_task:update_visible_position(target_v_index)
-	cur_task:focus()
+	cur_card:update_visible_position(cur_v_index)
+	target_card:update_visible_position(target_v_index)
+	cur_card:focus()
 end
 
 ---@param direction? number
@@ -368,28 +368,28 @@ function M:move_horizontal(direction, placement)
 		self.ctx.board:scroll_board(direction, self.list_index)
 	end
 
-	self:delete_task(false)
+	self:delete_card(false)
 
 	if placement == "first" then
-		for _, task in pairs(target_list.tasks) do
-			task.index = task.index + 1
+		for _, card in pairs(target_list.cards) do
+			card.index = card.index + 1
 		end
 	end
 
-	-- Update task+list index and parent win
-	local target_index = placement == "last" and #target_list.tasks + 1 or 1
-	local new_task = self.new({
+	-- Update card+list index and parent win
+	local target_index = placement == "last" and #target_list.cards + 1 or 1
+	local new_card = self.new({
 		data = self.data,
 		index = target_index,
 		ctx = self.ctx,
 		list_index = target_list.index,
 	}):mount(target_list)
-	table.insert(target_list.tasks, target_index, new_task)
+	table.insert(target_list.cards, target_index, new_card)
 
 	if placement == "last" then
-		target_list:jump_to_last_task()
+		target_list:jump_to_last_card()
 	else
-		target_list:jump_to_first_task()
+		target_list:jump_to_first_card()
 	end
 end
 

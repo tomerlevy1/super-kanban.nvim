@@ -2,10 +2,10 @@ local utils = require("super-kanban.utils")
 local actions = {}
 
 actions.close = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		ctx.board:exit()
 	end
 
@@ -13,41 +13,41 @@ actions.close = function()
 end
 
 ---@param placement? "first"|"last"
-actions.create_task = function(placement)
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+actions.create_card = function(placement)
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
 
-		listUI:create_task(placement)
+		listUI:create_card(placement)
 	end
 
-	return { callback = callback, desc = "Create a new task" }
+	return { callback = callback, desc = "Create a new card" }
 end
 
-actions.delete_task = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+actions.delete_card = function()
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
-		if not taskUI then
+	local callback = function(cardUI, listUI, ctx)
+		if not cardUI then
 			return
 		end
-		taskUI:delete_task()
+		cardUI:delete_card()
 	end
 
-	return { callback = callback, desc = "Delete task" }
+	return { callback = callback, desc = "Delete card" }
 end
 
 ---@param placement? "first"|"last"
 actions.create_list = function(placement)
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		vim.api.nvim_exec_autocmds("BufLeave", {})
 		vim.ui.input({
 			prompt = "Enter a name for the new list:",
@@ -62,10 +62,10 @@ actions.create_list = function(placement)
 end
 
 actions.delete_list = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
@@ -76,10 +76,10 @@ actions.delete_list = function()
 end
 
 actions.rename_list = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
@@ -99,7 +99,7 @@ actions.rename_list = function()
 end
 
 ---@param direction? '"newest_first"'|'"oldest_first"'
-actions.sort_tasks_by_due = function(direction)
+actions.sort_cards_by_due = function(direction)
   direction = direction or "newest_first"
 	vim.validate({
 		direction = {
@@ -111,41 +111,41 @@ actions.sort_tasks_by_due = function(direction)
 		},
 	})
 
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
 
-		listUI:sort_tasks_by_due(direction)
+		listUI:sort_cards_by_due(direction)
 	end
 
 	return { callback = callback, desc = "Sort list" }
 end
 
 actions.pick_date = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
-		if not taskUI then
+	local callback = function(cardUI, listUI, ctx)
+		if not cardUI then
 			return
 		end
-		taskUI:pick_date()
+		cardUI:pick_date()
 	end
 
 	return { callback = callback, desc = "Pick due date" }
 end
 
 actions.log_info = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
-		if taskUI then
-			dd(taskUI.data.title, string.format("index %s, visual_index %s", taskUI.index, taskUI.visible_index))
+	local callback = function(cardUI, listUI, ctx)
+		if cardUI then
+			dd(cardUI.data.title, string.format("index %s, visual_index %s", cardUI.index, cardUI.visible_index))
 		end
 
 		-- if listUI then
@@ -154,55 +154,55 @@ actions.log_info = function()
 
 		if listUI and _G.log then
 			local list = ctx.lists[listUI.index]
-			for _, item in ipairs(list.tasks) do
+			for _, item in ipairs(list.cards) do
 				log(item.data.title, string.format("index %s, visual_index %s", item.index, item.visible_index))
 			end
 		end
 	end
 
-	return { callback = callback, desc = "Print task info" }
+	return { callback = callback, desc = "Print card info" }
 end
 
 ---@param direction "left"|"right"|"up"|"down"
 actions.move = function(direction)
 	direction = direction or "down"
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
-		if not taskUI then
+	local callback = function(cardUI, listUI, ctx)
+		if not cardUI then
 			return
 		end
 
 		local move_directions = {
 			left = function()
-				taskUI:move_horizontal(-1)
+				cardUI:move_horizontal(-1)
 			end,
 			right = function()
-				taskUI:move_horizontal(1)
+				cardUI:move_horizontal(1)
 			end,
 			up = function()
-				taskUI:move_vertical(-1)
+				cardUI:move_vertical(-1)
 			end,
 			down = function()
-				taskUI:move_vertical(1)
+				cardUI:move_vertical(1)
 			end,
 		}
 
 		move_directions[direction]()
 	end
 
-	return { callback = callback, desc = "Move task to " .. direction }
+	return { callback = callback, desc = "Move card to " .. direction }
 end
 
 ---@param direction "left"|"right"
 actions.move_list = function(direction)
 	direction = direction or "down"
 
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
@@ -226,43 +226,43 @@ end
 actions.jump = function(direction)
 	direction = direction or "down"
 
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		local move_directions = {
 			left = function()
-				if taskUI then
-					taskUI:jump_horizontal(-1)
+				if cardUI then
+					cardUI:jump_horizontal(-1)
 				elseif listUI then
 					listUI:jump_horizontal(-1)
 				end
 			end,
 			right = function()
-				if taskUI then
-					taskUI:jump_horizontal(1)
+				if cardUI then
+					cardUI:jump_horizontal(1)
 				elseif listUI then
 					listUI:jump_horizontal(1)
 				end
 			end,
 			up = function()
-				if taskUI then
-					taskUI:jump_vertical(-1)
+				if cardUI then
+					cardUI:jump_vertical(-1)
 				end
 			end,
 			down = function()
-				if taskUI then
-					taskUI:jump_vertical(1)
+				if cardUI then
+					cardUI:jump_vertical(1)
 				end
 			end,
 			first = function()
 				if listUI then
-					listUI:jump_to_first_task()
+					listUI:jump_to_first_card()
 				end
 			end,
 			last = function()
 				if listUI then
-					listUI:jump_to_last_task()
+					listUI:jump_to_last_card()
 				end
 			end,
 		}
@@ -270,17 +270,17 @@ actions.jump = function(direction)
 		move_directions[direction]()
 	end
 
-	return { callback = callback, desc = "Jump to " .. direction .. "task" }
+	return { callback = callback, desc = "Jump to " .. direction .. "card" }
 end
 
 ---@param direction "left"|"right"|"first"|"last"
 actions.jump_list = function(direction)
 	direction = direction or "down"
 
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
+	local callback = function(cardUI, listUI, ctx)
 		if not listUI then
 			return
 		end
@@ -307,11 +307,11 @@ actions.jump_list = function(direction)
 end
 
 actions.search = function()
-	---@param taskUI superkanban.TaskUI|nil
-	---@param listUI superkanban.TaskListUI|nil
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
-	local callback = function(taskUI, listUI, ctx)
-		require("lua.super-kanban.pickers.snacks").search_tasks({}, ctx, taskUI or listUI)
+	local callback = function(cardUI, listUI, ctx)
+		require("lua.super-kanban.pickers.snacks").search_cards({}, ctx, cardUI or listUI)
 	end
 
 	return { callback = callback, desc = "Search", nowait = true }

@@ -43,7 +43,7 @@ function M.extract_task_data_from_str(raw)
 end
 
 ---@param data superkanban.TaskData
-function M.get_lines_from_task(data)
+function M.get_buf_lines_from_task(data)
 	local lines = { data.title or "" }
 
 	if #data.tag > 0 then

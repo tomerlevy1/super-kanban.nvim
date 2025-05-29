@@ -136,7 +136,7 @@ function writer.format_task_list_items(items)
 	return ""
 end
 
----@param task superkanban.TaskUI
+---@param task superkanban.cardUI
 function writer.format_md_checklist(task)
 	local tag = writer.format_task_list_items(task.data.tag)
 	local due = writer.format_task_list_items(task.data.due)
@@ -155,8 +155,8 @@ function M.write_file(ctx)
 
 	for _, list_section in ipairs(ctx.lists) do
 		table.insert(new_lines, string.format("%s %s\n", "##", list_section.data.title))
-		for _, task in ipairs(list_section.tasks) do
-			table.insert(new_lines, writer.format_md_checklist(task))
+		for _, card in ipairs(list_section.cards) do
+			table.insert(new_lines, writer.format_md_checklist(card))
 		end
 	end
 

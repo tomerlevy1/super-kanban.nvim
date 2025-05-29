@@ -15,19 +15,19 @@
 ---@field date? superkanban.DatePickerData|nil
 ---@field tag string[]
 
----@class superkanban.TaskListData
+---@class superkanban.ListData
 ---@field title string
 ---@field tasks superkanban.TaskData[]
 
 ---@class superkanban.SourceData
----@field lists superkanban.TaskListData
+---@field lists superkanban.ListData
 
----@class superkanban.TaskList.Ctx :superkanban.TaskListUI[]
----@field tasks superkanban.TaskUI[]
+---@class superkanban.List.Ctx :superkanban.ListUI[]
+---@field cards superkanban.cardUI[]
 
 ---@class superkanban.Ctx
 ---@field board superkanban.BoardUI
----@field lists superkanban.TaskList.Ctx[]
+---@field lists superkanban.List.Ctx[]
 ---@field source_path string
 ---@field config superkanban.Config
 

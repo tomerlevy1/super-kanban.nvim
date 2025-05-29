@@ -1,7 +1,7 @@
 local hl = require("super-kanban.highlights")
 local Board = require("super-kanban.ui.board")
 local List = require("super-kanban.ui.list")
-local Task = require("super-kanban.ui.task")
+local Card = require("super-kanban.ui.card")
 local actions = require("super-kanban.actions")
 
 local M = {}
@@ -34,7 +34,7 @@ local config = {
 			"%%",
 		},
 	},
-	task = {
+	card = {
 		width = 0,
 		height = 6,
 		zindex = 7,
@@ -68,11 +68,11 @@ local config = {
 		first_day_of_week = "Sunday",
 	},
 	mappinngs = {
-		["gn"] = actions.create_task("first"),
-		["gN"] = actions.create_task("last"),
-		["gD"] = actions.delete_task(),
-		["g."] = actions.sort_tasks_by_due("oldest_first"),
-		["g,"] = actions.sort_tasks_by_due("newest_first"),
+		["gn"] = actions.create_card("first"),
+		["gN"] = actions.create_card("last"),
+		["gD"] = actions.delete_card(),
+		["g."] = actions.sort_cards_by_due("oldest_first"),
+		["g,"] = actions.sort_cards_by_due("newest_first"),
 
 		["zn"] = actions.create_list("last"),
 		["zN"] = actions.create_list("first"),
@@ -124,29 +124,27 @@ local function open_board(source_path)
 	ctx.source_path = source_path
 	ctx.lists = {}
 
-	local first_task_loc = nil
-
-	local default_list = { { tasks = {}, title = "todo" } }
+	local first_card_loc = nil
 
 	local parsed_data = require("super-kanban.parser.markdown").parse_file(source_path)
 
-	-- Setup lists & tasks windows then generate ctx
-	for list_index, list_md in ipairs(parsed_data and parsed_data.lists or default_list) do
+	-- Setup list & card windows then generate ctx
+	for list_index, list_data in ipairs(parsed_data and parsed_data.lists or {}) do
 		local list = List({
-			data = { title = list_md.title },
+			data = { title = list_data.title },
 			index = list_index,
 			ctx = ctx,
 		})
 
-		---@type superkanban.TaskUI[]
-		local tasks = {}
-		if type(list_md.tasks) == "table" and #list_md.tasks ~= 0 then
-			for task_index, task_md in ipairs(list_md.tasks) do
-				if first_task_loc == nil then
-					first_task_loc = { list_index, task_index }
+		---@type superkanban.cardUI[]
+		local cards = {}
+		if type(list_data.tasks) == "table" and #list_data.tasks ~= 0 then
+			for task_index, task_data in ipairs(list_data.tasks) do
+				if first_card_loc == nil then
+					first_card_loc = { list_index, task_index }
 				end
-				tasks[task_index] = Task({
-					data = task_md,
+				cards[task_index] = Card({
+					data = task_data,
 					index = task_index,
 					list_index = list_index,
 					ctx = ctx,
@@ -154,7 +152,7 @@ local function open_board(source_path)
 			end
 		end
 
-		ctx.lists[list_index] = List.generate_list_ctx(list, tasks)
+		ctx.lists[list_index] = List.generate_list_ctx(list, cards)
 	end
 
 	ctx.board:mount(ctx, {

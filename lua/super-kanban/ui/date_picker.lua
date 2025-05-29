@@ -23,7 +23,7 @@ local hl = require("super-kanban.highlights")
 ---@field win_opts {row:number,col:number,relative:string}
 ---@field ctx superkanban.Ctx
 ---@field type "date_picker"
----@overload fun(opts?:superkanban.DatePicker.NewOpts,ctx:superkanban.Ctx): superkanban.TaskUI
+---@overload fun(opts?:superkanban.DatePicker.NewOpts,ctx:superkanban.Ctx): superkanban.cardUI
 local M = setmetatable({}, {
 	__call = function(t, ...)
 		return t.new(...)

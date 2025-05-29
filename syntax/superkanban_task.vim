@@ -1,5 +1,5 @@
 " Highlight tags like #study
-syntax match KanbanTaksTag /#\w\+/
+syntax match KanbanTag /#\w\+/
 
 " Highlight dates
 " @{2025-04-25}

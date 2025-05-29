@@ -72,19 +72,19 @@ local M = {
 		FloatBorder = "KanbanListBorder",
 		FloatTitle = "KanbanListTitleBottom",
 	}),
-	task = make_winhighlight({
-		Normal = "KanbanTaksNormal",
-		NormalNC = "KanbanTaksNormalNC",
-		WinBar = "KanbanTaksWinbar",
-		WinBarNC = "KanbanTaksWinbarNC",
-		FloatBorder = "KanbanTaksSeparatorNC",
+	card = make_winhighlight({
+		Normal = "KanbanCardNormal",
+		NormalNC = "KanbanCardNormalNC",
+		WinBar = "KanbanCardWinbar",
+		WinBarNC = "KanbanCardWinbarNC",
+		FloatBorder = "KanbanCardSeparatorNC",
 	}),
-	taskActive = make_winhighlight({
-		Normal = "KanbanTaksNormal",
-		NormalNC = "KanbanTaksNormalNC",
-		WinBar = "KanbanTaksWinbar",
-		WinBarNC = "KanbanTaksWinbarNC",
-		FloatBorder = "KanbanTaksSeparator",
+	cardActive = make_winhighlight({
+		Normal = "KanbanCardNormal",
+		NormalNC = "KanbanCardNormalNC",
+		WinBar = "KanbanCardWinbar",
+		WinBarNC = "KanbanCardWinbarNC",
+		FloatBorder = "KanbanCardSeparator",
 	}),
 	date_picker = make_winhighlight({
 		Normal = "KanbanDatePickerNormal",
@@ -110,18 +110,17 @@ function M.create_winhighlights()
     KanbanListWinbar            = { fg = c.bg0, bg = border_fg },
     KanbanListTitleBottom       = { fg = c.green, bg = c.none },
 
-    -- Task window
-    KanbanTaksNormal            = { fg = c.fg, bg = float_bg },
-    KanbanTaksWinBar            = { fg = c.light_grey, bg = float_bg },
-    KanbanTaksSeparator         = { fg = border_fg, bg = float_bg },
-    KanbanTaksNormalNC          = { fg = c.fg, bg = c.none },
-    KanbanTaksWinbarNC          = { fg = c.grey, bg = c.none },
-    KanbanTaksSeparatorNC       = { fg = border_fg, bg = c.none },
+    -- Card window
+    KanbanCardNormal            = { fg = c.fg, bg = float_bg },
+    KanbanCardWinBar            = { fg = c.light_grey, bg = float_bg },
+    KanbanCardSeparator         = { fg = border_fg, bg = float_bg },
+    KanbanCardNormalNC          = { fg = c.fg, bg = c.none },
+    KanbanCardWinbarNC          = { fg = c.grey, bg = c.none },
+    KanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
 
-    -- Task cotent
-    KanbanTaksTag               = { fg = c.yellow, bg = c.dim_yellow },
+    -- Card cotent
+    KanbanTag               = { fg = c.yellow, bg = c.dim_yellow },
     KanbanDueDate               = { fg = '#8a5cf5' },
-    KanbanDueDateShort          = { fg = '#8a5cf5'  },
 
     KanbanDatePickerDateHL      = { fg = c.bg_d, bg = c.blue },
     KanbanDatePickerNormal      = { link = 'KanbanNormal' },

@@ -4,7 +4,7 @@ local M = {}
 
 ---@param item any
 ---@param ctx superkanban.Ctx
-local function focus_task_on_confirm(item, ctx)
+local function focus_card_on_confirm(item, ctx)
 	local list = ctx.lists[item.value.list_index]
 	local list_was_in_view = true
 	if not list:in_view() then
@@ -12,18 +12,18 @@ local function focus_task_on_confirm(item, ctx)
 		ctx.board:scroll_to_a_list(list.index, false)
 	end
 
-	local task = list.tasks[item.value.index]
-	if list_was_in_view and task:in_view() then
-		task:focus()
+	local card = list.cards[item.value.index]
+	if list_was_in_view and card:in_view() then
+		card:focus()
 	else
-		list:scroll_to_a_task(task.index, true)
+		list:scroll_to_a_card(card.index, true)
 	end
 end
 
 ---@param opts snacks.picker.Config
 ---@param ctx superkanban.Ctx
----@param current_item superkanban.TaskUI|superkanban.TaskListUI|nil
-function M.search_tasks(opts, ctx, current_item)
+---@param current_item superkanban.cardUI|superkanban.ListUI|nil
+function M.search_cards(opts, ctx, current_item)
 	local status_ok, snack_picker = pcall(require, "snacks.picker")
 	if not status_ok then
 		vim.notify("snacks.nvim not found", vim.log.levels.ERROR)
@@ -37,7 +37,7 @@ function M.search_tasks(opts, ctx, current_item)
 		confirm = function(p, item)
 			if item then
 				found_item = true
-				focus_task_on_confirm(item, ctx)
+				focus_card_on_confirm(item, ctx)
 			end
 			p:close()
 		end,
@@ -70,17 +70,17 @@ function M.search_tasks(opts, ctx, current_item)
 		finder = function()
 			local items = {}
 			for _, list in ipairs(ctx.lists) do
-				for _, task in ipairs(list.tasks) do
+				for _, card in ipairs(list.cards) do
 					items[#items + 1] = {
-						text = task.data.title,
+						text = card.data.title,
 						preview = {
-							text = table.concat(text.get_lines_from_task(task.data), "\n"),
-							ft = "superkanban_task",
+							text = table.concat(text.get_buf_lines_from_task(card.data), "\n"),
+							ft = "superkanban_card",
 						},
 						value = {
-							data = task.data,
-							index = task.index,
-							list_index = task.list_index,
+							data = card.data,
+							index = card.index,
+							list_index = card.list_index,
 						},
 					}
 				end

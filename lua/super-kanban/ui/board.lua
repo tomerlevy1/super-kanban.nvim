@@ -72,16 +72,16 @@ function M:setup_win(ctx, opts)
 
 			local list_can_fit = self:item_can_fit()
 			local focus_item = nil
-			local first_hidden_task_index = 0
+			local first_hidden_card_index = 0
 
 			for index, list in ipairs(ctx.lists) do
 				local space_available = list_can_fit >= index
-				if focus_item == nil and space_available and #list.tasks > 0 then
-					focus_item = list.tasks[1]
+				if focus_item == nil and space_available and #list.cards > 0 then
+					focus_item = list.cards[1]
 				end
 
-				if not space_available and first_hidden_task_index == 0 then
-					first_hidden_task_index = index
+				if not space_available and first_hidden_card_index == 0 then
+					first_hidden_card_index = index
 				end
 
 				list:mount({ visible_index = space_available and index or nil })
@@ -93,7 +93,7 @@ function M:setup_win(ctx, opts)
 				ctx.lists[1]:focus()
 			end
 
-			self:update_scroll_info(0, first_hidden_task_index > 0 and #ctx.lists + 1 - first_hidden_task_index or 0)
+			self:update_scroll_info(0, first_hidden_card_index > 0 and #ctx.lists + 1 - first_hidden_card_index or 0)
 
 			if opts and opts.on_open then
 				opts.on_open()
@@ -219,8 +219,8 @@ function M:create_list(list_name, placement)
 		ctx = self.ctx,
 	})
 
-	local tasks = {}
-	table.insert(self.ctx.lists, target_index, List.generate_list_ctx(new_list, tasks))
+	local cards = {}
+	table.insert(self.ctx.lists, target_index, List.generate_list_ctx(new_list, cards))
 	new_list:mount({ visible_index = visual_index })
 
 	if placement == "last" then
@@ -249,7 +249,7 @@ function M:scroll_board(direction, cur_list_index)
 
 	local list_can_fit = self.ctx.board:item_can_fit()
 	local new_item_index, new_item_visual_index = nil, nil
-	local hide_task_index = nil
+	local hide_card_index = nil
 
 	for index, item in ipairs(lists) do
 		if item:in_view() then
@@ -259,21 +259,21 @@ function M:scroll_board(direction, cur_list_index)
 				new_item_index, new_item_visual_index = index + 1, item.visible_index + 1
 			elseif not is_right and new_item_visual_index == nil then
 				new_item_index, new_item_visual_index = index - 1, 1
-				hide_task_index = new_item_index + list_can_fit
+				hide_card_index = new_item_index + list_can_fit
 			end
 		elseif is_right and type(new_item_visual_index) == "number" then
 			break
 		end
 
-		if not is_right and index == hide_task_index then
+		if not is_right and index == hide_card_index then
 			item:update_visible_position(nil)
 			break
 		end
 	end
 
-	local new_task_in_view = lists[new_item_index]
-	if new_task_in_view then
-		new_task_in_view:update_visible_position(new_item_visual_index)
+	local new_card_in_view = lists[new_item_index]
+	if new_card_in_view then
+		new_card_in_view:update_visible_position(new_item_visual_index)
 	end
 
 	-- update scroll info
@@ -386,12 +386,12 @@ function M:jump_to_last_list()
 	end
 
 	for index = #lists, 1, -1 do
-		local tk = lists[index]
+		local list = lists[index]
 		if list_can_fit > 0 then
-			tk:update_visible_position(list_can_fit)
+			list:update_visible_position(list_can_fit)
 			list_can_fit = list_can_fit - 1
 		else
-			tk:update_visible_position(nil)
+			list:update_visible_position(nil)
 		end
 	end
 

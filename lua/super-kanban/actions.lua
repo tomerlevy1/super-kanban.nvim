@@ -1,4 +1,3 @@
-local utils = require("super-kanban.utils")
 local actions = {}
 
 actions.close = function()
@@ -311,7 +310,7 @@ actions.search = function()
 	---@param listUI superkanban.ListUI|nil
 	---@param ctx superkanban.Ctx
 	local callback = function(cardUI, listUI, ctx)
-		require("lua.super-kanban.pickers.snacks").search_cards({}, ctx, cardUI or listUI)
+		require("super-kanban.pickers.snacks").search_cards({}, ctx, cardUI or listUI)
 	end
 
 	return { callback = callback, desc = "Search", nowait = true }

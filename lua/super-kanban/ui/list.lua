@@ -291,7 +291,7 @@ end
 function M:set_keymaps()
 	local buffer = self.win.buf
 
-	for lhs, rhs in pairs(self.ctx.config.mappinngs) do
+	for lhs, rhs in pairs(self.ctx.config.mappings) do
 		vim.keymap.set("n", lhs, function()
 			rhs.callback(nil, self.ctx.lists[self.index], self.ctx)
 		end, utils.merge({ buffer = buffer }, rhs))

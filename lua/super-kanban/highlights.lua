@@ -94,7 +94,7 @@ local M = {
 	}),
 }
 
-function M.create_winhighlights()
+function M.setup_highlights()
 	local float_bg = "#21252B"
 	local border_fg = c.cyan
   -- stylua: ignore
@@ -134,6 +134,5 @@ function M.create_winhighlights()
 		vim.api.nvim_set_hl(0, hl_name, option)
 	end
 end
-M.create_winhighlights()
 
 return M

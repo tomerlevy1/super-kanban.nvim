@@ -336,7 +336,7 @@ function M:move_vertical(direction)
 	local cur_card = list.cards[cur_index]
 	local target_card = list.cards[target_index]
 
-	if target_card:closed() then
+	if not target_card:in_view() then
 		list:scroll_list(direction)
 	end
 
@@ -368,29 +368,28 @@ function M:move_horizontal(direction, placement)
 		self.ctx.board:scroll_board(direction, self.list_index)
 	end
 
-	self:delete_card(false)
-
-	if placement == "first" then
-		for _, card in pairs(target_list.cards) do
-			card.index = card.index + 1
-		end
-	end
-
 	-- Update card+list index and parent win
-	local target_index = placement == "last" and #target_list.cards + 1 or 1
+	local target_card_index = placement == "last" and #target_list.cards + 1 or 1
 	local new_card = self.new({
-		data = self.data,
-		index = target_index,
-		ctx = self.ctx,
+		data = vim.deepcopy(self.data),
+		index = target_card_index,
+		ctx = target_list.ctx,
 		list_index = target_list.index,
 	}):mount(target_list)
-	table.insert(target_list.cards, target_index, new_card)
+	table.insert(target_list.cards, target_card_index, new_card)
 
 	if placement == "last" then
 		target_list:jump_to_last_card()
 	else
+		for index, card in pairs(target_list.cards) do
+			if target_card_index ~= index then
+				card.index = card.index + 1
+			end
+		end
 		target_list:jump_to_first_card()
 	end
+
+	self:delete_card(false)
 end
 
 function M:pick_date(create_new_date, at_sign_pos)

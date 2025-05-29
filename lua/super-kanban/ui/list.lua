@@ -227,8 +227,7 @@ end
 ---@param card_count number
 function M:update_winbar(card_count)
 	if type(card_count) == "number" then
-		local count = card_count == 0 and "" or tostring(card_count)
-		vim.api.nvim_set_option_value("winbar", self:generate_winbar(self.data.title, count), { win = self.win.win })
+		vim.api.nvim_set_option_value("winbar", self:generate_winbar(self.data.title, tostring(card_count)), { win = self.win.win })
 	end
 end
 
@@ -404,7 +403,7 @@ function M:move_horizontal(direction)
 		return
 	end
 
-	if target_list:closed() then
+	if not target_list:in_view() then
 		self.ctx.board:scroll_board(direction)
 	end
 

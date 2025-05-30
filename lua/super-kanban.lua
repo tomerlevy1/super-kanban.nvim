@@ -84,6 +84,7 @@ local config = {
     ['g.'] = actions.sort_cards_by_due('oldest_first'),
     ['g,'] = actions.sort_cards_by_due('newest_first'),
     ['<C-t>'] = actions.toggle_complete(),
+    ['g<C-t>'] = actions.archive_card(),
 
     ['zn'] = actions.create_list('last'),
     ['zN'] = actions.create_list('first'),
@@ -133,18 +134,19 @@ local function open_board(source_path)
     return nil
   end
 
+  local parsed_data = require('super-kanban.parser.markdown').parse_file(source_path)
+  if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
+    utils.msg('No list found in: [' .. source_path .. ']', 'warn')
+    return
+  end
+
   ctx.board = Board()
   ctx.config = config
   ctx.source_path = source_path
   ctx.lists = {}
+  ctx.archive = parsed_data.lists['archive']
 
   local first_card_loc = nil
-
-  local parsed_data = require('super-kanban.parser.markdown').parse_file(source_path)
-
-  if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
-    return
-  end
 
   -- Setup list & card windows then generate ctx
   for list_index, list_data in ipairs(parsed_data.lists) do

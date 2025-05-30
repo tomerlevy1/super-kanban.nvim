@@ -1,3 +1,4 @@
+local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local List = require('super-kanban.ui.list')
 local utils = require('super-kanban.utils')
@@ -228,6 +229,13 @@ function M:create_list(list_name, placement)
   else
     self:jump_to_first_list()
   end
+end
+
+function M:create_archive_list()
+  if self.ctx.archive and self.ctx.archive.title == constants.archive_heading then
+    return
+  end
+  self.ctx.archive = { title = constants.archive_heading, tasks = {} }
 end
 
 ---@param direction number

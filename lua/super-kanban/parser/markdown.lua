@@ -98,7 +98,8 @@ function M.parse_file(filepath)
   local tree = md_parser:parse()[1]
   local root = tree:root()
 
-  local list_index = 0
+  ---@type integer|string,integer|string
+  local list_index, list_index_before_archive = 0, 0
   ---@type superkanban.SourceData
   local data = {
     lists = {},
@@ -113,7 +114,16 @@ function M.parse_file(filepath)
     local text = ts.get_node_text(node, buf)
 
     if name == 'heading_text' then
-      list_index = list_index + 1
+      -- Store the archive data into archive key
+      if text == constants.archive_heading then
+        list_index_before_archive = list_index
+        list_index = 'archive'
+      else
+        if type(list_index) == 'string' then
+          list_index = list_index_before_archive
+        end
+        list_index = list_index + 1
+      end
       data.lists[list_index] = parser.create_list_data(text)
     elseif #data.lists[list_index].tasks == 0 and name == 'maybe_bold' and text:match('^%*%*.+%*%*$') then
       -- Parse bold text with Complete
@@ -145,11 +155,11 @@ function writer.format_task_list_items(items)
   return ''
 end
 
----@param task superkanban.cardUI
-function writer.format_md_checklist(task)
-  local tag = writer.format_task_list_items(task.data.tag)
-  local due = writer.format_task_list_items(task.data.due)
-  return string.format('- [%s] %s%s%s\n', task.data.check, task.data.title, tag, due)
+---@param data superkanban.TaskData
+function writer.format_md_checklist(data)
+  local tag = writer.format_task_list_items(data.tag)
+  local due = writer.format_task_list_items(data.due)
+  return string.format('- [%s] %s%s%s\n', data.check, data.title, tag, due)
 end
 
 ---@param ctx superkanban.Ctx
@@ -173,7 +183,19 @@ function M.write_file(ctx)
 
     -- Add checklist
     for _, card in ipairs(list_section.cards) do
-      table.insert(new_lines, writer.format_md_checklist(card))
+      table.insert(new_lines, writer.format_md_checklist(card.data))
+    end
+  end
+
+  if ctx.archive and ctx.archive.title == constants.archive_heading then
+    table.insert(new_lines, '\n***\n')
+
+    -- Add heading
+    table.insert(new_lines, string.format('%s %s\n', '##', ctx.archive.title))
+
+    -- Add checklist
+    for _, task_data in ipairs(ctx.archive.tasks) do
+      table.insert(new_lines, writer.format_md_checklist(task_data))
     end
   end
 

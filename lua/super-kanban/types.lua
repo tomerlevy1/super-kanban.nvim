@@ -28,6 +28,7 @@
 
 ---@class superkanban.Ctx
 ---@field board superkanban.BoardUI
+---@field archive? superkanban.ListData
 ---@field lists superkanban.List.Ctx[]
 ---@field source_path string
 ---@field config superkanban.Config

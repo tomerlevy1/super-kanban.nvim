@@ -275,9 +275,26 @@ function M:delete_card(should_focus)
   end
 end
 
-function M:toggle_complete()
-  self.data.check = self:is_complete() and constants.checkbox_unchecked or constants.checkbox_checked
+---@param check? boolean
+function M:toggle_complete(check)
+  if check == true then
+    self.data.check = constants.checkbox_checked
+  elseif check == false then
+    self.data.check = constants.checkbox_unchecked
+  else
+    self.data.check = self:is_complete() and constants.checkbox_unchecked or constants.checkbox_checked
+  end
+
   self:update_winbar()
+end
+
+function M:move_to_archive()
+  self.ctx.board:create_archive_list()
+
+  self.data.check = constants.checkbox_checked
+  table.insert(self.ctx.archive.tasks, self.data)
+
+  self:delete_card()
 end
 
 ---@param direction? number

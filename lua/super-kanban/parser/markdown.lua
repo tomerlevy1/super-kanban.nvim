@@ -1,3 +1,4 @@
+local constants = require('super-kanban.constants')
 local ts = vim.treesitter
 local ts_query = vim.treesitter.query
 
@@ -13,6 +14,9 @@ local query = ts_query.parse(
       (task_list_marker_unchecked)
     ] @checkbox
     (paragraph (inline) @task_text))
+
+  (paragraph
+    (inline) @maybe_bold)
   ]]
 )
 -- (atx_heading (atx_h1_marker) @marker (inline) @heading_text)
@@ -111,6 +115,11 @@ function M.parse_file(filepath)
     if name == 'heading_text' then
       list_index = list_index + 1
       data.lists[list_index] = parser.create_list_data(text)
+    elseif #data.lists[list_index].tasks == 0 and name == 'maybe_bold' and text:match('^%*%*.+%*%*$') then
+      -- Parse bold text with Complete
+      if text == constants.list_auto_complete_mark then
+        data.lists[list_index].complete_task = true
+      end
     elseif name == 'checkbox' then
       pending_task.checkbox = text
     elseif name == 'task_text' then
@@ -154,7 +163,15 @@ function M.write_file(ctx)
   local new_lines = {}
 
   for _, list_section in ipairs(ctx.lists) do
+    -- Add heading
     table.insert(new_lines, string.format('%s %s\n', '##', list_section.data.title))
+
+    -- Add Complete mark
+    if list_section.complete_task then
+      table.insert(new_lines, constants.list_auto_complete_mark .. '\n')
+    end
+
+    -- Add checklist
     for _, card in ipairs(list_section.cards) do
       table.insert(new_lines, writer.format_md_checklist(card))
     end

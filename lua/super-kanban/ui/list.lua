@@ -7,12 +7,14 @@ local date = require('super-kanban.utils.date')
 ---@class superkanban.List.Opts
 ---@field data {title: string}
 ---@field index number
+---@field complete_task? boolean
 ---@field ctx superkanban.Ctx
 
 ---@class superkanban.ListUI
 ---@field data {title: string}
 ---@field index number
 ---@field visible_index number
+---@field complete_task? boolean
 ---@field win snacks.win
 ---@field ctx superkanban.Ctx
 ---@field type "list"
@@ -41,6 +43,7 @@ function M.new(opts)
   self.ctx = opts.ctx
   self.data = opts.data
   self.index = opts.index
+  self.complete_task = opts.complete_task
   self.scroll_info = { top = 0, bot = 0 }
   self.type = 'list'
 

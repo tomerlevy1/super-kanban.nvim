@@ -1,3 +1,4 @@
+local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local DatePicker = require('super-kanban.ui.date_picker')
 local utils = require('super-kanban.utils')
@@ -275,7 +276,7 @@ function M:delete_card(should_focus)
 end
 
 function M:toggle_complete()
-  self.data.check = self:is_complete() and ' ' or 'x'
+  self.data.check = self:is_complete() and constants.checkbox_unchecked or constants.checkbox_checked
   self:update_winbar()
 end
 
@@ -372,7 +373,7 @@ function M:move_horizontal(direction, placement)
   if direction == nil then
     direction = 1
   end
-
+  local cur_list = self.ctx.lists[self.list_index]
   local target_list = self.ctx.lists[self.list_index + direction]
   if not target_list then
     return
@@ -382,11 +383,23 @@ function M:move_horizontal(direction, placement)
     self.ctx.board:scroll_board(direction, self.list_index)
   end
 
+  -- Auto Update checkmark while moving to/from the list with **Complete** tag
+  local updated_check_mark = nil
+  if target_list.complete_task then
+    updated_check_mark = constants.checkbox_checked
+  elseif not target_list.complete_task and cur_list.complete_task then
+    updated_check_mark = constants.checkbox_unchecked
+  end
+
   -- Update card+list index and parent win
   local target_card_index = placement == 'last' and #target_list.cards + 1 or 1
+  local new_card_data = vim.deepcopy(self.data)
+  if updated_check_mark then
+    new_card_data.check = updated_check_mark
+  end
   local new_card = self
     .new({
-      data = vim.deepcopy(self.data),
+      data = new_card_data,
       index = target_card_index,
       ctx = target_list.ctx,
       list_index = target_list.index,

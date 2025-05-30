@@ -17,6 +17,7 @@
 
 ---@class superkanban.ListData
 ---@field title string
+---@field complete_task? boolean
 ---@field tasks superkanban.TaskData[]
 
 ---@class superkanban.SourceData

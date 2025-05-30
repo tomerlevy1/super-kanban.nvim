@@ -72,7 +72,8 @@ local config = {
   },
   icons = {
     card_checkmarks = {
-      [' '] = ' ', -- '☐',
+      ['empty_box'] = '☐',
+      [' '] = ' ',
       ['x'] = '✔',
     },
   },
@@ -141,11 +142,16 @@ local function open_board(source_path)
 
   local parsed_data = require('super-kanban.parser.markdown').parse_file(source_path)
 
+  if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
+    return
+  end
+
   -- Setup list & card windows then generate ctx
-  for list_index, list_data in ipairs(parsed_data and parsed_data.lists or {}) do
+  for list_index, list_data in ipairs(parsed_data.lists) do
     local list = List({
       data = { title = list_data.title },
       index = list_index,
+      complete_task = list_data.complete_task,
       ctx = ctx,
     })
 

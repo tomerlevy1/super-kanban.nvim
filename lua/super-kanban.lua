@@ -70,12 +70,19 @@ local config = {
     win_options = {},
     first_day_of_week = 'Sunday',
   },
+  icons = {
+    card_checkmarks = {
+      [' '] = ' ', -- '☐',
+      ['x'] = '✔',
+    },
+  },
   mappings = {
     ['gn'] = actions.create_card('first'),
     ['gN'] = actions.create_card('last'),
     ['gD'] = actions.delete_card(),
     ['g.'] = actions.sort_cards_by_due('oldest_first'),
     ['g,'] = actions.sort_cards_by_due('newest_first'),
+    ['<C-t>'] = actions.toggle_complete(),
 
     ['zn'] = actions.create_list('last'),
     ['zN'] = actions.create_list('first'),

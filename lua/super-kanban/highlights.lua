@@ -119,9 +119,13 @@ function M.setup_highlights()
     KanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
 
     -- Card cotent
-    KanbanTag               = { fg = c.yellow, bg = c.dim_yellow },
+    KanbanNone                  = { fg = c.none, bg = c.none },
+    KanbanTag                   = { fg = c.yellow, bg = c.dim_yellow },
     KanbanDueDate               = { fg = '#8a5cf5' },
+    KanbanCheckMark             = { link = 'KanbanCardWinbarNC' },
+    KanbanCheckMarkDone         = { fg = c.dark_green },
 
+    -- Date Picker window
     KanbanDatePickerDateHL      = { fg = c.bg_d, bg = c.blue },
     KanbanDatePickerNormal      = { link = 'KanbanNormal' },
     KanbanDatePickerBorder      = { link = 'FloatBorder' },

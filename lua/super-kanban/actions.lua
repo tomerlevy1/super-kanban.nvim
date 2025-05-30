@@ -41,6 +41,21 @@ actions.delete_card = function()
 	return { callback = callback, desc = "Delete card" }
 end
 
+actions.toggle_complete = function()
+	---@param cardUI superkanban.cardUI|nil
+	---@param listUI superkanban.ListUI|nil
+	---@param ctx superkanban.Ctx
+	local callback = function(cardUI, listUI, ctx)
+    if not cardUI then
+      return
+    end
+
+    cardUI:toggle_complete()
+	end
+
+	return { callback = callback, desc = "Toggle Complete" }
+end
+
 ---@param placement? "first"|"last"
 actions.create_list = function(placement)
 	---@param cardUI superkanban.cardUI|nil

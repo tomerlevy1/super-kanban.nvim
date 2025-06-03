@@ -31,7 +31,8 @@ local M = setmetatable({}, {
 M.__index = M
 
 local ns_date_picker = vim.api.nvim_create_namespace('super-kanban-date-picker')
-local ns_date_under_cursor = vim.api.nvim_create_namespace('super-kanban-date-picker-current-date')
+local ns_date_under_cursor = vim.api.nvim_create_namespace('super-kanban-date-picker-date-under-cursor')
+local ns_date_today = vim.api.nvim_create_namespace('super-kanban-date-picker-today')
 
 ---@param year number
 ---@param month number
@@ -139,7 +140,8 @@ end
 
 ---@param days_in_month number
 ---@param start_day number
-local function get_calendar_lines(days_in_month, start_day, find_day)
+---@param opts {find_day?:number,today_day:number}
+local function get_calendar_lines(days_in_month, start_day, opts)
   vim.validate('days_in_month', days_in_month, 'number')
   local lines = {}
   local positions = { first_day = {}, last_day = {}, find_day = nil }
@@ -167,10 +169,15 @@ local function get_calendar_lines(days_in_month, start_day, find_day)
       local row = #lines + 1
       positions.last_day = { row = row, col = col }
     end
-    if type(find_day) == 'number' and find_day == day then
+    if type(opts.find_day) == 'number' and opts.find_day == day then
       local col = (line_x * 2) + (line_x - 2 * 1)
       local row = #lines + 1
       positions.find_day = { row = row, col = col }
+    end
+    if opts.today_day > 0 and opts.today_day == day then
+      local col = (line_x * 2) + (line_x - 2 * 1)
+      local row = #lines + 1
+      positions.today = { row = row, col = col }
     end
 
     if #line == 7 then
@@ -218,6 +225,23 @@ function M.new(opts, ctx)
   return self
 end
 
+---@param find_day? number
+function M:scaffold_day_lines(find_day)
+  local days_in_month = get_days_in_month(self.data.year, self.data.month)
+  local start_day = get_start_day(self.data.year, self.data.month, self.ctx.config.date_picker.first_day_of_week)
+  local lines, day_positions = get_calendar_lines(days_in_month, start_day, {
+    find_day = find_day,
+    today_day = self:month_has_today(),
+  })
+
+  return {
+    lines = lines,
+    day_positions = day_positions,
+    height = #lines,
+    border_height = #lines + 2,
+  }
+end
+
 ---@param opts superkanban.DatePicker.MountOpts
 function M:mount(opts)
   opts = opts or {}
@@ -233,14 +257,9 @@ function M:mount(opts)
     end
   end
 
-  local days_in_month = get_days_in_month(self.data.year, self.data.month)
-  local start_day = get_start_day(self.data.year, self.data.month, self.ctx.config.date_picker.first_day_of_week)
-  local lines, day_positions = get_calendar_lines(days_in_month, start_day, self.data.day)
-
   local width = 20
-  local height = #lines
   local border_width = width + 2
-  local border_height = height + 2
+  local info = self:scaffold_day_lines(self.data.day)
 
   local calender_title = make_calendar_title(self.ctx.config.date_picker.first_day_of_week)
   local weekdays = {
@@ -257,7 +276,7 @@ function M:mount(opts)
     }, conf.date_picker.win_options),
 
     width = border_width,
-    height = border_height,
+    height = info.border_height,
     col = self.win_opts.col,
     row = self.win_opts.row,
     -- Non cofig values
@@ -282,18 +301,19 @@ function M:mount(opts)
     }, conf.date_picker.win_options),
 
     width = width,
-    height = height,
+    height = info.height,
     border = 'none',
     relative = 'win',
     -- col = "0",
     row = #weekdays,
     win = self.border_win.win,
     text = function()
-      return lines
+      return info.lines
     end,
     on_win = function()
       vim.schedule(function()
-        self:highlight_a_day(day_positions.find_day)
+        self:hl_a_day(info.day_positions.today)
+        self:put_cursor_on_a_day(info.day_positions.find_day)
         self:set_events()
       end)
     end,
@@ -313,7 +333,7 @@ function M:mount(opts)
       w = { 'e', expr = true },
       ['0'] = { '0e', expr = true },
       ['.'] = function()
-        self:update_month(self.current_year, self.current_month, 'find_day', self.current_day)
+        self:update_month(self.current_year, self.current_month, { focus_on = 'today' })
       end,
       n = function()
         self:next_month()
@@ -332,35 +352,61 @@ function M:exit()
   self.border_win:close()
 end
 
+function M:month_has_today()
+  if self.current_year == self.data.year and self.current_month == self.data.month then
+    return self.current_day
+  end
+
+  return 0
+end
+
 ---@param pos {row:integer,col:integer}
-function M:highlight_a_day(pos)
+function M:put_cursor_on_a_day(pos)
   if not pos or not pos.row or not pos.col then
     return
   end
   vim.api.nvim_win_set_cursor(self.win.win, { pos.row, pos.col })
 end
 
----@param year integer
----@param month integer
----@param focus? "first_day"|"last_day"|"find_day"
----@param find_a_day? integer
-function M:update_month(year, month, focus, find_a_day)
-  local days_in_month = get_days_in_month(year, month)
-  local start_day = get_start_day(year, month, self.ctx.config.date_picker.first_day_of_week)
-  local lines, day_positions = get_calendar_lines(days_in_month, start_day, find_a_day)
-
-  -- update height
-  vim.api.nvim_win_set_height(self.win.win, #lines)
-  vim.api.nvim_win_set_height(self.border_win.win, #lines + 2)
-
-  self.border_win:set_title(get_calander_title(year, month))
-  vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, lines)
-  if focus then
-    self:highlight_a_day(day_positions[focus])
+---@param pos {row:integer,col:integer}
+function M:hl_a_day(pos)
+  if not pos or not pos.row or not pos.col then
+    return
   end
 
+  vim.api.nvim_buf_set_extmark(0, ns_date_today, pos.row - 1, pos.col - 1, {
+    end_col = pos.col + 1,
+    hl_group = 'KanbanDatePickerDateToday',
+  })
+end
+
+---@param year integer
+---@param month integer
+---@param opts {focus_on?:"first_day"|"last_day"|"today"|number}
+function M:update_month(year, month, opts)
+  opts = opts or {}
   self.data.month = month
   self.data.year = year
+
+  ---@type any, any
+  local find_day, focus_on = nil, opts.focus_on
+  if type(opts.focus_on) == 'number' then
+    find_day = opts.focus_on
+    focus_on = 'find_day'
+  end
+
+  local info = self:scaffold_day_lines(find_day)
+
+  -- update height
+  vim.api.nvim_win_set_height(self.win.win, info.height)
+  vim.api.nvim_win_set_height(self.border_win.win, info.border_height)
+
+  self.border_win:set_title(get_calander_title(year, month))
+  vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, info.lines)
+  self:hl_a_day(info.day_positions.today)
+  if focus_on then
+    self:put_cursor_on_a_day(info.day_positions[focus_on])
+  end
 end
 
 function M:next_month()
@@ -371,7 +417,7 @@ function M:next_month()
     year = year + 1
   end
 
-  self:update_month(year, month, 'first_day')
+  self:update_month(year, month, { focus_on = 'first_day' })
 end
 
 function M:prev_month()
@@ -382,7 +428,7 @@ function M:prev_month()
     year = year - 1
   end
 
-  self:update_month(year, month, 'last_day')
+  self:update_month(year, month, { focus_on = 'last_day' })
 end
 
 function M:insert_date()
@@ -448,7 +494,7 @@ function M:highlight_day_under_cursor()
       if col >= start_col - 1 and col <= end_col - 1 then
         vim.api.nvim_buf_set_extmark(0, ns_date_under_cursor, row, start_col - 1, {
           end_col = end_col,
-          hl_group = 'KanbanDatePickerDateHL',
+          hl_group = 'KanbanDatePickerUnderCursor',
         })
 
         -- Extract number & trim space
@@ -460,6 +506,8 @@ function M:highlight_day_under_cursor()
 
   if selected_date and selected_date > 0 then
     self.data.day = selected_date
+  else
+    vim.api.nvim_feedkeys('w', 'n', false)
   end
 end
 

@@ -126,7 +126,8 @@ function M.setup_highlights()
     KanbanCheckMarkDone         = { fg = c.dark_green },
 
     -- Date Picker window
-    KanbanDatePickerDateHL      = { fg = c.bg_d, bg = c.blue },
+    KanbanDatePickerDateToday   = { fg = c.green },
+    KanbanDatePickerUnderCursor = { fg = c.bg_d, bg = c.blue },
     KanbanDatePickerNormal      = { link = 'KanbanNormal' },
     KanbanDatePickerBorder      = { link = 'FloatBorder' },
     KanbanDatePickerTitle       = { link = 'Title' },

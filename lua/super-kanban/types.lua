@@ -32,6 +32,7 @@
 ---@field lists superkanban.List.Ctx[]
 ---@field source_path string
 ---@field config superkanban.Config
+---@field location {list:number,card:number}
 
 ---@class superkanban.MarkdownConfig
 ---@field description_folder string

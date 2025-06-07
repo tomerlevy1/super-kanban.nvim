@@ -162,7 +162,12 @@ function M:focus()
   end
 
   self.win:focus()
+  self:update_ctx_location()
   return true
+end
+
+function M:update_ctx_location()
+  self.ctx.location = { list = self.index, card = 0 }
 end
 
 function M:exit()
@@ -290,8 +295,10 @@ function M:set_events(ctx)
   self.win:on('BufEnter', function()
     local card = ctx.lists[self.index].cards[1]
     if card then
-      card:focus()
+      return card:focus()
     end
+
+    self:update_ctx_location()
   end, { buf = true })
 end
 

@@ -117,6 +117,7 @@ function M:focus()
 
   self.win:focus()
   self:update_hl(true, self.win.win)
+  self:update_ctx_location()
 end
 
 function M:exit()
@@ -221,9 +222,14 @@ function M:is_complete()
   return true
 end
 
+function M:update_ctx_location()
+  self.ctx.location = { list = self.list_index, card = self.index }
+end
+
 function M:set_events()
   self.win:on({ 'BufEnter', 'WinEnter' }, function()
     self:update_hl(true, self.win.win)
+    self:update_ctx_location()
   end, { buf = true })
 
   self.win:on({ 'BufLeave', 'WinLeave' }, function()
@@ -476,6 +482,12 @@ function M:pick_date(create_new_date, at_sign_pos)
       end
     end,
   })
+end
+
+function M:remove_date()
+  self.data.due = {}
+  self:update_buffer_text()
+  self:update_winbar()
 end
 
 return M

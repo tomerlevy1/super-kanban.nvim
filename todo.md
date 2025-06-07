@@ -14,9 +14,9 @@
 
 ## Todo
 
-- [ ] date user_command ex: pick_date remove_date
-
 ## Work in progress
+
+- [ ] date user_command ex: pick_date remove_date
 
 ## Completed
 

@@ -18,6 +18,7 @@ local config = {
       '## Todo',
       '## Work in progress',
       '## Completed',
+      '**Complete**',
     },
     header = {
       '---',
@@ -116,8 +117,6 @@ local config = {
 }
 
 M.is_opned = false
----@type superkanban.Ctx
-local ctx = {}
 
 ---@param source_path string
 local function open_board(source_path)
@@ -125,6 +124,8 @@ local function open_board(source_path)
     utils.msg('Filename is missing. Please provide a valid file name.', 'warn')
     return
   end
+  source_path = vim.fs.normalize(source_path)
+
   if not utils.is_markdown(source_path) then
     utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: .md', 'warn')
     return
@@ -140,13 +141,13 @@ local function open_board(source_path)
     return
   end
 
+  ---@type superkanban.Ctx
+  local ctx = {}
   ctx.board = Board()
   ctx.config = config
   ctx.source_path = source_path
   ctx.lists = {}
   ctx.archive = parsed_data.lists['archive']
-
-  local first_card_loc = nil
 
   -- Setup list & card windows then generate ctx
   for list_index, list_data in ipairs(parsed_data.lists) do
@@ -161,9 +162,6 @@ local function open_board(source_path)
     local cards = {}
     if type(list_data.tasks) == 'table' and #list_data.tasks ~= 0 then
       for task_index, task_data in ipairs(list_data.tasks) do
-        if first_card_loc == nil then
-          first_card_loc = { list_index, task_index }
-        end
         cards[task_index] = Card({
           data = task_data,
           index = task_index,
@@ -184,16 +182,18 @@ local function open_board(source_path)
       M.is_opned = false
     end,
   })
+
+  M._ctx = ctx
 end
 
 ---Open super-kanban
 ---@param source_path string
 function M.open(source_path)
-  if M.is_opned and ctx.source_path == source_path then
+  if M.is_opned and M._ctx.source_path == source_path then
     return
-  elseif M.is_opned and ctx.board then
-    if ctx.board then
-      ctx.board:exit()
+  elseif M.is_opned and M._ctx.board then
+    if M._ctx.board then
+      M._ctx.board:exit()
     end
 
     vim.schedule(function()
@@ -212,6 +212,8 @@ function M.create(source_path)
     utils.msg('Filename is missing. Please provide a valid file name.', 'warn')
     return
   end
+  source_path = vim.fs.normalize(source_path)
+
   if not utils.is_markdown(source_path) then
     utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: .md', 'warn')
     return

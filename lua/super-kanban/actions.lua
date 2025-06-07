@@ -162,7 +162,21 @@ actions.pick_date = function()
     cardUI:pick_date()
   end
 
-  return { callback = callback, desc = 'Pick due date' }
+  return { callback = callback, desc = 'Pick date' }
+end
+
+actions.remove_date = function()
+  ---@param cardUI superkanban.cardUI|nil
+  ---@param listUI superkanban.ListUI|nil
+  ---@param ctx superkanban.Ctx
+  local callback = function(cardUI, listUI, ctx)
+    if not cardUI then
+      return
+    end
+    cardUI:remove_date()
+  end
+
+  return { callback = callback, desc = 'Remove date' }
 end
 
 actions.log_info = function()

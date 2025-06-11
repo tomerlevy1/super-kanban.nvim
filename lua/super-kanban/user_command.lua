@@ -1,7 +1,21 @@
 local utils = require('super-kanban.utils')
+local text = require('super-kanban.utils.text')
 local actions = require('super-kanban.actions')
 
-local top_level_mode_completion = { 'open', 'create', 'task', 'list' }
+local directions = { 'left', 'right', 'up', 'down', 'first', 'last' }
+local list_directions = { 'left', 'right', 'first', 'last' }
+local function make_kv_completion(prefix, arg_lead, completions)
+  return vim.tbl_filter(
+    function(item)
+      return vim.startswith(prefix .. item, arg_lead)
+    end,
+    vim.tbl_map(function(dir)
+      return prefix .. dir
+    end, completions)
+  )
+end
+
+local top_level_mode_completion = { 'open', 'create', 'card', 'list', 'search' }
 local nested_mode_completion = {
   open = function(arg_lead)
     return vim.fn.getcompletion(arg_lead, 'file')
@@ -9,7 +23,24 @@ local nested_mode_completion = {
   create = function(arg_lead)
     return vim.fn.getcompletion(arg_lead, 'dir')
   end,
-  task = { 'pick_date', 'remove_date' },
+  card = {
+    'create',
+    'delete',
+    'toggle_complete',
+    'archive',
+    'pick_date',
+    'remove_date',
+    'move=',
+    'jump=',
+    'sort=',
+  },
+  list = {
+    'create',
+    'rename',
+    'delete',
+    'move=',
+    'jump=',
+  },
 }
 
 local function get_completion(arg_lead, cmd_line, cursor_pos)
@@ -34,6 +65,30 @@ local function get_completion(arg_lead, cmd_line, cursor_pos)
   -- Suggest 2nd level modes
   elseif arg_count == 2 then
     local mode = split[2]
+    local action = split[3] -- could be 'jump=' or 'move='
+
+    if mode == 'card' then
+      if vim.startswith(action, 'jump=') or vim.startswith(arg_lead, 'jump=') then
+        return make_kv_completion('jump=', arg_lead, directions)
+      elseif vim.startswith(action, 'move=') or vim.startswith(arg_lead, 'move=') then
+        return make_kv_completion('move=', arg_lead, directions)
+      end
+    end
+
+    if mode == 'card' then
+      if vim.startswith(action, 'sort=') or vim.startswith(arg_lead, 'sort=') then
+        return make_kv_completion('sort=', arg_lead, { 'descending', 'ascending' })
+      end
+    end
+
+    if mode == 'list' then
+      if vim.startswith(action, 'jump=') or vim.startswith(arg_lead, 'jump=') then
+        return make_kv_completion('jump=', arg_lead, list_directions)
+      elseif vim.startswith(action, 'move=') or vim.startswith(arg_lead, 'move=') then
+        return make_kv_completion('move=', arg_lead, list_directions)
+      end
+    end
+
     local option = nested_mode_completion[mode]
     if type(option) == 'function' then
       return option(arg_lead)
@@ -43,6 +98,23 @@ local function get_completion(arg_lead, cmd_line, cursor_pos)
   end
 
   return {}
+end
+
+---@param arg_str string
+local function parse_key_value(arg_str)
+  if arg_str == nil or type(arg_str) ~= 'string' then
+    return arg_str, nil
+  end
+  arg_str = text.trim(arg_str)
+  if arg_str == '' then
+    return arg_str, nil
+  end
+
+  local key, value = string.match(arg_str, '([^=]+)=([^=]+)')
+  if key and value then
+    return key, value
+  end
+  return arg_str, nil
 end
 
 local M = {}
@@ -74,6 +146,18 @@ local function run_action_from_key(action_key, ctx)
   run_action(fn(), ctx)
 end
 
+local execute_command = function(act_name_from_group, ctx)
+  if type(act_name_from_group) == 'string' then
+    run_action_from_key(act_name_from_group, ctx)
+    return true
+  elseif type(act_name_from_group) == 'function' then
+    act_name_from_group()
+    return true
+  end
+
+  return false
+end
+
 ---@param kanban superkanban
 ---@param config superkanban.Config
 function M.setup_commands(kanban, config)
@@ -87,24 +171,57 @@ function M.setup_commands(kanban, config)
   }
 
   local action_modes = {
-    task = {
+    card = {
+      create = 'create_card_at_begin',
+      delete = 'delete_card',
+      toggle_complete = 'toggle_complete',
+      archive = 'archive_card',
       pick_date = 'pick_date',
       remove_date = 'remove_date',
+      move = { -- move=direction
+        up = 'move_up',
+        down = 'move_down',
+        left = 'move_left',
+        right = 'move_right',
+      },
+      jump = { -- jump=direction
+        up = 'jump_up',
+        down = 'jump_down',
+        left = 'jump_left',
+        right = 'jump_right',
+        first = 'jump_first',
+        last = 'jump_last',
+      },
+      sort = { -- sort=direction
+        descending = 'sort_by_due_descending',
+        ascending = 'sort_by_due_ascending',
+      },
       -- pick_date = function()
       --   run_action(actions.pick_date(), kanban._ctx)
       -- end,
     },
-    -- list = {
-    --   create = function(file)
-    --     dd('asdf')
-    --   end,
-    -- },
+    list = {
+      create = 'create_list_at_begin',
+      rename = 'rename_list',
+      delete = 'delete_list',
+      move = { -- move=direction
+        left = 'move_list_left',
+        right = 'move_list_right',
+      },
+      jump = { -- jump=direction
+        left = 'jump_list_left',
+        right = 'jump_list_right',
+        first = 'jump_list_first',
+        last = 'jump_list_last',
+      },
+    },
+    search = 'search',
   }
 
   vim.api.nvim_create_user_command('SuperKanban', function(opts)
     local args = opts.fargs
 
-    local mode, file, action = args[1], nil, nil
+    local mode, file = args[1], nil
 
     if file_modes[mode] then
       file = args[2]
@@ -112,25 +229,47 @@ function M.setup_commands(kanban, config)
       return
     elseif action_modes[mode] then
       if not kanban.is_opned then
-        utils.msg('SuperKanban should be open to perform the action', 'warn')
+        utils.msg('SuperKanban should be open to perform the action.', 'warn')
         return
       end
 
-      action = args[2]
-      if action_modes[mode][action] then
-        local fn = action_modes[mode][action]
-        if type(fn) == 'string' then
-          run_action_from_key(fn, kanban._ctx)
-        elseif type(fn) == 'function' then
-          action_modes[mode][action]()
-        end
+      local action, action_value = parse_key_value(args[2])
+      local aciton_group = action_modes[mode]
+      local act_name_from_group = type(aciton_group) == 'table'
+          and (action_value and aciton_group[action][action_value] or aciton_group[action])
+        or aciton_group
+
+      if execute_command(act_name_from_group, kanban._ctx) then
+        return
       end
-      return
+
+      utils.msg(('[%s] is not a valid command.'):format(text.trim(opts.args)), 'warn')
     else
       file = args[1]
       file_modes.open(file)
     end
   end, { nargs = '+', complete = get_completion, desc = 'SuperKanban' })
 end
+
+vim.api.nvim_create_user_command('Foo', function(opts)
+  local args = opts.fargs -- args as a list of words
+  local parsed = {}
+
+  -- Basic parser for `key=value` style
+  for _, arg in ipairs(args) do
+    local key, value = string.match(arg, '([^=]+)=([^=]+)')
+    if key and value then
+      parsed[key] = value
+    else
+      table.insert(parsed, arg) -- positional args like `card`
+    end
+  end
+
+  -- Example: accessing the parsed values
+  dd('Command type:', parsed[1]) -- should be "card"
+  dd('Jump direction:', parsed['jump']) -- should be "right"
+end, {
+  nargs = '*',
+})
 
 return M

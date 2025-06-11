@@ -142,6 +142,10 @@ function M:fill_empty_space(opts)
     local item = lists[index]
     item.index = item.index - 1
 
+    for _, card in pairs(item.cards) do
+      card.list_index = item.index
+    end
+
     if item:in_view() then
       last_used_visible_index = item.visible_index - 1
       item:update_visible_position(last_used_visible_index)

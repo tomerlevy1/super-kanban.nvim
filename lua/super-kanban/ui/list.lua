@@ -171,6 +171,9 @@ function M:update_ctx_location()
 end
 
 function M:exit()
+  for _, card in pairs(self.ctx.lists[self.index].cards) do
+    card:exit()
+  end
   self.win:close()
   self.visible_index = nil
 end
@@ -219,8 +222,7 @@ function M:update_visible_position(new_index)
     self.visible_index = new_index
     self.win:update()
   else
-    self.win:hide()
-    self.visible_index = nil
+    self:exit()
   end
 end
 
@@ -376,7 +378,7 @@ function M:rename_list(new_name)
   end
 
   self.data.title = new_name
-  self.win:set_title({ { self.data.title } }, 'center')
+  self:update_winbar(#self.ctx.lists[self.index].cards)
 end
 
 function M:jump_horizontal(direction)

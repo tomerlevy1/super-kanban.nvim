@@ -1,4 +1,3 @@
-local constants = require('super-kanban.constants')
 local common = require('super-kanban.parser.common')
 local ts = vim.treesitter
 
@@ -25,8 +24,9 @@ local query = vim.treesitter.query.parse(
 local M = {}
 
 ---@param filepath string
+---@param config  superkanban.Config
 ---@return superkanban.SourceData?
-function M.parse_file(filepath)
+function M.parse_file(filepath, config)
   local root, buf = common.get_parser('org', filepath)
   if not root then
     return nil
@@ -49,7 +49,7 @@ function M.parse_file(filepath)
 
     if name == 'heading_text' then
       -- Store the archive data into archive key
-      if text == constants.archive_heading then
+      if text == config.org.archive_heading then
         list_index_before_archive = list_index
         list_index = 'archive'
       else
@@ -62,7 +62,7 @@ function M.parse_file(filepath)
     elseif
       #data.lists[list_index].tasks == 0
       and name == 'maybe_bold'
-      and text == constants.org.list_auto_complete_mark
+      and text == config.org.list_auto_complete_mark
     then
       -- Parse bold text with Complete
       data.lists[list_index].complete_task = true

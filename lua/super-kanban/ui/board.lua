@@ -236,10 +236,11 @@ function M:create_list(list_name, placement)
 end
 
 function M:create_archive_list()
-  if self.ctx.archive and self.ctx.archive.title == constants.archive_heading then
+  local archive_heading = self.ctx.config[self.ctx.ft].archive_heading
+  if self.ctx.archive and self.ctx.archive.title == archive_heading then
     return
   end
-  self.ctx.archive = { title = constants.archive_heading, tasks = {} }
+  self.ctx.archive = { title = archive_heading, tasks = {} }
 end
 
 ---@param direction number

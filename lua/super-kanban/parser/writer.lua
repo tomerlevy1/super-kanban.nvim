@@ -1,4 +1,3 @@
-local constants = require('super-kanban.constants')
 local utils = require('super-kanban.utils')
 
 local M = {}
@@ -27,11 +26,7 @@ function M.write_file(ctx)
     require('super-kanban.utils').msg("Can't open file.", 'error')
     return nil
   end
-
-  local decorators = constants.markdown
-  if ctx.ft == 'org' then
-    decorators = constants.org
-  end
+  local decorators = ctx.config[ctx.ft]
 
   local new_lines = {}
 
@@ -50,7 +45,7 @@ function M.write_file(ctx)
     end
   end
 
-  if ctx.archive and ctx.archive.title == constants.archive_heading then
+  if ctx.archive and ctx.archive.title == decorators.archive_heading then
     table.insert(new_lines, ('\n%s\n'):format(decorators.section_separators))
 
     -- Add heading

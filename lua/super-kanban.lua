@@ -9,11 +9,14 @@ local writer = require('super-kanban.parser.writer')
 local M = {}
 
 ---@class superkanban.Config
----@field markdown superkanban.MarkdownConfig
 local config = {
   org = {
     description_folder = './tasks/',
-    list_head = 'h2',
+    -- list_head = 'h2',
+    list_head = '*',
+    list_auto_complete_mark = '*Complete*',
+    section_separators = '-----',
+    archive_heading = 'Archive',
     default_template = {
       '* Backlog',
       '* Todo',
@@ -41,7 +44,11 @@ local config = {
   },
   markdown = {
     description_folder = './tasks/',
-    list_head = 'h2',
+    -- list_head = 'h2',
+    list_head = '##',
+    list_auto_complete_mark = '**Complete**',
+    section_separators = '***',
+    archive_heading = 'Archive',
     default_template = {
       '## Backlog',
       '## Todo',
@@ -166,7 +173,7 @@ local function open_board(source_path)
     return
   end
 
-  local parsed_data = require('super-kanban.parser').parse_file(source_path, filetype)
+  local parsed_data = require('super-kanban.parser').parse_file(source_path, filetype, config)
 
   if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
     utils.msg('No list found in: [' .. source_path .. ']', 'warn')

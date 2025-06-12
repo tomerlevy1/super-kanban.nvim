@@ -126,16 +126,22 @@ local function open_board(source_path)
   end
   source_path = vim.fs.normalize(source_path)
 
-  if not utils.is_markdown(source_path) then
-    utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: .md', 'warn')
-    return
-  end
   if not vim.uv.fs_stat(source_path) then
     utils.msg('File not found: [' .. source_path .. ']', 'warn')
     return nil
   end
 
-  local parsed_data = require('super-kanban.parser.markdown').parse_file(source_path)
+  local is_markdown = utils.is_markdown(source_path)
+  local is_org = utils.is_org(source_path)
+
+  if not (is_markdown or is_org) then
+    utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: org & markdown', 'warn')
+    return
+  end
+
+  local filetype = is_markdown and 'markdown' or is_org and 'org'
+  local parsed_data = require('super-kanban.parser').parse_file(source_path, filetype)
+
   if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
     utils.msg('No list found in: [' .. source_path .. ']', 'warn')
     return
@@ -148,6 +154,7 @@ local function open_board(source_path)
   ctx.source_path = source_path
   ctx.lists = {}
   ctx.archive = parsed_data.lists['archive']
+  ctx.ft = filetype
 
   -- Setup list & card windows then generate ctx
   for list_index, list_data in ipairs(parsed_data.lists) do

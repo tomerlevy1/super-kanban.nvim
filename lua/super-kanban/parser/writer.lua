@@ -1,0 +1,70 @@
+local constants = require('super-kanban.constants')
+
+local M = {}
+--------------------------------------------------
+---- Markdown Writer -----------------------------
+--------------------------------------------------
+
+local function format_task_list_items(items)
+  if #items > 0 then
+    return ' ' .. table.concat(items, ' ')
+  end
+  return ''
+end
+
+---@param data superkanban.TaskData
+local function format_md_checklist(data)
+  local tag = format_task_list_items(data.tag)
+  local due = format_task_list_items(data.due)
+  return string.format('- [%s] %s%s%s\n', data.check, data.title, tag, due)
+end
+
+---@param ctx superkanban.Ctx
+function M.write_file(ctx)
+  local file = io.open(ctx.source_path, 'w')
+  if not file then
+    require('super-kanban.utils').msg("Can't open file.", 'error')
+    return nil
+  end
+
+  local decorators = constants.markdown
+  if ctx.ft == 'org' then
+    decorators = constants.org
+  end
+
+  local new_lines = {}
+
+  for _, list_section in ipairs(ctx.lists) do
+    -- Add heading
+    table.insert(new_lines, string.format('%s %s\n', decorators.list_head, list_section.data.title))
+
+    -- Add Complete mark
+    if list_section.complete_task then
+      table.insert(new_lines, decorators.list_auto_complete_mark .. '\n')
+    end
+
+    -- Add checklist
+    for _, card in ipairs(list_section.cards) do
+      table.insert(new_lines, format_md_checklist(card.data))
+    end
+  end
+
+  if ctx.archive and ctx.archive.title == constants.archive_heading then
+    table.insert(new_lines, ('\n%s\n'):format(decorators.section_separators))
+
+    -- Add heading
+    table.insert(new_lines, string.format('%s %s\n', decorators.list_head, ctx.archive.title))
+
+    -- Add checklist
+    for _, task_data in ipairs(ctx.archive.tasks) do
+      table.insert(new_lines, format_md_checklist(task_data))
+    end
+  end
+
+  for _, line in ipairs(new_lines) do
+    file:write(line .. '\n')
+  end
+  file:close()
+end
+
+return M

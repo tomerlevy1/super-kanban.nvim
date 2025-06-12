@@ -4,29 +4,31 @@ local ts = vim.treesitter
 
 -- Tree-sitter query to extract tasks and headings
 local query = vim.treesitter.query.parse(
-  'markdown',
+  'org',
   [[
-  (atx_heading (atx_h2_marker) (inline) @heading_text)
+  (headline
+    stars: (stars)
+    item: (item
+      (expr) @heading_text))
 
-  (list_item
-    [
-      (task_list_marker_checked)
-      (task_list_marker_unchecked)
-    ] @checkbox
-    (paragraph (inline) @task_text))
+  (listitem
+    bullet: (bullet)
+    checkbox: (checkbox) @checkbox
+    contents: (paragraph
+      (expr)
+      (expr)?) @task_text)  ; Support one or two expr nodes in contents
 
-  (paragraph
-    (inline) @maybe_bold)
+  (body (paragraph
+    (expr) @maybe_bold))
   ]]
 )
--- (atx_heading (inline) @heading_text)
 
 local M = {}
 
 ---@param filepath string
 ---@return superkanban.SourceData?
 function M.parse_file(filepath)
-  local root, buf = common.get_parser('markdown', filepath)
+  local root, buf = common.get_parser('org', filepath)
   if not root then
     return nil
   end
@@ -61,7 +63,7 @@ function M.parse_file(filepath)
     elseif
       #data.lists[list_index].tasks == 0
       and name == 'maybe_bold'
-      and text == constants.markdown.list_auto_complete_mark
+      and text == constants.org.list_auto_complete_mark
     then
       -- Parse bold text with Complete
       data.lists[list_index].complete_task = true
@@ -77,5 +79,18 @@ function M.parse_file(filepath)
   vim.api.nvim_buf_delete(buf, { force = true })
   return data
 end
+
+-- local filepath = 'test.org'
+-- local data = M.parse_file(filepath)
+-- dd(data)
+-- M:write_file(filepath, data)
+
+-- -- Print the result
+-- for _, list in ipairs(data) do
+-- 	print("## " .. list.title)
+-- 	for _, task in ipairs(list.tasks) do
+-- 		print("- " .. task.check .. " " .. task.title)
+-- 	end
+-- end
 
 return M

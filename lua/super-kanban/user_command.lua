@@ -32,7 +32,6 @@ local nested_mode_completion = {
     'remove_date',
     'move=',
     'jump=',
-    'sort=',
   },
   list = {
     'create',
@@ -40,6 +39,7 @@ local nested_mode_completion = {
     'delete',
     'move=',
     'jump=',
+    'sort=',
   },
 }
 
@@ -75,17 +75,13 @@ local function get_completion(arg_lead, cmd_line, cursor_pos)
       end
     end
 
-    if mode == 'card' then
-      if vim.startswith(action, 'sort=') or vim.startswith(arg_lead, 'sort=') then
-        return make_kv_completion('sort=', arg_lead, { 'descending', 'ascending' })
-      end
-    end
-
     if mode == 'list' then
       if vim.startswith(action, 'jump=') or vim.startswith(arg_lead, 'jump=') then
         return make_kv_completion('jump=', arg_lead, list_directions)
       elseif vim.startswith(action, 'move=') or vim.startswith(arg_lead, 'move=') then
         return make_kv_completion('move=', arg_lead, list_directions)
+      elseif vim.startswith(action, 'sort=') or vim.startswith(arg_lead, 'sort=') then
+        return make_kv_completion('sort=', arg_lead, { 'descending', 'ascending' })
       end
     end
 
@@ -192,10 +188,6 @@ function M.setup_commands(kanban, config)
         first = 'jump_first',
         last = 'jump_last',
       },
-      sort = { -- sort=direction
-        descending = 'sort_by_due_descending',
-        ascending = 'sort_by_due_ascending',
-      },
       -- pick_date = function()
       --   run_action(actions.pick_date(), kanban._ctx)
       -- end,
@@ -213,6 +205,10 @@ function M.setup_commands(kanban, config)
         right = 'jump_list_right',
         first = 'jump_list_first',
         last = 'jump_list_last',
+      },
+      sort = { -- sort=direction
+        descending = 'sort_by_due_descending',
+        ascending = 'sort_by_due_ascending',
       },
     },
     search = 'search',

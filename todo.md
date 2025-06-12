@@ -1,8 +1,8 @@
 ## Backlog
 
-- [ ] Add ui buttons
+- [ ] Add more move directional action
 
-- [ ] title <br> support
+- [ ] Implement move first/last for cardUI
 
 - [ ] Add description #task
 
@@ -10,17 +10,29 @@
 
 - [ ] Set a WIP Limit https://publish.obsidian.md/kanban/How+do+I/Set+a+WIP+Limit
 
+- [ ] title <br> support
+
+- [ ] time tracking
+
+- [ ] Add ui buttons
+
 - [ ] creat task in top/bot/next/prev
 
 ## Todo
 
-## Work in progress
+- [ ] defalut file path
 
-- [ ] date user_command ex: pick_date remove_date
+## Work in progress
 
 ## Completed
 
 **Complete**
+
+- [x] org support
+
+- [x] create_list delete_list rename_list user_command
+
+- [x] date user_command ex: pick_date remove_date
 
 - [x] hl today on date_picker
 

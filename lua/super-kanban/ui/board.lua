@@ -170,7 +170,7 @@ function M:exit()
 end
 
 function M:on_exit()
-  require('super-kanban.parser.markdown').write_file(self.ctx)
+  require('super-kanban.parser.writer').write_file(self.ctx)
   for _, li in ipairs(self.ctx.lists) do
     li:exit()
   end

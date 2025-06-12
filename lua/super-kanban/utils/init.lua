@@ -45,4 +45,8 @@ function M.is_markdown(path)
   return path:match('%.md$') or path:match('%.markdown$')
 end
 
+function M.is_org(path)
+  return path:match('%.org$')
+end
+
 return M

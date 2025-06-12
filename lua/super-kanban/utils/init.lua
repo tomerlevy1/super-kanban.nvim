@@ -49,4 +49,18 @@ function M.is_org(path)
   return path:match('%.org$')
 end
 
+---@param path any
+---@return string|nil
+function M.get_filetype_from_path(path)
+  if M.is_markdown(path) then
+    return 'markdown'
+  end
+
+  if M.is_org(path) then
+    return 'org'
+  end
+
+  return nil
+end
+
 return M

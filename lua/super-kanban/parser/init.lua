@@ -1,7 +1,7 @@
 local M = {}
 
 ---@param filepath string
----@param filetype  superkan.ft
+---@param filetype  superkanban.ft
 ---@return superkanban.SourceData?
 function M.parse_file(filepath, filetype)
   if filetype == 'markdown' then

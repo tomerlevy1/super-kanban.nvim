@@ -3,6 +3,7 @@ local List = require('super-kanban.ui.list')
 local Card = require('super-kanban.ui.card')
 local actions = require('super-kanban.actions')
 local utils = require('super-kanban.utils')
+local writer = require('super-kanban.parser.writer')
 
 ---@class superkanban
 local M = {}
@@ -10,8 +11,36 @@ local M = {}
 ---@class superkanban.Config
 ---@field markdown superkanban.MarkdownConfig
 local config = {
+  org = {
+    description_folder = './tasks/',
+    list_head = 'h2',
+    default_template = {
+      '* Backlog',
+      '* Todo',
+      '* Work in progress',
+      '* Completed',
+      '*Complete*',
+    },
+    header = {
+      '---',
+      '',
+      'kanban-plugin: basic',
+      '',
+      '---',
+      '',
+    },
+    footer = {
+      '',
+      '',
+      '%% kanban:settings',
+      '```',
+      '{"kanban-plugin":"basic"}',
+      '```',
+      '%%',
+    },
+  },
   markdown = {
-    description_folder = './tasks/', -- "./"
+    description_folder = './tasks/',
     list_head = 'h2',
     default_template = {
       '## Backlog',
@@ -131,15 +160,12 @@ local function open_board(source_path)
     return nil
   end
 
-  local is_markdown = utils.is_markdown(source_path)
-  local is_org = utils.is_org(source_path)
-
-  if not (is_markdown or is_org) then
+  local filetype = utils.get_filetype_from_path(source_path)
+  if not filetype then
     utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: org & markdown', 'warn')
     return
   end
 
-  local filetype = is_markdown and 'markdown' or is_org and 'org'
   local parsed_data = require('super-kanban.parser').parse_file(source_path, filetype)
 
   if not parsed_data or not parsed_data.lists or #parsed_data.lists == 0 then
@@ -221,31 +247,22 @@ function M.create(source_path)
   end
   source_path = vim.fs.normalize(source_path)
 
-  if not utils.is_markdown(source_path) then
-    utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: .md', 'warn')
-    return
-  end
   if vim.uv.fs_stat(source_path) then
     utils.msg('File already exists: [' .. source_path .. ']', 'warn')
     return
   end
 
-  local file = io.open(source_path, 'w')
-  if not file then
-    utils.msg('Failed to create file: [' .. source_path .. ']', 'error')
-    return
-  end
-  if type(config.markdown.default_template) ~= 'table' and #config.markdown.default_template < 1 then
-    utils.msg('Invalid configuration: `config.markdown.default_template`', 'error')
+  local filetype = utils.get_filetype_from_path(source_path)
+  if not filetype then
+    utils.msg('Unsupported file type: [' .. source_path .. '] Supported types: org & markdown', 'warn')
     return
   end
 
-  for _, line in pairs(config.markdown.default_template) do
-    file:write(line .. '\n')
+  local success = writer.write_default_template(source_path, config, filetype)
+  if not success then
+    return
   end
 
-  file:close()
-  utils.msg('Created file: [' .. source_path .. '].', 'info')
   M.open(source_path)
 end
 

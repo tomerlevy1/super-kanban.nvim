@@ -1,4 +1,5 @@
 local constants = require('super-kanban.constants')
+local utils = require('super-kanban.utils')
 
 local M = {}
 --------------------------------------------------
@@ -65,6 +66,32 @@ function M.write_file(ctx)
     file:write(line .. '\n')
   end
   file:close()
+end
+
+---@param source_path string
+---@param config superkanban.Config
+---@param filetype superkanban.ft
+function M.write_default_template(source_path, config, filetype)
+  local file = io.open(source_path, 'w')
+  if not file then
+    utils.msg('Failed to create file: [' .. source_path .. ']', 'error')
+    return
+  end
+  local default_template = config[filetype].default_template
+
+  if type(default_template) ~= 'table' and #default_template < 1 then
+    utils.msg(('Invalid configuration: `config.%s.default_template`'):format(filetype), 'error')
+    return
+  end
+
+  for _, line in pairs(default_template) do
+    file:write(line .. '\n')
+  end
+
+  file:close()
+
+  utils.msg('Created file: [' .. source_path .. '].', 'info')
+  return true
 end
 
 return M

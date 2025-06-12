@@ -27,7 +27,7 @@
 ---@field cards superkanban.cardUI[]
 
 ---@class superkanban.Ctx
----@field ft superkan.ft
+---@field ft superkanban.ft
 ---@field board superkanban.BoardUI
 ---@field archive? superkanban.ListData
 ---@field lists superkanban.List.Ctx[]
@@ -44,7 +44,7 @@
 
 ---@alias WeekDay "Sunday"|"Monday"|"Tuesday"|"Wednesday"|"Thursday"|"Friday"|"Saturday"
 
----@alias superkan.ft "markdown"|"org"
+---@alias superkanban.ft "markdown"|"org"
 
 ---@alias HighlightedText { [1]: string, [2]: string }
 ---@alias HighlightLine HighlightedText[]

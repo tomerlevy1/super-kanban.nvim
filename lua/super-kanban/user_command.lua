@@ -247,25 +247,4 @@ function M.setup_commands(kanban, config)
   end, { nargs = '+', complete = get_completion, desc = 'SuperKanban' })
 end
 
-vim.api.nvim_create_user_command('Foo', function(opts)
-  local args = opts.fargs -- args as a list of words
-  local parsed = {}
-
-  -- Basic parser for `key=value` style
-  for _, arg in ipairs(args) do
-    local key, value = string.match(arg, '([^=]+)=([^=]+)')
-    if key and value then
-      parsed[key] = value
-    else
-      table.insert(parsed, arg) -- positional args like `card`
-    end
-  end
-
-  -- Example: accessing the parsed values
-  dd('Command type:', parsed[1]) -- should be "card"
-  dd('Jump direction:', parsed['jump']) -- should be "right"
-end, {
-  nargs = '*',
-})
-
 return M

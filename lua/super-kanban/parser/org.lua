@@ -8,8 +8,7 @@ local query = vim.treesitter.query.parse(
   [[
   (headline
     stars: (stars)
-    item: (item
-      (expr) @heading_text))
+    item: (item) @heading_text)
 
   (listitem
     bullet: (bullet)

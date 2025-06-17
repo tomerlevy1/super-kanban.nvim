@@ -1,3 +1,5 @@
+local constants = require('super-kanban.constants')
+
 local M = {}
 
 function M.get_default(x, default)
@@ -61,6 +63,12 @@ function M.get_filetype_from_path(path)
   end
 
   return nil
+end
+
+---@param head string
+---@param ft superkanban.ft
+function M.get_heading_prefix(head, ft)
+  return constants[ft].headings[head] or constants[ft].headings.h2
 end
 
 return M

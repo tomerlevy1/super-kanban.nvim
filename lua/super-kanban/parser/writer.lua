@@ -27,12 +27,13 @@ function M.write_file(ctx)
     return nil
   end
   local decorators = ctx.config[ctx.ft]
+  local heading_prefix = utils.get_heading_prefix(decorators.list_heading, ctx.ft)
 
   local new_lines = {}
 
   for _, list_section in ipairs(ctx.lists) do
     -- Add heading
-    table.insert(new_lines, string.format('%s %s\n', decorators.list_head, list_section.data.title))
+    table.insert(new_lines, string.format('%s %s\n', heading_prefix, list_section.data.title))
 
     -- Add Complete mark
     if list_section.complete_task then
@@ -49,7 +50,7 @@ function M.write_file(ctx)
     table.insert(new_lines, ('\n%s\n'):format(decorators.section_separators))
 
     -- Add heading
-    table.insert(new_lines, string.format('%s %s\n', decorators.list_head, ctx.archive.title))
+    table.insert(new_lines, string.format('%s %s\n', heading_prefix, ctx.archive.title))
 
     -- Add checklist
     for _, task_data in ipairs(ctx.archive.tasks) do

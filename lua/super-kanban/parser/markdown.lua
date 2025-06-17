@@ -5,7 +5,7 @@ local ts = vim.treesitter
 local query = vim.treesitter.query.parse(
   'markdown',
   [[
-  (atx_heading (atx_h2_marker) (inline) @heading_text)
+  (atx_heading (inline) @heading_text)
 
   (list_item
     [
@@ -18,6 +18,7 @@ local query = vim.treesitter.query.parse(
     (inline) @maybe_bold)
   ]]
 )
+-- (atx_heading (atx_h2_marker) (inline) @heading_text)
 -- (atx_heading (inline) @heading_text)
 
 local M = {}

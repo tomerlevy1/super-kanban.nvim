@@ -15,7 +15,7 @@ local function make_kv_completion(prefix, arg_lead, completions)
   )
 end
 
-local top_level_mode_completion = { 'open', 'create', 'card', 'list', 'search' }
+local top_level_mode_completion = { 'open', 'create', 'card', 'list' }
 local nested_mode_completion = {
   open = function(arg_lead)
     return vim.fn.getcompletion(arg_lead, 'file')
@@ -30,6 +30,7 @@ local nested_mode_completion = {
     'archive',
     'pick_date',
     'remove_date',
+    'search',
     'move=',
     'jump=',
   },
@@ -157,6 +158,7 @@ function M.setup_commands(kanban, config)
   }
 
   local action_groups = {
+    -- search = 'search',
     card = {
       create = 'create_card_at_begin',
       delete = 'delete_card',
@@ -164,6 +166,7 @@ function M.setup_commands(kanban, config)
       archive = 'archive_card',
       pick_date = 'pick_date',
       remove_date = 'remove_date',
+      search = 'search_card',
       move = { -- move=direction
         up = 'move_up',
         down = 'move_down',
@@ -201,7 +204,6 @@ function M.setup_commands(kanban, config)
         ascending = 'sort_by_due_ascending',
       },
     },
-    search = 'search',
   }
 
   vim.api.nvim_create_user_command('SuperKanban', function(opts)

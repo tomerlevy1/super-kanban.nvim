@@ -1,5 +1,9 @@
 ## Backlog
 
+- [ ] filter by tags
+
+- [ ] fix user_commd key=value completion
+
 - [ ] Add more move directional action
 
 - [ ] Implement move first/last for cardUI

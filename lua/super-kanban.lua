@@ -145,7 +145,7 @@ local config = {
     ['zl'] = 'move_list_right',
 
     ['q'] = 'close',
-    ['/'] = 'search',
+    ['/'] = 'search_card',
     ['zi'] = 'pick_date',
     ['X'] = 'log_info',
   },

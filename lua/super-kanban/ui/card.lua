@@ -1,6 +1,7 @@
 local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local DatePicker = require('super-kanban.ui.date_picker')
+local actions = require('super-kanban.actions')
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local date = require('super-kanban.utils.date')
@@ -253,13 +254,8 @@ function M:set_events()
 end
 
 function M:set_keymaps()
-  local buffer = self.win.buf
-
-  for lhs, rhs in pairs(self.ctx.config.mappings) do
-    vim.keymap.set('n', lhs, function()
-      rhs.callback(self, self.ctx.lists[self.list_index], self.ctx)
-    end, utils.merge({ buffer = buffer }, rhs))
-  end
+  local list = self.ctx.lists[self.list_index]
+  actions._set_keymaps(self, list, self.ctx, self.win.buf)
 end
 
 ---@param should_focus? boolean

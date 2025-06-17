@@ -1,7 +1,6 @@
 local Board = require('super-kanban.ui.board')
 local List = require('super-kanban.ui.list')
 local Card = require('super-kanban.ui.card')
-local actions = require('super-kanban.actions')
 local utils = require('super-kanban.utils')
 local writer = require('super-kanban.parser.writer')
 
@@ -115,40 +114,40 @@ local config = {
     },
   },
   mappings = {
-    ['gn'] = actions.create_card_at_begin(),
-    ['gN'] = actions.create_card_at_end(),
-    ['gD'] = actions.delete_card(),
-    ['g.'] = actions.sort_by_due_descending(),
-    ['g,'] = actions.sort_by_due_ascending(),
-    ['<C-t>'] = actions.toggle_complete(),
-    ['g<C-t>'] = actions.archive_card(),
+    ['gn'] = 'create_card_at_begin',
+    ['gN'] = 'create_card_at_end',
+    ['gD'] = 'delete_card',
+    ['g.'] = 'sort_by_due_descending',
+    ['g,'] = 'sort_by_due_ascending',
+    ['<C-t>'] = 'toggle_complete',
+    ['g<C-t>'] = 'archive_card',
 
-    ['zn'] = actions.create_list_at_begin(), -- wrong
-    ['zN'] = actions.create_list_at_end(),
-    ['zD'] = actions.delete_list(),
-    ['zr'] = actions.rename_list(),
+    ['zn'] = 'create_list_at_begin',
+    ['zN'] = 'create_list_at_end',
+    ['zD'] = 'delete_list',
+    ['zr'] = 'rename_list',
 
-    ['<C-k>'] = actions.jump_up(),
-    ['<C-j>'] = actions.jump_down(),
-    ['<C-h>'] = actions.jump_left(),
-    ['<C-l>'] = actions.jump_right(),
-    ['gg'] = actions.jump_first(),
-    ['G'] = actions.jump_last(),
+    ['<C-k>'] = 'jump_up',
+    ['<C-j>'] = 'jump_down',
+    ['<C-h>'] = 'jump_left',
+    ['<C-l>'] = 'jump_right',
+    ['gg'] = 'jump_first',
+    ['G'] = 'jump_last',
 
-    ['<A-k>'] = actions.move_up(),
-    ['<A-j>'] = actions.move_down(),
-    ['<A-h>'] = actions.move_left(),
-    ['<A-l>'] = actions.move_right(),
+    ['<A-k>'] = 'move_up',
+    ['<A-j>'] = 'move_down',
+    ['<A-h>'] = 'move_left',
+    ['<A-l>'] = 'move_right',
 
-    ['z0'] = actions.jump_list_first(),
-    ['z$'] = actions.jump_list_last(),
-    ['zh'] = actions.move_list_left(),
-    ['zl'] = actions.move_list_right(),
+    ['z0'] = 'jump_list_first',
+    ['z$'] = 'jump_list_last',
+    ['zh'] = 'move_list_left',
+    ['zl'] = 'move_list_right',
 
-    ['q'] = actions.close(),
-    ['/'] = actions.search(),
-    ['zi'] = actions.pick_date(),
-    ['X'] = actions.log_info(),
+    ['q'] = 'close',
+    ['/'] = 'search',
+    ['zi'] = 'pick_date',
+    ['X'] = 'log_info',
   },
 }
 
@@ -273,6 +272,7 @@ function M.create(source_path)
   M.open(source_path)
 end
 
+---@param user_conf superkanban.Config
 function M.setup(user_conf)
   if user_conf ~= nil then
     config = vim.tbl_deep_extend('keep', user_conf, config)

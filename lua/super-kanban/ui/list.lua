@@ -3,6 +3,7 @@ local utils = require('super-kanban.utils')
 local Card = require('super-kanban.ui.card')
 local text = require('super-kanban.utils.text')
 local date = require('super-kanban.utils.date')
+local actions = require('super-kanban.actions')
 
 ---@class superkanban.List.Opts
 ---@field data {title: string}
@@ -305,13 +306,8 @@ function M:set_events(ctx)
 end
 
 function M:set_keymaps()
-  local buffer = self.win.buf
-
-  for lhs, rhs in pairs(self.ctx.config.mappings) do
-    vim.keymap.set('n', lhs, function()
-      rhs.callback(nil, self.ctx.lists[self.index], self.ctx)
-    end, utils.merge({ buffer = buffer }, rhs))
-  end
+  local list = self.ctx.lists[self.index]
+  actions._set_keymaps(nil, list, self.ctx, self.win.buf)
 end
 
 ---@param placement? "first"|"last"

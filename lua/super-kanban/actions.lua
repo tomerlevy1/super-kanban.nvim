@@ -1,14 +1,13 @@
+local utils = require('super-kanban.utils')
+
 local actions = {}
 
-actions.close = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    ctx.board:exit()
-  end
-
-  return { callback = callback, desc = 'Close SuperKanban' }
+---Close SuperKanban
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.close = function(cardUI, listUI, ctx)
+  ctx.board:exit()
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -21,65 +20,54 @@ local _create_card = function(cardUI, listUI, ctx, placement)
   end
   listUI:create_card(placement)
 end
-actions.create_card_at_begin = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _create_card(cardUI, listUI, ctx, 'first')
-  end
 
-  return { callback = callback, desc = 'Create a new card at the begin of the list' }
-end
-actions.create_card_at_end = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _create_card(cardUI, listUI, ctx, 'last')
-  end
-
-  return { callback = callback, desc = 'Create a new card at the end of the list' }
+---Create a new card at the begin of the list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_card_at_begin = function(cardUI, listUI, ctx)
+  _create_card(cardUI, listUI, ctx, 'first')
 end
 
-actions.delete_card = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not cardUI then
-      return
-    end
-    cardUI:delete_card()
-  end
-
-  return { callback = callback, desc = 'Delete card' }
+---Create a new card at the end of the list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_card_at_end = function(cardUI, listUI, ctx)
+  _create_card(cardUI, listUI, ctx, 'last')
 end
-actions.toggle_complete = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not cardUI then
-      return
-    end
-    cardUI:toggle_complete()
-  end
 
-  return { callback = callback, desc = 'Toggle Complete' }
+---Delete card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.delete_card = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:delete_card()
 end
-actions.archive_card = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not cardUI then
-      return
-    end
-    cardUI:move_to_archive()
-  end
 
-  return { callback = callback, desc = 'Archive card' }
+---Toggle Complete
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.toggle_complete = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:toggle_complete()
+end
+
+---Archive card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.archive_card = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:move_to_archive()
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -98,63 +86,54 @@ local _create_list = function(cardUI, listUI, ctx, placement)
     end
   end)
 end
-actions.create_list_at_begin = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _create_list(cardUI, listUI, ctx, 'first')
-  end
 
-  return { callback = callback, desc = 'Create list at the begin of the board' }
-end
-actions.create_list_at_end = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _create_list(cardUI, listUI, ctx, 'last')
-  end
-
-  return { callback = callback, desc = 'Create list at end of the board' }
+---Create list at the begin of the board
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_list_at_begin = function(cardUI, listUI, ctx)
+  _create_list(cardUI, listUI, ctx, 'first')
 end
 
-actions.delete_list = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not listUI then
-      return
+---Create list at end of the board
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_list_at_end = function(cardUI, listUI, ctx)
+  _create_list(cardUI, listUI, ctx, 'last')
+end
+
+---Delete list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.delete_list = function(cardUI, listUI, ctx)
+  if not listUI then
+    return
+  end
+  listUI:delete_list()
+end
+
+---Rename list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.rename_list = function(cardUI, listUI, ctx)
+  if not listUI then
+    return
+  end
+
+  vim.api.nvim_exec_autocmds('BufLeave', {})
+  vim.ui.input({
+    prompt = 'Rename list:',
+    default = listUI.data.title,
+  }, function(name)
+    if name then
+      vim.schedule(function()
+        listUI:rename_list(name)
+      end)
     end
-    listUI:delete_list()
-  end
-
-  return { callback = callback, desc = 'Delete list' }
-end
-actions.rename_list = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not listUI then
-      return
-    end
-
-    vim.api.nvim_exec_autocmds('BufLeave', {})
-    vim.ui.input({
-      prompt = 'Rename list:',
-      default = listUI.data.title,
-    }, function(name)
-      if name then
-        vim.schedule(function()
-          listUI:rename_list(name)
-        end)
-      end
-    end)
-  end
-
-  return { callback = callback, desc = 'Rename list' }
+  end)
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -178,83 +157,43 @@ local _sort_by_due = function(cardUI, listUI, ctx, direction)
 
   listUI:sort_cards_by_due(direction)
 end
-actions.sort_by_due_descending = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _sort_by_due(cardUI, listUI, ctx, 'newest_first')
-  end
 
-  return { callback = callback, desc = 'Sort cards in descending order' }
-end
-actions.sort_by_due_ascending = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _sort_by_due(cardUI, listUI, ctx, 'oldest_first')
-  end
-
-  return { callback = callback, desc = 'Sort cards in ascefnding order' }
+---Sort cards in descending order
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.sort_by_due_descending = function(cardUI, listUI, ctx)
+  _sort_by_due(cardUI, listUI, ctx, 'newest_first')
 end
 
-actions.pick_date = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not cardUI then
-      return
-    end
-    cardUI:pick_date()
-  end
-
-  return { callback = callback, desc = 'Pick date' }
-end
-actions.remove_date = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if not cardUI then
-      return
-    end
-    cardUI:remove_date()
-  end
-
-  return { callback = callback, desc = 'Remove date' }
+---Sort cards in ascefnding order
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.sort_by_due_ascending = function(cardUI, listUI, ctx)
+  _sort_by_due(cardUI, listUI, ctx, 'oldest_first')
 end
 
-actions.log_info = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    if cardUI then
-      dd(
-        string.format(
-          'CardUI %s, index %s, visual_index %s, list_index %s',
-          cardUI.data.title,
-          cardUI.index,
-          cardUI.visible_index,
-          cardUI.list_index
-        )
-      )
-    end
-    if listUI then
-      dd(string.format('listUI %s,index %s, visual_index %s', listUI.data.title, listUI.index, listUI.visible_index))
-    end
-
-    if listUI and _G.log then
-      local list = ctx.lists[listUI.index]
-      for _, item in ipairs(list.cards) do
-        log(item.data.title, string.format('index %s, visual_index %s', item.index, item.visible_index))
-      end
-    end
+---Pick date
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.pick_date = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
   end
+  cardUI:pick_date()
+end
 
-  return { callback = callback, desc = 'Print card info' }
+---Remove date
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.remove_date = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:remove_date()
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -280,45 +219,37 @@ local function _move(cardUI, direction)
 
   move_directions[direction]()
 end
-actions.move_left = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move(cardUI, 'left')
-  end
 
-  return { callback = callback, desc = 'Move card to left' }
+---Move card to left
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_left = function(cardUI, listUI, ctx)
+  _move(cardUI, 'left')
 end
-actions.move_right = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move(cardUI, 'right')
-  end
 
-  return { callback = callback, desc = 'Move card to right' }
+---Move card to right
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_right = function(cardUI, listUI, ctx)
+  _move(cardUI, 'right')
 end
-actions.move_up = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move(cardUI, 'up')
-  end
 
-  return { callback = callback, desc = 'Move card to up' }
+---Move card to up
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_up = function(cardUI, listUI, ctx)
+  _move(cardUI, 'up')
 end
-actions.move_down = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move(cardUI, 'down')
-  end
 
-  return { callback = callback, desc = 'Move card to down' }
+---Move card to down
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_down = function(cardUI, listUI, ctx)
+  _move(cardUI, 'down')
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -341,25 +272,21 @@ local _move_list = function(cardUI, listUI, ctx, direction)
 
   move_directions[direction]()
 end
-actions.move_list_left = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move_list(cardUI, listUI, ctx, 'left')
-  end
 
-  return { callback = callback, desc = 'Move list to left' }
+---Move list to left
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_list_left = function(cardUI, listUI, ctx)
+  _move_list(cardUI, listUI, ctx, 'left')
 end
-actions.move_list_right = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _move_list(cardUI, listUI, ctx, 'right')
-  end
 
-  return { callback = callback, desc = 'Move list to right' }
+---Move list to right
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.move_list_right = function(cardUI, listUI, ctx)
+  _move_list(cardUI, listUI, ctx, 'right')
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -406,65 +333,53 @@ local _jump = function(cardUI, listUI, ctx, direction)
 
   move_directions[direction]()
 end
-actions.jump_left = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'left')
-  end
 
-  return { callback = callback, desc = 'Jump to left card' }
+---Jump to left card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_left = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'left')
 end
-actions.jump_right = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'right')
-  end
 
-  return { callback = callback, desc = 'Jump to right card' }
+---Jump to right card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_right = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'right')
 end
-actions.jump_up = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'up')
-  end
 
-  return { callback = callback, desc = 'Jump to up card' }
+---Jump to up card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_up = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'up')
 end
-actions.jump_down = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'down')
-  end
 
-  return { callback = callback, desc = 'Jump to down card' }
+---Jump to down card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_down = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'down')
 end
-actions.jump_first = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'first')
-  end
 
-  return { callback = callback, desc = 'Jump to first card' }
+---Jump to first card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_first = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'first')
 end
-actions.jump_last = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump(cardUI, listUI, ctx, 'last')
-  end
 
-  return { callback = callback, desc = 'Jump to last card' }
+---Jump to last card
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_last = function(cardUI, listUI, ctx)
+  _jump(cardUI, listUI, ctx, 'last')
 end
 
 ---@param cardUI superkanban.cardUI|nil
@@ -493,56 +408,98 @@ local _jump_list = function(cardUI, listUI, ctx, direction)
 
   move_directions[direction]()
 end
-actions.jump_list_left = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump_list(cardUI, listUI, ctx, 'left')
-  end
 
-  return { callback = callback, desc = 'Jump to left list' }
-end
-actions.jump_list_right = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump_list(cardUI, listUI, ctx, 'right')
-  end
-
-  return { callback = callback, desc = 'Jump to right list' }
-end
-actions.jump_list_first = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump_list(cardUI, listUI, ctx, 'first')
-  end
-
-  return { callback = callback, desc = 'Jump to first list' }
-end
-actions.jump_list_last = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    _jump_list(cardUI, listUI, ctx, 'last')
-  end
-
-  return { callback = callback, desc = 'Jump to last list' }
+---Jump to left list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_list_left = function(cardUI, listUI, ctx)
+  _jump_list(cardUI, listUI, ctx, 'left')
 end
 
-actions.search = function()
-  ---@param cardUI superkanban.cardUI|nil
-  ---@param listUI superkanban.ListUI|nil
-  ---@param ctx superkanban.Ctx
-  local callback = function(cardUI, listUI, ctx)
-    require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI)
+---Jump to right list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_list_right = function(cardUI, listUI, ctx)
+  _jump_list(cardUI, listUI, ctx, 'right')
+end
+
+---Jump to first list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_list_first = function(cardUI, listUI, ctx)
+  _jump_list(cardUI, listUI, ctx, 'first')
+end
+
+---Jump to last list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.jump_list_last = function(cardUI, listUI, ctx)
+  _jump_list(cardUI, listUI, ctx, 'last')
+end
+
+---Search
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.search = function(cardUI, listUI, ctx)
+  require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI)
+end
+
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.log_info = function(cardUI, listUI, ctx)
+  if cardUI then
+    dd(
+      string.format(
+        'CardUI %s, index %s, visual_index %s, list_index %s',
+        cardUI.data.title,
+        cardUI.index,
+        cardUI.visible_index,
+        cardUI.list_index
+      )
+    )
+  end
+  if listUI then
+    dd(string.format('listUI %s,index %s, visual_index %s', listUI.data.title, listUI.index, listUI.visible_index))
   end
 
-  return { callback = callback, desc = 'Search', nowait = true }
+  if listUI and _G.log then
+    local list = ctx.lists[listUI.index]
+    for _, item in ipairs(list.cards) do
+      log(item.data.title, string.format('index %s, visual_index %s', item.index, item.visible_index))
+    end
+  end
+end
+
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+---@param buf number
+function actions._set_keymaps(cardUI, listUI, ctx, buf)
+  for lhs, rhs in pairs(ctx.config.mappings) do
+    local opts = { buffer = buf }
+
+    if type(rhs) == 'string' then
+      opts.desc = rhs
+      local callback = actions[rhs]
+      if not callback then
+        return
+      end
+
+      vim.keymap.set('n', lhs, function()
+        callback(cardUI, listUI, ctx)
+      end, opts)
+    elseif type(rhs) == 'table' then
+      vim.keymap.set('n', lhs, function()
+        rhs.callback(cardUI, listUI, ctx)
+      end, utils.merge(opts, rhs))
+    end
+  end
 end
 
 return actions

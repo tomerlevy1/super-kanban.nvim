@@ -96,6 +96,7 @@ local function get_completion(arg_lead, cmd_line, cursor_pos)
   return {}
 end
 
+---Parse key=value inputs
 ---@param arg_str string
 local function parse_key_value(arg_str)
   if arg_str == nil or type(arg_str) ~= 'string' then
@@ -115,39 +116,28 @@ end
 
 local M = {}
 
----@param act {callback:fun(cardUI:superkanban.cardUI|nil,listUI:superkanban.ListUI|nil,ctx:superkanban.Ctx)}
+---@param fn fun(cardUI:superkanban.cardUI|nil,listUI:superkanban.ListUI|nil,ctx:superkanban.Ctx)
 ---@param ctx superkanban.Ctx
-local function run_action(act, ctx)
-  if not act or not act.callback then
-    return
-  end
-
+local function run_action_with_data(fn, ctx)
   local list = ctx.lists[ctx.location.list]
   local card = list.cards[ctx.location.card]
-  act.callback(card, list, ctx)
+  fn(card, list, ctx)
 end
 
----@param action_key string
+---@param action_name string
 ---@param ctx superkanban.Ctx
-local function run_action_from_key(action_key, ctx)
-  if not action_key then
-    return
-  end
+local execute_command = function(action_name, ctx)
+  if type(action_name) == 'string' then
+    local callback = actions[action_name]
+    if not callback or not type(callback) == 'function' then
+      return false
+    end
 
-  local fn = actions[action_key]
-  if not fn or not type(fn) == 'function' then
-    return
-  end
+    run_action_with_data(callback, ctx)
 
-  run_action(fn(), ctx)
-end
-
-local execute_command = function(act_name_from_group, ctx)
-  if type(act_name_from_group) == 'string' then
-    run_action_from_key(act_name_from_group, ctx)
     return true
-  elseif type(act_name_from_group) == 'function' then
-    act_name_from_group()
+  elseif type(action_name) == 'function' then
+    action_name()
     return true
   end
 
@@ -166,7 +156,7 @@ function M.setup_commands(kanban, config)
     end,
   }
 
-  local action_modes = {
+  local action_groups = {
     card = {
       create = 'create_card_at_begin',
       delete = 'delete_card',
@@ -223,17 +213,22 @@ function M.setup_commands(kanban, config)
       file = args[2]
       file_modes[mode](file)
       return
-    elseif action_modes[mode] then
+    elseif action_groups[mode] then
       if not kanban.is_opned then
         utils.msg('SuperKanban should be open to perform the action.', 'warn')
         return
       end
 
-      local action, action_value = parse_key_value(args[2])
-      local aciton_group = action_modes[mode]
-      local act_name_from_group = type(aciton_group) == 'table'
-          and (action_value and aciton_group[action][action_value] or aciton_group[action])
-        or aciton_group
+      local action_group = action_groups[mode]
+      local action_key, action_value = parse_key_value(args[2])
+      local act_name_from_group
+
+      if type(action_group) == 'table' then
+        local group = action_group[action_key]
+        act_name_from_group = action_value and group and group[action_value] or group
+      else
+        act_name_from_group = action_group
+      end
 
       if execute_command(act_name_from_group, kanban._ctx) then
         return

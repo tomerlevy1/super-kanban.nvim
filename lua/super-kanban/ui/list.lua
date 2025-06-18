@@ -63,7 +63,7 @@ function M:setup_win()
     zindex = conf.list.zindex,
     wo = utils.merge({
       winhighlight = hl.list,
-      winbar = self:generate_winbar(self.data.title, ''),
+      winbar = self:generate_winbar(self.data.title, tostring(#self.ctx.lists[self.index].cards)),
     }, conf.list.win_options),
     -- Non cofig values
     win = self.ctx.board.win.win,
@@ -179,21 +179,6 @@ function M:exit()
   self.visible_index = nil
 end
 
-function M:update_scroll_info(top, bottom, total)
-  self.scroll_info.top = top > 0 and top or 0
-  self.scroll_info.bot = bottom > 0 and bottom or 0
-  self:update_winbar(total)
-
-  vim.api.nvim_win_set_config(self.win.win, {
-    footer = {
-      { '↑' .. tostring(self.scroll_info.top) },
-      { '-', 'KanbanListBorder' },
-      { '↓' .. tostring(self.scroll_info.bot) },
-    },
-    footer_pos = 'center',
-  })
-end
-
 function M:item_can_fit()
   local height = self.win:size().height - 3
   return math.floor(height / (self.ctx.config.card.height + 1))
@@ -211,17 +196,18 @@ function M:in_view()
   return self:has_visual_index() and not self:closed()
 end
 
----@param new_index? number
-function M:update_visible_position(new_index)
-  if type(new_index) == 'number' and new_index > 0 then
-    self.win.opts.col = get_list_position(new_index, self.ctx.config).col
+---@param new_visible_index? number
+function M:update_visible_position(new_visible_index)
+  if type(new_visible_index) == 'number' and new_visible_index > 0 then
+    self.win.opts.col = get_list_position(new_visible_index, self.ctx.config).col
 
     if self:closed() then
       self.win:show()
     end
 
-    self.visible_index = new_index
+    self.visible_index = new_visible_index
     self.win:update()
+    self:update_scroll_info(self.scroll_info.top, self.scroll_info.bot - 1, #self.ctx.lists[self.index].cards)
   else
     self:exit()
   end
@@ -244,6 +230,30 @@ function M:update_winbar(card_count)
       { win = self.win.win }
     )
   end
+end
+
+---@param top number
+---@param bottom number
+---@param total number
+function M:update_scroll_info(top, bottom, total)
+  vim.validate({
+    top = { top, 'number' },
+    bottom = { bottom, 'number' },
+    total = { total, 'number' },
+  })
+
+  self.scroll_info.top = top > 0 and top or 0
+  self.scroll_info.bot = bottom > 0 and bottom or 0
+  self:update_winbar(total)
+
+  vim.api.nvim_win_set_config(self.win.win, {
+    footer = {
+      { '↑' .. tostring(self.scroll_info.top) },
+      { '-', 'KanbanListBorder' },
+      { '↓' .. tostring(self.scroll_info.bot) },
+    },
+    footer_pos = 'center',
+  })
 end
 
 ---@param opts {from:number,to:number}
@@ -457,7 +467,6 @@ function M:jump_to_first_card()
   for index = 1, #list.cards, 1 do
     local card = list.cards[index]
     if item_can_fit >= index then
-      -- dd(tk.data.title)
       card:update_visible_position(index)
     else
       card:update_visible_position(nil)

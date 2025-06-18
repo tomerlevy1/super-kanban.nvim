@@ -1,24 +1,28 @@
 ## Backlog
 
-- [ ] filter by tags
+- [ ] zoom in a list
 
-- [ ] fix user_commd key=value completion
+- [ ] implement header & footer
 
 - [ ] Add more move directional action
 
 - [ ] Implement move first/last for cardUI
 
+- [ ] filter by tags
+
+- [ ] fix user_commd key=value completion
+
 - [ ] Add description #task
-
-- [ ] Add `<C-o>/<C-j>/<C-6>` jumps #task
-
-- [ ] Set a WIP Limit https://publish.obsidian.md/kanban/How+do+I/Set+a+WIP+Limit
-
-- [ ] title <br> support
 
 - [ ] time tracking
 
+- [ ] Set a WIP Limit https://publish.obsidian.md/kanban/How+do+I/Set+a+WIP+Limit
+
 - [ ] Add ui buttons
+
+- [ ] Add `<C-o>/<C-j>/<C-6>` jumps #task
+
+- [ ] title <br> support
 
 - [ ] creat task in top/bot/next/prev
 
@@ -31,6 +35,8 @@
 ## Completed
 
 **Complete**
+
+- [x] fix card count while scroll
 
 - [x] org support
 

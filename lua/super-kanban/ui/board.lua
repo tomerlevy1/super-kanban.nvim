@@ -166,6 +166,7 @@ function M:fill_empty_space(opts)
 end
 
 function M:exit()
+  vim.api.nvim_exec_autocmds('BufLeave', {})
   self.win:close()
 end
 

@@ -16,10 +16,10 @@ local config = {
     section_separators = '-----',
     archive_heading = 'Archive',
     default_template = {
-      '* Backlog',
-      '* Todo',
-      '* Work in progress',
-      '* Completed',
+      '** Backlog',
+      '** Todo',
+      '** Work in progress',
+      '** Completed',
       '*Complete*',
     },
     header = {

@@ -82,6 +82,7 @@ local config = {
     },
   },
   list = {
+    winbar_format = '║ %s %%= %d ║',
     width = 32,
     height = 0.9,
     zindex = 6,
@@ -112,6 +113,11 @@ local config = {
     },
   },
   mappings = {
+    ['q'] = 'close',
+    ['/'] = 'search_card',
+    ['zi'] = 'pick_date',
+    ['X'] = 'log_info',
+
     ['gn'] = 'create_card_at_begin',
     ['gN'] = 'create_card_at_end',
     ['gD'] = 'delete_card',
@@ -141,11 +147,6 @@ local config = {
     ['z$'] = 'jump_list_last',
     ['zh'] = 'move_list_left',
     ['zl'] = 'move_list_right',
-
-    ['q'] = 'close',
-    ['/'] = 'search_card',
-    ['zi'] = 'pick_date',
-    ['X'] = 'log_info',
   },
 }
 
@@ -276,8 +277,9 @@ function M.setup(user_conf)
     config = vim.tbl_deep_extend('keep', user_conf, config)
   end
 
-  require('super-kanban.highlights').setup_highlights()
-  require('super-kanban.user_command').setup_commands(M, config)
+  require('super-kanban.highlights').setup()
+  require('super-kanban.user_command').setup(M, config)
+  require('super-kanban.ui').setup(config)
 end
 
 -- lua require("super-kanban").open("test.md")

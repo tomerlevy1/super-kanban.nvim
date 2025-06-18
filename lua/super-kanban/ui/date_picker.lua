@@ -2,6 +2,9 @@ local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local hl = require('super-kanban.highlights')
 
+---@type superkanban.Config
+local config
+
 ---@class superkanban.DatePicker.NewOpts
 ---@field data? superkanban.DatePickerDataOpts
 ---@field row? number
@@ -537,5 +540,10 @@ end
 -- 	})
 -- end
 -- open_date()
+
+---@param conf superkanban.Config
+function M.setup(conf)
+  config = conf
+end
 
 return M

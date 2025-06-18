@@ -94,7 +94,7 @@ local M = {
 	}),
 }
 
-function M.setup_highlights()
+function M.setup()
 	local float_bg = "#21252B"
 	local border_fg = c.cyan
   -- stylua: ignore

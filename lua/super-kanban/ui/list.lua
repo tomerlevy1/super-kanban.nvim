@@ -5,6 +5,9 @@ local text = require('super-kanban.utils.text')
 local date = require('super-kanban.utils.date')
 local actions = require('super-kanban.actions')
 
+---@type superkanban.Config
+local config
+
 ---@class superkanban.List.Opts
 ---@field data {title: string}
 ---@field index number
@@ -63,7 +66,7 @@ function M:setup_win()
     zindex = conf.list.zindex,
     wo = utils.merge({
       winhighlight = hl.list,
-      winbar = self:generate_winbar(self.data.title, tostring(#self.ctx.lists[self.index].cards)),
+      winbar = self:generate_winbar(self.data.title, #self.ctx.lists[self.index].cards),
     }, conf.list.win_options),
     -- Non cofig values
     win = self.ctx.board.win.win,
@@ -213,22 +216,16 @@ function M:update_visible_position(new_visible_index)
   end
 end
 
-local f_winbar = '║ %s %%= %s ║'
-
 ---@param title string
----@param count string
+---@param count number
 function M:generate_winbar(title, count)
-  return f_winbar:format(title, count)
+  return self.ctx.config.list.winbar_format:format(title, count)
 end
 
 ---@param card_count number
 function M:update_winbar(card_count)
   if type(card_count) == 'number' then
-    vim.api.nvim_set_option_value(
-      'winbar',
-      self:generate_winbar(self.data.title, tostring(card_count)),
-      { win = self.win.win }
-    )
+    vim.api.nvim_set_option_value('winbar', self:generate_winbar(self.data.title, card_count), { win = self.win.win })
   end
 end
 
@@ -668,6 +665,11 @@ function M:sort_cards_by_due(direction)
   local top = 0
   local bot = #list.cards - item_can_fit
   list:update_scroll_info(top, bot, #list.cards)
+end
+
+---@param conf superkanban.Config
+function M.setup(conf)
+  config = conf
 end
 
 return M

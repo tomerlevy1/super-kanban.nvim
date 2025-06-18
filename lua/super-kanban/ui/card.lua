@@ -6,6 +6,9 @@ local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local date = require('super-kanban.utils.date')
 
+---@type superkanban.Config
+local config
+
 ---@class superkanban.Card.Opts
 ---@field data superkanban.TaskData
 ---@field index number
@@ -139,7 +142,7 @@ function M:in_view()
 end
 
 function M:generate_winbar()
-  local f_str = '%%= %s%%#KanbanNone#%s'
+  local f_str = '%%=%s%%#KanbanNone#%s'
   local checkmark, checkmark_hl = self.ctx.config.icons.card_checkmarks[' '], 'KanbanCheckMark'
   if self:is_complete() then
     checkmark, checkmark_hl = self.ctx.config.icons.card_checkmarks['x'], 'KanbanCheckMarkDone'
@@ -484,6 +487,11 @@ function M:remove_date()
   self.data.due = {}
   self:update_buffer_text()
   self:update_winbar()
+end
+
+---@param conf superkanban.Config
+function M.setup(conf)
+  config = conf
 end
 
 return M

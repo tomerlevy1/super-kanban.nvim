@@ -1,8 +1,10 @@
-local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local List = require('super-kanban.ui.list')
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
+
+---@type superkanban.Config
+local config
 
 ---@class superkanban.BoardUI
 ---@field win snacks.win
@@ -414,6 +416,11 @@ function M:jump_to_last_list()
   local bot = 0
   local top = #lists - self:item_can_fit()
   self:update_scroll_info(top, bot)
+end
+
+---@param conf superkanban.Config
+function M.setup(conf)
+  config = conf
 end
 
 return M

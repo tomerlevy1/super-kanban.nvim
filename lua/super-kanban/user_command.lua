@@ -147,7 +147,7 @@ end
 
 ---@param kanban superkanban
 ---@param config superkanban.Config
-function M.setup_commands(kanban, config)
+function M.setup(kanban, config)
   local file_modes = {
     open = function(file)
       kanban.open(file)

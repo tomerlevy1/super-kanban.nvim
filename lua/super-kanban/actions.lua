@@ -480,8 +480,9 @@ end
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
 ---@param buf number
-function actions._set_keymaps(cardUI, listUI, ctx, buf)
-  for lhs, rhs in pairs(ctx.config.mappings) do
+---@param conf superkanban.Config
+function actions._set_keymaps(cardUI, listUI, ctx, buf, conf)
+  for lhs, rhs in pairs(conf.mappings) do
     local opts = { buffer = buf }
 
     if type(rhs) == 'string' then

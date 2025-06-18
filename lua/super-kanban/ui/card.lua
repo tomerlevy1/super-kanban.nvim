@@ -60,7 +60,7 @@ end
 ---@param list superkanban.ListUI
 ---@return snacks.win
 function M:setup_win(list)
-  local conf = self.ctx.config
+  local conf = config
 
   self.win = Snacks.win({
     -- User cofig values
@@ -78,7 +78,7 @@ function M:setup_win(list)
     relative = 'win',
     win = list.win.win,
     col = 0,
-    row = calculate_row_pos(self.index, self.ctx.config),
+    row = calculate_row_pos(self.index, config),
     focusable = true,
     keys = { q = false },
     bo = { modifiable = true, filetype = 'superkanban_card' },
@@ -143,9 +143,9 @@ end
 
 function M:generate_winbar()
   local f_str = '%%=%s%%#KanbanNone#%s'
-  local checkmark, checkmark_hl = self.ctx.config.icons.card_checkmarks[' '], 'KanbanCheckMark'
+  local checkmark, checkmark_hl = config.icons.card_checkmarks[' '], 'KanbanCheckMark'
   if self:is_complete() then
-    checkmark, checkmark_hl = self.ctx.config.icons.card_checkmarks['x'], 'KanbanCheckMarkDone'
+    checkmark, checkmark_hl = config.icons.card_checkmarks['x'], 'KanbanCheckMarkDone'
   end
 
   return f_str:format(utils.with_hl(checkmark, checkmark_hl), self:get_relative_date())
@@ -185,7 +185,7 @@ end
 ---@param new_index? number
 function M:update_visible_position(new_index)
   if type(new_index) == 'number' and new_index > 0 then
-    self.win.opts.row = calculate_row_pos(new_index, self.ctx.config)
+    self.win.opts.row = calculate_row_pos(new_index, config)
 
     if self:closed() then
       self.win:show()
@@ -258,7 +258,7 @@ end
 
 function M:set_keymaps()
   local list = self.ctx.lists[self.list_index]
-  actions._set_keymaps(self, list, self.ctx, self.win.buf)
+  actions._set_keymaps(self, list, self.ctx, self.win.buf, config)
 end
 
 ---@param should_focus? boolean

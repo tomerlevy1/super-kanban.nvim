@@ -181,7 +181,6 @@ local function open_board(source_path)
   ---@type superkanban.Ctx
   local ctx = {}
   ctx.board = Board()
-  ctx.config = config
   ctx.source_path = source_path
   ctx.lists = {}
   ctx.archive = parsed_data.lists['archive']

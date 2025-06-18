@@ -231,7 +231,7 @@ end
 ---@param find_day? number
 function M:scaffold_day_lines(find_day)
   local days_in_month = get_days_in_month(self.data.year, self.data.month)
-  local start_day = get_start_day(self.data.year, self.data.month, self.ctx.config.date_picker.first_day_of_week)
+  local start_day = get_start_day(self.data.year, self.data.month, config.date_picker.first_day_of_week)
   local lines, day_positions = get_calendar_lines(days_in_month, start_day, {
     find_day = find_day,
     today_day = self:month_has_today(),
@@ -248,7 +248,7 @@ end
 ---@param opts superkanban.DatePicker.MountOpts
 function M:mount(opts)
   opts = opts or {}
-  local conf = self.ctx.config
+  local conf = config
 
   local date_selected = false
   local function handle_on_select()
@@ -264,7 +264,7 @@ function M:mount(opts)
   local border_width = width + 2
   local info = self:scaffold_day_lines(self.data.day)
 
-  local calender_title = make_calendar_title(self.ctx.config.date_picker.first_day_of_week)
+  local calender_title = make_calendar_title(conf.date_picker.first_day_of_week)
   local weekdays = {
     { { text.center_str(calender_title, border_width), 'KanbanDatePickerWeekDays' } },
     { { text.center_str(string.rep('─', width), border_width), 'KanbanDatePickerSeparator' } },

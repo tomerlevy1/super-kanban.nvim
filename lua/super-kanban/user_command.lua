@@ -2,6 +2,9 @@ local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local actions = require('super-kanban.actions')
 
+---@type superkanban.Config
+local config
+
 local directions = { 'left', 'right', 'up', 'down', 'first', 'last' }
 local list_directions = { 'left', 'right', 'first', 'last' }
 local function make_kv_completion(prefix, arg_lead, completions)
@@ -146,8 +149,10 @@ local execute_command = function(action_name, ctx)
 end
 
 ---@param kanban superkanban
----@param config superkanban.Config
-function M.setup(kanban, config)
+---@param conf superkanban.Config
+function M.setup(kanban, conf)
+  config = conf
+
   local file_modes = {
     open = function(file)
       kanban.open(file)

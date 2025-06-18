@@ -20,13 +20,14 @@ local function format_md_checklist(data)
 end
 
 ---@param ctx superkanban.Ctx
-function M.write_file(ctx)
+---@param conf superkanban.Config
+function M.write_file(ctx, conf)
   local file = io.open(ctx.source_path, 'w')
   if not file then
     require('super-kanban.utils').msg("Can't open file.", 'error')
     return nil
   end
-  local decorators = ctx.config[ctx.ft]
+  local decorators = conf[ctx.ft]
   local heading_prefix = utils.get_heading_prefix(decorators.list_heading, ctx.ft)
 
   local new_lines = {}

@@ -48,7 +48,7 @@ end
 ---@param ctx superkanban.Ctx
 ---@param opts {on_close?:fun(),on_open?:fun()}
 function M:setup_win(ctx, opts)
-  local conf = ctx.config
+  local conf = config
 
   self.win = Snacks.win({
     -- User cofig values
@@ -120,8 +120,8 @@ function M:mount(ctx, opts)
 end
 
 function M:item_can_fit()
-  local width = self.win:size().width - 2 - self.ctx.config.board.padding.left
-  return math.floor(width / self.ctx.config.list.width)
+  local width = self.win:size().width - 2 - config.board.padding.left
+  return math.floor(width / config.list.width)
 end
 
 function M:update_scroll_info(first, last)
@@ -173,7 +173,7 @@ function M:exit()
 end
 
 function M:on_exit()
-  require('super-kanban.parser.writer').write_file(self.ctx)
+  require('super-kanban.parser.writer').write_file(self.ctx, config)
   for _, li in ipairs(self.ctx.lists) do
     li:exit()
   end
@@ -239,7 +239,7 @@ function M:create_list(list_name, placement)
 end
 
 function M:create_archive_list()
-  local archive_heading = self.ctx.config[self.ctx.ft].archive_heading
+  local archive_heading = config[self.ctx.ft].archive_heading
   if self.ctx.archive and self.ctx.archive.title == archive_heading then
     return
   end

@@ -55,7 +55,7 @@ function M.new(opts)
 end
 
 function M:setup_win()
-  local conf = self.ctx.config
+  local conf = config
   local pos = get_list_position(self.index, conf)
 
   self.win = Snacks.win({
@@ -184,7 +184,7 @@ end
 
 function M:item_can_fit()
   local height = self.win:size().height - 3
-  return math.floor(height / (self.ctx.config.card.height + 1))
+  return math.floor(height / (config.card.height + 1))
 end
 
 function M:closed()
@@ -202,7 +202,7 @@ end
 ---@param new_visible_index? number
 function M:update_visible_position(new_visible_index)
   if type(new_visible_index) == 'number' and new_visible_index > 0 then
-    self.win.opts.col = get_list_position(new_visible_index, self.ctx.config).col
+    self.win.opts.col = get_list_position(new_visible_index, config).col
 
     if self:closed() then
       self.win:show()
@@ -219,7 +219,7 @@ end
 ---@param title string
 ---@param count number
 function M:generate_winbar(title, count)
-  return self.ctx.config.list.winbar_format:format(title, count)
+  return config.list.winbar_format:format(title, count)
 end
 
 ---@param card_count number
@@ -314,7 +314,7 @@ end
 
 function M:set_keymaps()
   local list = self.ctx.lists[self.index]
-  actions._set_keymaps(nil, list, self.ctx, self.win.buf)
+  actions._set_keymaps(nil, list, self.ctx, self.win.buf, config)
 end
 
 ---@param placement? "first"|"last"

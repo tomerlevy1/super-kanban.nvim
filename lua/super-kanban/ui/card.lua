@@ -141,14 +141,14 @@ function M:in_view()
   return self:has_visual_index() and not self:closed()
 end
 
+local winbar_format = ''
 function M:generate_winbar()
-  local f_str = '%%=%s%%#KanbanNone#%s'
   local checkmark, checkmark_hl = config.icons.card_checkmarks[' '], 'KanbanCheckMark'
   if self:is_complete() then
     checkmark, checkmark_hl = config.icons.card_checkmarks['x'], 'KanbanCheckMarkDone'
   end
 
-  return f_str:format(utils.with_hl(checkmark, checkmark_hl), self:get_relative_date())
+  return winbar_format:format(utils.with_hl(checkmark, checkmark_hl), self:get_relative_date())
 end
 
 function M:update_winbar()
@@ -490,8 +490,17 @@ function M:remove_date()
 end
 
 ---@param conf superkanban.Config
+local function _build_winbar_format_str(conf)
+  return '%%=%s%%#KanbanNone#%s'
+  --          │               ╰> Date
+  --          ╰─> Card checkmark
+end
+
+---@param conf superkanban.Config
 function M.setup(conf)
   config = conf
+
+  winbar_format = _build_winbar_format_str(conf)
 end
 
 return M

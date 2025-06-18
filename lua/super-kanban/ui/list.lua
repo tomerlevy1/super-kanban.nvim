@@ -216,10 +216,11 @@ function M:update_visible_position(new_visible_index)
   end
 end
 
+local winbar_format = ''
 ---@param title string
 ---@param count number
 function M:generate_winbar(title, count)
-  return config.list.winbar_format:format(title, count)
+  return winbar_format:format(title, count)
 end
 
 ---@param card_count number
@@ -243,11 +244,12 @@ function M:update_scroll_info(top, bottom, total)
   self.scroll_info.bot = bottom > 0 and bottom or 0
   self:update_winbar(total)
 
+  local icons = config.icons
   vim.api.nvim_win_set_config(self.win.win, {
     footer = {
-      { '↑' .. tostring(self.scroll_info.top) },
+      { icons.arrow_up .. tostring(self.scroll_info.top) },
       { '-', 'KanbanListBorder' },
-      { '↓' .. tostring(self.scroll_info.bot) },
+      { icons.arrow_down .. tostring(self.scroll_info.bot) },
     },
     footer_pos = 'center',
   })
@@ -668,8 +670,21 @@ function M:sort_cards_by_due(direction)
 end
 
 ---@param conf superkanban.Config
+local function _build_winbar_format_str(conf)
+  local icons = conf.icons
+  return table.concat({
+    icons.list_left_edge,
+    ' %s %%= %d ',
+    -- │      ╰> Card count
+    -- ╰─> List heading
+    icons.list_right_edge,
+  })
+end
+
+---@param conf superkanban.Config
 function M.setup(conf)
   config = conf
+  winbar_format = _build_winbar_format_str(conf)
 end
 
 return M

@@ -75,18 +75,17 @@ local config = {
     width = 0,
     height = 6,
     zindex = 7,
-    border = { '', '', '', ' ', '▁', '▁', '▁', ' ' }, -- add border at bottom
+    border = { '', '', '', ' ', '▁', '▁', '▁', ' ' }, -- Only add border at bottom
     win_options = {
       wrap = true,
       -- spell = true, Uncomment this to enable spell checking
     },
   },
   list = {
-    winbar_format = '║ %s %%= %d ║',
     width = 32,
     height = 0.9,
     zindex = 6,
-    -- border = { "", "", "", "│", "┘", "─", "└", "│" }, -- bottom single
+    -- border = { '', '', '', '│', '┘', '─', '└', '│' }, -- bottom single
     border = { '', '', '', '│', '╯', '─', '╰', '│' }, -- bottom rounded
     -- border = "rounded",
     win_options = {},
@@ -95,7 +94,7 @@ local config = {
     width = 0,
     height = vim.o.lines - 2,
     zindex = 5,
-    border = { '', ' ', '', '', '', '', '', '' }, -- add empty space on top border
+    border = { '', ' ', '', '', '', '', '', '' }, -- Only add empty space on top border
     win_options = {},
     padding = { top = 1, left = 8 },
   },
@@ -106,6 +105,14 @@ local config = {
     first_day_of_week = 'Sunday',
   },
   icons = {
+    list_left_edge = '║',
+    list_right_edge = '║',
+    left_sep = '',
+    right_sep = '',
+    arrow_left = '←',
+    arrow_right = '→',
+    arrow_up = '↑',
+    arrow_down = '↓',
     card_checkmarks = {
       ['empty_box'] = '☐',
       [' '] = ' ',

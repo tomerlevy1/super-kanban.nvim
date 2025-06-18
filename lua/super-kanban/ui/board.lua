@@ -19,20 +19,13 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
+local winbar_format = ''
 ---@param title string
 ---@param start_count number
 ---@param end_count number
 ---@return string
 local function generate_winbar(title, start_count, end_count)
-  local segments = {
-    '%%#KanbanListTitleBottom# ← %s',
-    '%%=',
-    '%%#KanbanWinbar#%%#KanbanFileTitleAlt#%%#KanbanFileTitle#%s%%#KanbanFileTitleAlt#%%#KanbanWinbar#',
-    '%%=',
-    '%%#KanbanListTitleBottom#%s → ',
-  }
-  local f_str = table.concat(segments, ' ')
-  return string.format(f_str, start_count, title, end_count)
+  return winbar_format:format(start_count, title, end_count)
 end
 
 function M.new()
@@ -419,8 +412,47 @@ function M:jump_to_last_list()
 end
 
 ---@param conf superkanban.Config
+local function _build_winbar_format_str(conf)
+  local with_separator = require('super-kanban.highlights').build_str_with_separator
+  local icons = conf.icons
+  local left_sep, right_sep = icons.left_sep, icons.right_sep
+
+  local title_format = with_separator('%s', {
+    left_sep = left_sep,
+    right_sep = right_sep,
+    text_hl = '%%#KanbanBoardTitle#',
+    sep_hl = '%%#KanbanBoardTitleAlt#',
+  })
+
+  local left_scroll_format = with_separator(' ' .. icons.arrow_left .. ' %s', {
+    left_sep = '',
+    right_sep = right_sep,
+    text_hl = '%%#KanbanBoardScrollInfo#',
+    sep_hl = '%%#KanbanBoardScrollInfoAlt#',
+  })
+
+  local right_scroll_format = with_separator('%s ' .. icons.arrow_right .. ' ', {
+    left_sep = left_sep,
+    right_sep = '',
+    text_hl = '%%#KanbanBoardScrollInfo#',
+    sep_hl = '%%#KanbanBoardScrollInfoAlt#',
+  })
+
+  return table.concat({
+    left_scroll_format,
+    '%%#KanbanWinbar#',
+    '%%=',
+    title_format,
+    '%%#KanbanWinbar#',
+    '%%=',
+    right_scroll_format,
+  })
+end
+
+---@param conf superkanban.Config
 function M.setup(conf)
   config = conf
+  winbar_format = _build_winbar_format_str(conf)
 end
 
 return M

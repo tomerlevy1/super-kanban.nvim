@@ -5,6 +5,35 @@ local hl = require('super-kanban.highlights')
 ---@type superkanban.Config
 local config
 
+local ns_date_picker = vim.api.nvim_create_namespace('super-kanban-date-picker')
+local ns_date_under_cursor = vim.api.nvim_create_namespace('super-kanban-date-picker-date-under-cursor')
+local ns_date_today = vim.api.nvim_create_namespace('super-kanban-date-picker-today')
+
+local month_names = {
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+}
+
+local weekday_map = {
+  Sunday = 0,
+  Monday = 1,
+  Tuesday = 2,
+  Wednesday = 3,
+  Thursday = 4,
+  Friday = 5,
+  Saturday = 6,
+}
+
 ---@class superkanban.DatePicker.NewOpts
 ---@field data? superkanban.DatePickerDataOpts
 ---@field row? number
@@ -33,10 +62,6 @@ local M = setmetatable({}, {
 })
 M.__index = M
 
-local ns_date_picker = vim.api.nvim_create_namespace('super-kanban-date-picker')
-local ns_date_under_cursor = vim.api.nvim_create_namespace('super-kanban-date-picker-date-under-cursor')
-local ns_date_today = vim.api.nvim_create_namespace('super-kanban-date-picker-today')
-
 ---@param year number
 ---@param month number
 local function get_days_in_month(year, month)
@@ -52,16 +77,6 @@ local function get_days_in_month(year, month)
   local last_day_of_month = os.time({ year = year, month = month, day = 1 }) - 86400
   return tonumber(os.date('%d', last_day_of_month))
 end
-
-local weekday_map = {
-  Sunday = 0,
-  Monday = 1,
-  Tuesday = 2,
-  Wednesday = 3,
-  Thursday = 4,
-  Friday = 5,
-  Saturday = 6,
-}
 
 ---@param year number
 ---@param month number
@@ -110,21 +125,6 @@ local function make_calendar_title(first_day_of_week)
 
   return table.concat(result, ' ')
 end
-
-local month_names = {
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-}
 
 ---@param month_number number
 ---@return string
@@ -346,6 +346,7 @@ function M:mount(opts)
       end,
       i = handle_on_select,
       o = handle_on_select,
+      ['<CR>'] = handle_on_select,
     },
   })
 end
@@ -527,19 +528,6 @@ function M:set_events()
     end)
   end, { buf = true })
 end
-
--- local function open_date()
--- 	local picker = M.new({}, _G.foo)
--- 	picker:mount({
--- 		on_select = function(date)
--- 			dd(date)
--- 		end,
--- 		on_close = function()
--- 			dd("closed")
--- 		end,
--- 	})
--- end
--- open_date()
 
 ---@param conf superkanban.Config
 function M.setup(conf)

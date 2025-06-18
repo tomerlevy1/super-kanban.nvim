@@ -203,7 +203,7 @@ end
 function M:extract_buffer_and_update_task_data()
   local lines = self.win:lines()
 
-  local raw = table.concat(lines, ' ')
+  local raw = table.concat(lines, ' <br>')
   local title, tags, due, date_obj = text.extract_task_data_from_str(raw)
 
   self.data.title = title

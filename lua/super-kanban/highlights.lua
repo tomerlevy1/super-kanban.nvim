@@ -102,10 +102,11 @@ function M.setup()
     KanbanNormal                = { fg = c.fg, bg = c.none },
     KanbanWinbar                = { link = 'KanbanNormal' },
 
-    KanbanBoardTitle             = { fg = c.bg0, bg = c.orange },
-    KanbanBoardTitleAlt          = { fg = c.orange, bg = c.bg0 },
+    KanbanBoardTitle            = { fg = c.bg0, bg = c.orange },
+    KanbanBoardTitleEdge        = { fg = c.orange, bg = c.bg0 },
     KanbanBoardScrollInfo       = { fg = c.bg0, bg = c.cyan },
-    KanbanBoardScrollInfoAlt    = { fg = c.cyan, bg = c.none },
+    KanbanBoardScrollInfoEdge   = { fg = c.cyan, bg = c.none },
+    KanbanBoardToolbar          = { fg = c.light_grey, bg = c.none },
 
     -- List window
     KanbanListNormal            = { link = 'KanbanNormal' },

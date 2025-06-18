@@ -1,8 +1,10 @@
 ## Backlog
 
+- [ ] defalut file path
+
 - [ ] zoom in a list
 
-- [ ] implement header & footer
+- [ ] zoom in a card
 
 - [ ] Add more move directional action
 
@@ -12,8 +14,6 @@
 
 - [ ] fix user_commd key=value completion
 
-- [ ] Add description #task
-
 - [ ] time tracking
 
 - [ ] Set a WIP Limit https://publish.obsidian.md/kanban/How+do+I/Set+a+WIP+Limit
@@ -22,19 +22,21 @@
 
 - [ ] Add `<C-o>/<C-j>/<C-6>` jumps #task
 
-- [ ] title <br> support
-
 - [ ] creat task in top/bot/next/prev
 
 ## Todo
 
-- [ ] defalut file path
+- [ ] implement header & footer
 
 ## Work in progress
+
+- [ ] Add description #task
 
 ## Completed
 
 **Complete**
+
+- [x] line break support
 
 - [x] fix card count while scroll
 

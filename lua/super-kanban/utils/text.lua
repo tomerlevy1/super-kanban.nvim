@@ -33,7 +33,7 @@ function M.extract_task_data_from_str(raw)
     return ''
   end)
   -- clean up spaces
-  title = title:gsub('%s+', ' '):gsub('^%s*(.-)%s*$', '%1')
+  title = title:gsub('%s+', ' '):gsub('^%s*(.-)%s*$', '%1'):gsub(' <br>$', '')
 
   if #due > 0 then
     date_obj = Date.extract_date_obj_from_str(due[#due])
@@ -44,18 +44,19 @@ end
 
 ---@param data superkanban.TaskData
 function M.get_buf_lines_from_task(data)
-  local lines = { data.title or '' }
+  local lines = vim.split(data.title or '', ' <br>', { plain = true })
 
+  local last_line = {}
   if #data.tag > 0 then
-    lines[2] = table.concat(data.tag, ' ')
+    vim.list_extend(last_line, data.tag)
   end
 
   if #data.due > 0 then
-    if lines[2] then
-      lines[2] = lines[2] .. ' ' .. table.concat(data.due, ' ')
-    else
-      lines[2] = table.concat(data.due, ' ')
-    end
+    vim.list_extend(last_line, data.due)
+  end
+
+  if #last_line > 0 then
+    table.insert(lines, table.concat(last_line, ' '))
   end
 
   return lines

@@ -82,7 +82,7 @@ function M:setup_win(list)
     row = calculate_row_pos(self.index, config),
     focusable = true,
     keys = { q = false },
-    bo = { modifiable = true, filetype = 'superkanban_card' },
+    bo = { modifiable = true, filetype = constants.card.filetype },
     on_win = function()
       vim.schedule(function()
         self:set_events()
@@ -155,7 +155,7 @@ end
 function M:update_winbar()
   local ft = vim.api.nvim_get_option_value('filetype', { buf = self.win.buf })
 
-  if ft == 'superkanban_card' then
+  if ft == constants.card.filetype then
     vim.api.nvim_set_option_value('winbar', self:generate_winbar(), { win = self.win.win })
   end
 end
@@ -516,7 +516,7 @@ end
 local function _build_winbar_format_str(conf)
   return '%%=%s%%#KanbanNone#%s'
   --          │               ╰> Date
-  --          ╰─> Card checkmark
+  --          ╰─> Card check mark
 end
 
 ---@param conf superkanban.Config

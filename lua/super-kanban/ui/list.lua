@@ -1,3 +1,4 @@
+local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local utils = require('super-kanban.utils')
 local Card = require('super-kanban.ui.card')
@@ -77,7 +78,7 @@ function M:setup_win()
     relative = 'win',
     focusable = true,
     keys = { q = false },
-    bo = { modifiable = false, filetype = 'superkanban_list' },
+    bo = { modifiable = false, filetype = constants.list.filetype },
     on_win = function()
       vim.schedule(function()
         self:set_keymaps()

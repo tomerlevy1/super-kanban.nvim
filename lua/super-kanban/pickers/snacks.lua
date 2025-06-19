@@ -1,4 +1,5 @@
 local text = require('super-kanban.utils.text')
+local constants = require('super-kanban.constants')
 
 local M = {}
 
@@ -75,7 +76,7 @@ function M.search_cards(opts, ctx, current_item)
             text = card.data.title,
             preview = {
               text = table.concat(text.get_buf_lines_from_task(card.data), '\n'),
-              ft = 'superkanban_card',
+              ft = constants.card.filetype,
             },
             value = {
               data = card.data,

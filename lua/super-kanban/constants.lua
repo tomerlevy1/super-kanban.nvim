@@ -21,6 +21,15 @@ local M = {
       h6 = '######',
     },
   },
+  board = {
+    filetype = 'superkanban_board'
+  },
+  list = {
+    filetype = 'superkanban_list'
+  },
+  card = {
+    filetype = 'superkanban_card'
+  },
 }
 
 return M

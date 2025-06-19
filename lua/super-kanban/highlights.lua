@@ -63,6 +63,8 @@ local M = {
   board = make_winhighlight({
     Normal = 'KanbanNormal',
     NormalNC = 'KanbanNormal',
+    WinBar = 'KanbanWinbar',
+    WinBarNC = 'KanbanWinbar',
   }),
   list = make_winhighlight({
     Normal = 'KanbanListNormal',
@@ -108,7 +110,7 @@ function M.setup()
     KanbanWinbar                = { link = 'KanbanNormal' },
 
     KanbanBoardTitle            = { fg = c.bg0, bg = c.orange },
-    KanbanBoardTitleEdge        = { fg = c.orange, bg = c.bg0 },
+    KanbanBoardTitleEdge        = { fg = c.orange, bg = c.none },
     KanbanBoardScrollInfo       = { fg = c.bg0, bg = c.cyan },
     KanbanBoardScrollInfoEdge   = { fg = c.cyan, bg = c.none },
     KanbanBoardToolbar          = { fg = c.light_grey, bg = c.none },
@@ -126,18 +128,19 @@ function M.setup()
     KanbanCardNormalNC          = { fg = c.fg, bg = c.none },
     KanbanCardWinbarNC          = { fg = c.grey, bg = c.none },
     KanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
-
-    -- NotePopup window
-    KanbanNoteNormal            = { fg = c.fg, bg = float_bg },
-    KanbanNoteNormalNC          = { link = 'NormalNC' },
-    KanbanNoteBorder            = { fg = border_fg, bg = c.none },
-
-    -- Card cotent
+    -- Card content
     KanbanNone                  = { fg = c.none, bg = c.none },
     KanbanTag                   = { fg = c.yellow, bg = c.dim_yellow },
     KanbanDueDate               = { fg = '#8a5cf5' },
     KanbanCheckMark             = { link = 'KanbanCardWinbarNC' },
     KanbanCheckMarkDone         = { fg = c.dark_green },
+
+    -- NotePopup window
+    KanbanNoteNormal            = { fg = c.fg, bg = float_bg },
+    KanbanNoteNormalNC          = { link = 'NormalNC' },
+    KanbanNoteBorder            = { fg = border_fg, bg = c.none },
+    KanbanNoteTitle             = { link = 'KanbanBoardScrollInfo' },
+    KanbanNoteTitleEdge         = { link = 'KanbanBoardScrollInfoEdge' },
 
     -- Date Picker window
     KanbanDatePickerDateToday   = { fg = c.green },

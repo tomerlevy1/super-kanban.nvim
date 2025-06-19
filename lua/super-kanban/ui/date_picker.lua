@@ -1,3 +1,4 @@
+local constants = require('super-kanban.constants')
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local hl = require('super-kanban.highlights')
@@ -54,7 +55,7 @@ local weekday_map = {
 ---@field win_opts {row:number,col:number,relative:string}
 ---@field ctx superkanban.Ctx
 ---@field type "date_picker"
----@overload fun(opts?:superkanban.DatePicker.NewOpts,ctx:superkanban.Ctx): superkanban.cardUI
+---@overload fun(opts?:superkanban.DatePicker.NewOpts,ctx:superkanban.Ctx): superkanban.DatePickerUI
 local M = setmetatable({}, {
   __call = function(t, ...)
     return t.new(...)
@@ -80,7 +81,7 @@ end
 
 ---@param year number
 ---@param month number
----@param first_day_of_week WeekDay  -- e.g. "Sunday", "Monday", etc.
+---@param first_day_of_week WeekDay -- e.g. "Sunday", "Monday", etc.
 ---@return number -- returns weekday index: 0=first_day_of_week, 6=last_day_of_week
 local function get_start_day(year, month, first_day_of_week)
   vim.validate({
@@ -271,18 +272,18 @@ function M:mount(opts)
   }
 
   self.border_win = Snacks.win({
-    -- User cofig values
+    -- User config values
     border = conf.date_picker.border,
     zindex = conf.date_picker.zindex,
     wo = utils.merge({
       winhighlight = hl.date_picker,
     }, conf.date_picker.win_options),
-
+    -- Non config values
+    bo = { filetype = constants.date_picker.filetype_back },
     width = border_width,
     height = info.border_height,
     col = self.win_opts.col,
     row = self.win_opts.row,
-    -- Non cofig values
     title = get_calander_title(self.data.year, self.data.month),
     title_pos = 'center',
     relative = self.win_opts.relative,
@@ -298,18 +299,20 @@ function M:mount(opts)
   })
 
   self.win = Snacks.win({
+    -- User config values
     zindex = conf.date_picker.zindex,
     wo = utils.merge({
       winhighlight = hl.date_picker,
     }, conf.date_picker.win_options),
-
+    -- Non config values
+    bo = { filetype = constants.date_picker.filetype },
     width = width,
     height = info.height,
     border = 'none',
     relative = 'win',
     -- col = "0",
     row = #weekdays,
-    win = self.border_win.win,
+    win = self.border_win.win, -- Set border win as parent window
     text = function()
       return info.lines
     end,
@@ -322,7 +325,7 @@ function M:mount(opts)
     end,
     on_close = function()
       self:exit()
-      -- Call if user canceled and did not selelcted any date
+      -- Call if user canceled and did not selected any date
       if not date_selected and opts.on_close then
         opts.on_close()
       end

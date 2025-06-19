@@ -60,7 +60,7 @@ function M:setup_win()
   local pos = get_list_position(self.index, conf)
 
   self.win = Snacks.win({
-    -- User cofig values
+    -- User config values
     width = conf.list.width,
     height = conf.list.height,
     border = conf.list.border,
@@ -69,7 +69,7 @@ function M:setup_win()
       winhighlight = hl.list,
       winbar = self:generate_winbar(self.data.title, #self.ctx.lists[self.index].cards),
     }, conf.list.win_options),
-    -- Non cofig values
+    -- Non config values
     win = self.ctx.board.win.win,
     row = pos.row,
     col = pos.col,

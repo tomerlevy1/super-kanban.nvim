@@ -64,7 +64,7 @@ function M:setup_win(list)
   local conf = config
 
   self.win = Snacks.win({
-    -- User cofig values
+    -- User config values
     width = conf.card.width,
     height = conf.card.height,
     border = conf.card.border,
@@ -73,7 +73,7 @@ function M:setup_win(list)
       winbar = self:generate_winbar(),
       winhighlight = hl.card,
     }, conf.card.win_options),
-    -- Non cofig values
+    -- Non config values
     show = false,
     enter = false,
     relative = 'win',
@@ -446,7 +446,7 @@ end
 
 function M:pick_date(create_new_date, at_sign_pos)
   local data = create_new_date and {} or date.extract_date_obj_from_str(self.data.due[#self.data.due])
-  local picker = DatePicker.new({ data = data }, self.ctx)
+  local picker = DatePicker({ data = data }, self.ctx)
   picker:mount({
     on_select = function(selected_date)
       if not selected_date then

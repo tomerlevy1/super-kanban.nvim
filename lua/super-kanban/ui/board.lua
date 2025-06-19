@@ -45,7 +45,7 @@ function M:setup_win(ctx, opts)
   local conf = config
 
   self.win = Snacks.win({
-    -- User cofig values
+    -- User config values
     width = conf.board.width,
     height = conf.board.height,
     border = conf.board.border,
@@ -54,7 +54,7 @@ function M:setup_win(ctx, opts)
       winhighlight = hl.board,
       winbar = generate_winbar('Kanban', 0, 0),
     }, conf.list.win_options),
-    -- Non cofig values
+    -- Non config values
     col = 0,
     row = 0,
     enter = false,
@@ -448,8 +448,8 @@ local function _build_winbar_format_str(conf)
     default_hl,
     '%%=',
     title_format,
-    '%%=',
     default_hl,
+    '%%=',
     right_scroll_format,
   })
 end

@@ -86,29 +86,28 @@ function M:setup_win(opts)
   local icons = config.icons
   local fname_tail = vim.fn.fnamemodify(opts.data.file_path, ':t')
   local title = {
-    { icons.left_sep, 'KanbanBoardScrollInfoEdge' },
-    { fname_tail, 'KanbanBoardScrollInfo' },
-    { icons.right_sep, 'KanbanBoardScrollInfoEdge' },
+    { icons.left_sep, 'KanbanNoteTitleEdge' },
+    { fname_tail, 'KanbanNoteTitle' },
+    { icons.right_sep, 'KanbanNoteTitleEdge' },
   }
 
   local note_conf = config.note_popup
 
   return Snacks.win({
-    -- User cofig values
+    -- User config values
     width = note_conf.width,
     height = note_conf.height,
     border = note_conf.border,
     zindex = note_conf.zindex,
-    wo = utils.merge({
-      winhighlight = hl.note_popup,
-    }, note_conf.win_options),
-
-    -- Non cofig values
-    file = opts.data.file_path,
     footer = title,
     footer_pos = 'center',
     -- title = title,
     -- title_pos = 'center',
+    wo = utils.merge({
+      winhighlight = hl.note_popup,
+    }, note_conf.win_options),
+    -- Non config values
+    file = opts.data.file_path,
     on_win = function()
       vim.schedule(function()
         self:set_events(opts)

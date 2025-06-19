@@ -257,7 +257,7 @@ function M.open(source_path)
   open_board(source_path)
 end
 
----Scaffold a kanban file with default template
+---Scaffold a KanBan file with default template
 ---@param source_path string
 function M.create(source_path)
   if not source_path or type(source_path) ~= 'string' or source_path == '' then
@@ -301,7 +301,5 @@ function M.setup(user_conf)
   require('super-kanban.user_command').setup(M, config)
   require('super-kanban.ui').setup(config)
 end
-
--- lua require("super-kanban").open("test.md")
 
 return M

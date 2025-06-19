@@ -21,6 +21,10 @@ local M = {
       h6 = '######',
     },
   },
+  date_picker = {
+    filetype = 'superkanban_date_picker',
+    filetype_back = 'superkanban_date_picker_back',
+  },
   board = {
     filetype = 'superkanban_board'
   },

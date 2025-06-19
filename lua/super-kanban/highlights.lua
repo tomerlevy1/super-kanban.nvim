@@ -92,6 +92,11 @@ local M = {
     FloatBorder = 'KanbanDatePickerBorder',
     Title = 'KanbanDatePickerTitle',
   }),
+  note_popup = make_winhighlight({
+    Normal = 'KanbanNoteNormal',
+    NormalNC = 'KanbanNoteNormalNC',
+    FloatBorder = 'KanbanNoteBorder',
+  }),
 }
 
 function M.setup()
@@ -121,6 +126,11 @@ function M.setup()
     KanbanCardNormalNC          = { fg = c.fg, bg = c.none },
     KanbanCardWinbarNC          = { fg = c.grey, bg = c.none },
     KanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
+
+    -- NotePopup window
+    KanbanNoteNormal            = { fg = c.fg, bg = float_bg },
+    KanbanNoteNormalNC          = { link = 'NormalNC' },
+    KanbanNoteBorder            = { fg = border_fg, bg = c.none },
 
     -- Card cotent
     KanbanNone                  = { fg = c.none, bg = c.none },

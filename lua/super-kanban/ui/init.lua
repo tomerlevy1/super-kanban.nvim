@@ -6,6 +6,7 @@ function M.setup(conf)
   require('super-kanban.ui.list').setup(conf)
   require('super-kanban.ui.card').setup(conf)
   require('super-kanban.ui.date_picker').setup(conf)
+  require('super-kanban.ui.note_popup').setup(conf)
 end
 
 return M

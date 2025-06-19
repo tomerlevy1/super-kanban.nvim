@@ -26,15 +26,17 @@
 
 ## Todo
 
+- [ ] fix cursor position while pick date
+
 - [ ] implement header & footer
 
 ## Work in progress
 
-- [ ] Add description #task
-
 ## Completed
 
 **Complete**
+
+- [x] Add description
 
 - [x] line break support
 

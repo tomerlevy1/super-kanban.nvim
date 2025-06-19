@@ -166,7 +166,7 @@ function M:exit()
 end
 
 function M:on_exit()
-  require('super-kanban.parser.writer').write_file(self.ctx, config)
+  require('super-kanban.parser.writer').write_kanban_file(self.ctx, config)
   for _, li in ipairs(self.ctx.lists) do
     li:exit()
   end

@@ -104,6 +104,13 @@ local config = {
     win_options = {},
     first_day_of_week = 'Sunday',
   },
+  note_popup = {
+    width = 0.6,
+    height = 0.7,
+    zindex = 8,
+    border = 'rounded',
+    win_options = {},
+  },
   icons = {
     list_left_edge = '║',
     list_right_edge = '║',
@@ -125,6 +132,7 @@ local config = {
     ['zi'] = 'pick_date',
     ['X'] = 'log_info',
 
+    ['<cr>'] = 'open_card_note',
     ['gn'] = 'create_card_at_begin',
     ['gN'] = 'create_card_at_end',
     ['gD'] = 'delete_card',
@@ -269,7 +277,13 @@ function M.create(source_path)
     return
   end
 
-  local success = writer.write_default_template(source_path, config, filetype)
+  local default_template = config[filetype].default_template
+  if type(default_template) ~= 'table' and #default_template < 1 then
+    utils.msg(('Invalid configuration: `config.%s.default_template`'):format(filetype), 'error')
+    return
+  end
+
+  local success = writer.write_lines(source_path, default_template)
   if not success then
     return
   end

@@ -70,6 +70,17 @@ actions.archive_card = function(cardUI, listUI, ctx)
   cardUI:move_to_archive()
 end
 
+---Open card note
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.open_card_note = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:open_note()
+end
+
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx

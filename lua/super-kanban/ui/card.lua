@@ -1,6 +1,7 @@
 local constants = require('super-kanban.constants')
 local hl = require('super-kanban.highlights')
 local DatePicker = require('super-kanban.ui.date_picker')
+local NotePopup = require('super-kanban.ui.note_popup')
 local actions = require('super-kanban.actions')
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
@@ -487,6 +488,28 @@ function M:remove_date()
   self.data.due = {}
   self:update_buffer_text()
   self:update_winbar()
+end
+
+function M:open_note()
+  local lines = self.win:lines()
+  local file_path, note_title, create_link = NotePopup.create_note_and_get_path(lines, self.ctx.ft)
+  if not file_path or not note_title then
+    return
+  end
+  if create_link then
+    local line_number = 1
+    vim.api.nvim_buf_set_lines(self.win.buf, line_number - 1, line_number, false, { '[[' .. note_title .. ']]' })
+    self:extract_buffer_and_update_task_data()
+  end
+
+  NotePopup({
+    data = { title = note_title, file_path = file_path },
+    on_close = function()
+      pcall(function()
+        self:focus()
+      end)
+    end,
+  }, self.ctx)
 end
 
 ---@param conf superkanban.Config

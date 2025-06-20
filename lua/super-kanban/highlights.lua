@@ -134,6 +134,8 @@ function M.setup()
     KanbanDueDate               = { fg = '#8a5cf5' },
     KanbanCheckMark             = { link = 'KanbanCardWinbarNC' },
     KanbanCheckMarkDone         = { fg = c.dark_green },
+    SuperKanbanLink             = { link = 'Function' },
+    SuperKanbanLinkDelimiter    = { link = 'SuperKanbanLink'  },
 
     -- NotePopup window
     KanbanNoteNormal            = { fg = c.fg, bg = float_bg },

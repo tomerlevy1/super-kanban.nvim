@@ -107,6 +107,7 @@ function M:setup_win(opts)
       winhighlight = hl.note_popup,
     }, note_conf.win_options),
     -- Non config values
+    backdrop = false,
     file = opts.data.file_path,
     on_win = function()
       vim.schedule(function()

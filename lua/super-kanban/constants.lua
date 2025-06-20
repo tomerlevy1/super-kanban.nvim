@@ -22,8 +22,8 @@ local M = {
     },
   },
   date_picker = {
-    filetype = 'superkanban_date_picker',
-    filetype_back = 'superkanban_date_picker_back',
+    filetype = 'superkanban_datepicker',
+    filetype_border = 'superkanban_datepicker_border',
   },
   board = {
     filetype = 'superkanban_board'

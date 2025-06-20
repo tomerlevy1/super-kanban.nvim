@@ -74,6 +74,7 @@ function M:setup_win(list)
       winhighlight = hl.card,
     }, conf.card.win_options),
     -- Non config values
+    backdrop = false,
     show = false,
     enter = false,
     relative = 'win',

@@ -110,7 +110,7 @@ function M.setup()
     DatePickerTitle       = 'Type' ,
     DatePickerWeekDays    = 'SuperKanbanBorder',
     DatePickerSeparator   = 'NonText',
-    DatePickerToday       = 'Type',
+    DatePickerToday       = 'SuperKanbanTag',
     DatePickerCursor      = { fg = darker_bg,  bg = cursor_bg },
   }, { prefix = prefix, default = false })
 end

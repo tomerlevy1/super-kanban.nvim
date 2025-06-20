@@ -53,8 +53,9 @@ function M:setup_win(ctx, opts)
     wo = utils.merge({
       winhighlight = hl.board,
       winbar = generate_winbar('Kanban', 0, 0),
-    }, conf.list.win_options),
+    }, conf.board.win_options),
     -- Non config values
+    backdrop = false,
     col = 0,
     row = 0,
     enter = false,

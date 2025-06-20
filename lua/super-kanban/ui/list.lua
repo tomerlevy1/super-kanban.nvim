@@ -70,6 +70,7 @@ function M:setup_win()
       winbar = self:generate_winbar(self.data.title, #self.ctx.lists[self.index].cards),
     }, conf.list.win_options),
     -- Non config values
+    backdrop = false,
     win = self.ctx.board.win.win,
     row = pos.row,
     col = pos.col,

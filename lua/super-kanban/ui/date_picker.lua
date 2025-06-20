@@ -279,7 +279,8 @@ function M:mount(opts)
       winhighlight = hl.date_picker,
     }, conf.date_picker.win_options),
     -- Non config values
-    bo = { filetype = constants.date_picker.filetype_back },
+    backdrop = false,
+    bo = { filetype = constants.date_picker.filetype_border },
     width = border_width,
     height = info.border_height,
     col = self.win_opts.col,
@@ -305,6 +306,7 @@ function M:mount(opts)
       winhighlight = hl.date_picker,
     }, conf.date_picker.win_options),
     -- Non config values
+    backdrop = false,
     bo = { filetype = constants.date_picker.filetype },
     width = width,
     height = info.height,

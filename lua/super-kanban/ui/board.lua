@@ -414,15 +414,15 @@ end
 
 ---@param conf superkanban.Config
 local function _build_winbar_format_str(conf)
-  local with_separator = require('super-kanban.highlights').build_str_with_separator
+  local with_separator = require('super-kanban.utils.hl').build_str_with_separator
   local icons = conf.icons
   local left_sep, right_sep = icons.left_sep, icons.right_sep
 
   local title_format = with_separator('%s', {
     left_sep = left_sep,
     right_sep = right_sep,
-    text_hl = '%%#SuperKanbanBoardTitle#',
-    sep_hl = '%%#SuperKanbanBoardTitleEdge#',
+    text_hl = '%%#SuperKanbanBoardFileName#',
+    sep_hl = '%%#SuperKanbanBoardFileNameEdge#',
   })
 
   local left_scroll_format = with_separator(' ' .. icons.arrow_left .. ' %s', {

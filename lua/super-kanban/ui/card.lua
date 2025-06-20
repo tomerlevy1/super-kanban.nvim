@@ -144,9 +144,9 @@ end
 
 local winbar_format = ''
 function M:generate_winbar()
-  local checkmark, checkmark_hl = config.icons.card_checkmarks[' '], 'KanbanCheckMark'
+  local checkmark, checkmark_hl = config.icons.card_checkmarks[' '], 'SuperKanbanCheckMark'
   if self:is_complete() then
-    checkmark, checkmark_hl = config.icons.card_checkmarks['x'], 'KanbanCheckMarkDone'
+    checkmark, checkmark_hl = config.icons.card_checkmarks['x'], 'SuperKanbanCheckMarkDone'
   end
 
   return winbar_format:format(utils.with_hl(checkmark, checkmark_hl), self:get_relative_date())
@@ -514,7 +514,7 @@ end
 
 ---@param conf superkanban.Config
 local function _build_winbar_format_str(conf)
-  return '%%=%s%%#KanbanNone#%s'
+  return '%%=%s%%#SuperKanbanNone#%s'
   --          │               ╰> Date
   --          ╰─> Card check mark
 end

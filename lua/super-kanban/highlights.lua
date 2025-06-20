@@ -49,8 +49,7 @@ local c = {
   ligh_green = '#00a86d',
 }
 
--- %#KanbanBoardTitle#
-local make_winhighlight = function(highlight)
+local winhighlight = function(highlight)
   return table.concat(
     vim.tbl_map(function(key)
       return key .. ':' .. highlight[key]
@@ -60,44 +59,44 @@ local make_winhighlight = function(highlight)
 end
 
 local M = {
-  board = make_winhighlight({
-    Normal = 'KanbanNormal',
-    NormalNC = 'KanbanNormal',
-    WinBar = 'KanbanWinbar',
-    WinBarNC = 'KanbanWinbar',
+  board = winhighlight({
+    Normal = 'SuperKanbanBoardNormal',
+    NormalNC = 'SuperKanbanBoardNormal',
+    WinBar = 'SuperKanbanBoardWinbar',
+    WinBarNC = 'SuperKanbanBoardWinbar',
   }),
-  list = make_winhighlight({
-    Normal = 'KanbanListNormal',
-    NormalNC = 'KanbanListNormal',
-    WinBar = 'KanbanListWinbar',
-    WinBarNC = 'KanbanListWinbar',
-    FloatBorder = 'KanbanListBorder',
-    FloatTitle = 'KanbanListTitleBottom',
+  list = winhighlight({
+    Normal = 'SuperKanbanListNormal',
+    NormalNC = 'SuperKanbanListNormal',
+    WinBar = 'SuperKanbanListWinbar',
+    WinBarNC = 'SuperKanbanListWinbar',
+    FloatBorder = 'SuperKanbanListBorder',
+    FloatTitle = 'SuperKanbanListTitleBottom',
   }),
-  card = make_winhighlight({
-    Normal = 'KanbanCardNormal',
-    NormalNC = 'KanbanCardNormalNC',
-    WinBar = 'KanbanCardWinbar',
-    WinBarNC = 'KanbanCardWinbarNC',
-    FloatBorder = 'KanbanCardSeparatorNC',
+  card = winhighlight({
+    Normal = 'SuperKanbanCardNormal',
+    NormalNC = 'SuperKanbanCardNormalNC',
+    WinBar = 'SuperKanbanCardWinbar',
+    WinBarNC = 'SuperKanbanCardWinbarNC',
+    FloatBorder = 'SuperKanbanCardSeparatorNC',
   }),
-  cardActive = make_winhighlight({
-    Normal = 'KanbanCardNormal',
-    NormalNC = 'KanbanCardNormalNC',
-    WinBar = 'KanbanCardWinbar',
-    WinBarNC = 'KanbanCardWinbarNC',
-    FloatBorder = 'KanbanCardSeparator',
+  cardActive = winhighlight({
+    Normal = 'SuperKanbanCardNormal',
+    NormalNC = 'SuperKanbanCardNormalNC',
+    WinBar = 'SuperKanbanCardWinbar',
+    WinBarNC = 'SuperKanbanCardWinbarNC',
+    FloatBorder = 'SuperKanbanCardSeparator',
   }),
-  date_picker = make_winhighlight({
-    Normal = 'KanbanDatePickerNormal',
-    NormalNC = 'KanbanDatePickerNormal',
-    FloatBorder = 'KanbanDatePickerBorder',
-    Title = 'KanbanDatePickerTitle',
+  date_picker = winhighlight({
+    Normal = 'SuperKanbanDatePickerNormal',
+    NormalNC = 'SuperKanbanDatePickerNormal',
+    FloatBorder = 'SuperKanbanDatePickerBorder',
+    Title = 'SuperKanbanDatePickerTitle',
   }),
-  note_popup = make_winhighlight({
-    Normal = 'KanbanNoteNormal',
-    NormalNC = 'KanbanNoteNormalNC',
-    FloatBorder = 'KanbanNoteBorder',
+  note_popup = winhighlight({
+    Normal = 'SuperKanbanNoteNormal',
+    NormalNC = 'SuperKanbanNoteNormalNC',
+    FloatBorder = 'SuperKanbanNoteBorder',
   }),
 }
 
@@ -106,52 +105,52 @@ function M.setup()
   local border_fg = c.cyan
   -- stylua: ignore
   local highlights = {
-    KanbanNormal                = { fg = c.fg, bg = c.none },
-    KanbanWinbar                = { link = 'KanbanNormal' },
-
-    KanbanBoardTitle            = { fg = c.bg0, bg = c.orange },
-    KanbanBoardTitleEdge        = { fg = c.orange, bg = c.none },
-    KanbanBoardScrollInfo       = { fg = c.bg0, bg = c.cyan },
-    KanbanBoardScrollInfoEdge   = { fg = c.cyan, bg = c.none },
-    KanbanBoardToolbar          = { fg = c.light_grey, bg = c.none },
+    SuperKanbanBoardNormal           = { fg = c.fg, bg = c.none },
+    SuperKanbanBoardWinbar           = { link = 'SuperKanbanBoardNormal' },
+    SuperKanbanBoardTitle            = { fg = c.bg0, bg = c.orange },
+    SuperKanbanBoardTitleEdge        = { fg = c.orange, bg = c.none },
+    SuperKanbanBoardScrollInfo       = { fg = c.bg0, bg = c.cyan },
+    SuperKanbanBoardScrollInfoEdge   = { fg = c.cyan, bg = c.none },
+    SuperKanbanBoardToolbar          = { fg = c.light_grey, bg = c.none },
 
     -- List window
-    KanbanListNormal            = { link = 'KanbanNormal' },
-    KanbanListBorder            = { fg = border_fg, bg = c.none },
-    KanbanListWinbar            = { fg = c.bg0, bg = border_fg },
-    KanbanListTitleBottom       = { fg = c.green, bg = c.none },
+    SuperKanbanListNormal            = { link = 'SuperKanbanBoardNormal' },
+    SuperKanbanListBorder            = { fg = border_fg, bg = c.none },
+    SuperKanbanListWinbar            = { fg = c.bg0, bg = border_fg },
+    SuperKanbanListTitleBottom       = { fg = c.green, bg = c.none },
 
     -- Card window
-    KanbanCardNormal            = { fg = c.fg, bg = float_bg },
-    KanbanCardWinBar            = { fg = c.light_grey, bg = float_bg },
-    KanbanCardSeparator         = { fg = border_fg, bg = float_bg },
-    KanbanCardNormalNC          = { fg = c.fg, bg = c.none },
-    KanbanCardWinbarNC          = { fg = c.grey, bg = c.none },
-    KanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
+    SuperKanbanCardNormal            = { fg = c.fg, bg = float_bg },
+    SuperKanbanCardWinBar            = { fg = c.light_grey, bg = float_bg },
+    SuperKanbanCardSeparator         = { fg = border_fg, bg = float_bg },
+    SuperKanbanCardNormalNC          = { fg = c.fg, bg = c.none },
+    SuperKanbanCardWinbarNC          = { fg = c.grey, bg = c.none },
+    SuperKanbanCardSeparatorNC       = { fg = border_fg, bg = c.none },
+
     -- Card content
-    KanbanNone                  = { fg = c.none, bg = c.none },
-    KanbanTag                   = { fg = c.yellow, bg = c.dim_yellow },
-    KanbanDueDate               = { fg = '#8a5cf5' },
-    KanbanCheckMark             = { link = 'KanbanCardWinbarNC' },
-    KanbanCheckMarkDone         = { fg = c.dark_green },
-    SuperKanbanLink             = { link = 'Function' },
-    SuperKanbanLinkDelimiter    = { link = 'SuperKanbanLink'  },
+    SuperKanbanNone                  = { fg = c.none, bg = c.none },
+    SuperKanbanTag                   = { fg = c.yellow, bg = c.dim_yellow },
+    SuperKanbanDueDate               = { fg = '#8a5cf5' },
+    SuperKanbanCheckMark             = { link = 'SuperKanbanCardWinbarNC' },
+    SuperKanbanCheckMarkDone         = { fg = c.dark_green },
+    SuperKanbanLink                  = { link = 'Function' },
+    SuperKanbanLinkDelimiter         = { link = 'SuperKanbanLink'  },
 
     -- NotePopup window
-    KanbanNoteNormal            = { fg = c.fg, bg = float_bg },
-    KanbanNoteNormalNC          = { link = 'NormalNC' },
-    KanbanNoteBorder            = { fg = border_fg, bg = c.none },
-    KanbanNoteTitle             = { link = 'KanbanBoardScrollInfo' },
-    KanbanNoteTitleEdge         = { link = 'KanbanBoardScrollInfoEdge' },
+    SuperKanbanNoteNormal            = { fg = c.fg, bg = float_bg },
+    SuperKanbanNoteNormalNC          = { link = 'NormalNC' },
+    SuperKanbanNoteBorder            = { fg = border_fg, bg = c.none },
+    SuperKanbanNoteTitle             = { link = 'SuperKanbanBoardScrollInfo' },
+    SuperKanbanNoteTitleEdge         = { link = 'SuperKanbanBoardScrollInfoEdge' },
 
     -- Date Picker window
-    KanbanDatePickerDateToday   = { fg = c.green },
-    KanbanDatePickerUnderCursor = { fg = c.bg_d, bg = c.blue },
-    KanbanDatePickerNormal      = { link = 'KanbanNormal' },
-    KanbanDatePickerBorder      = { link = 'FloatBorder' },
-    KanbanDatePickerTitle       = { link = 'Title' },
-    KanbanDatePickerWeekDays    = { fg = c.green, italic = true },
-    KanbanDatePickerSeparator   = { link = 'Comment' },
+    SuperKanbanDatePickerToday       = { fg = c.green },
+    SuperKanbanDatePickerCursor      = { fg = c.bg_d, bg = c.blue },
+    SuperKanbanDatePickerNormal      = { link = 'SuperKanbanBoardNormal' },
+    SuperKanbanDatePickerBorder      = { link = 'FloatBorder' },
+    SuperKanbanDatePickerTitle       = { link = 'Title' },
+    SuperKanbanDatePickerWeekDays    = { fg = c.green, italic = true },
+    SuperKanbanDatePickerSeparator   = { link = 'Comment' },
   }
 
   for hl_name, option in pairs(highlights) do

@@ -139,7 +139,7 @@ end
 local function get_calander_title(year, month)
   local month_name = get_month_name(month)
   local f_str = ' %s %s '
-  return { { f_str:format(month_name, year), 'KanbanDatePickerTitle' } }
+  return { { f_str:format(month_name, year), 'SuperKanbanDatePickerTitle' } }
 end
 
 ---@param days_in_month number
@@ -267,8 +267,8 @@ function M:mount(opts)
 
   local calender_title = make_calendar_title(conf.date_picker.first_day_of_week)
   local weekdays = {
-    { { text.center_str(calender_title, border_width), 'KanbanDatePickerWeekDays' } },
-    { { text.center_str(string.rep('─', width), border_width), 'KanbanDatePickerSeparator' } },
+    { { text.center_str(calender_title, border_width), 'SuperKanbanDatePickerWeekDays' } },
+    { { text.center_str(string.rep('─', width), border_width), 'SuperKanbanDatePickerSeparator' } },
   }
 
   self.border_win = Snacks.win({
@@ -383,7 +383,7 @@ function M:hl_a_day(pos)
 
   vim.api.nvim_buf_set_extmark(0, ns_date_today, pos.row - 1, pos.col - 1, {
     end_col = pos.col + 1,
-    hl_group = 'KanbanDatePickerDateToday',
+    hl_group = 'SuperKanbanDatePickerToday',
   })
 end
 
@@ -501,7 +501,7 @@ function M:highlight_day_under_cursor()
       if col >= start_col - 1 and col <= end_col - 1 then
         vim.api.nvim_buf_set_extmark(0, ns_date_under_cursor, row, start_col - 1, {
           end_col = end_col,
-          hl_group = 'KanbanDatePickerUnderCursor',
+          hl_group = 'SuperKanbanDatePickerCursor',
         })
 
         -- Extract number & trim space

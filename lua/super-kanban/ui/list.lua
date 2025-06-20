@@ -249,7 +249,7 @@ function M:update_scroll_info(top, bottom, total)
   vim.api.nvim_win_set_config(self.win.win, {
     footer = {
       { icons.arrow_up .. tostring(self.scroll_info.top) },
-      { '-', 'KanbanListBorder' },
+      { '-', 'SuperKanbanListBorder' },
       { icons.arrow_down .. tostring(self.scroll_info.bot) },
     },
     footer_pos = 'center',

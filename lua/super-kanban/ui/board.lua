@@ -421,27 +421,27 @@ local function _build_winbar_format_str(conf)
   local title_format = with_separator('%s', {
     left_sep = left_sep,
     right_sep = right_sep,
-    text_hl = '%%#KanbanBoardTitle#',
-    sep_hl = '%%#KanbanBoardTitleEdge#',
+    text_hl = '%%#SuperKanbanBoardTitle#',
+    sep_hl = '%%#SuperKanbanBoardTitleEdge#',
   })
 
   local left_scroll_format = with_separator(' ' .. icons.arrow_left .. ' %s', {
     left_sep = '',
     right_sep = right_sep,
-    text_hl = '%%#KanbanBoardScrollInfo#',
-    sep_hl = '%%#KanbanBoardScrollInfoEdge#',
+    text_hl = '%%#SuperKanbanBoardScrollInfo#',
+    sep_hl = '%%#SuperKanbanBoardScrollInfoEdge#',
   })
 
   local right_scroll_format = with_separator('%s ' .. icons.arrow_right .. ' ', {
     left_sep = left_sep,
     right_sep = '',
-    text_hl = '%%#KanbanBoardScrollInfo#',
-    sep_hl = '%%#KanbanBoardScrollInfoEdge#',
+    text_hl = '%%#SuperKanbanBoardScrollInfo#',
+    sep_hl = '%%#SuperKanbanBoardScrollInfoEdge#',
   })
 
-  local default_hl = '%%#KanbanWinbar#'
+  local default_hl = '%%#SuperKanbanBoardWinbar#'
 
-  -- '%%#KanbanBoardToolbar#󰐙  󱈎  󰧮    󰏌 ',
+  -- '%%#SuperKanbanBoardToolbar#󰐙  󱈎  󰧮    󰏌 ',
 
   return table.concat({
     left_scroll_format,

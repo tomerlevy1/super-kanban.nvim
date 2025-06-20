@@ -148,17 +148,17 @@ local execute_command = function(action_name, ctx)
   return false
 end
 
----@param kanban superkanban
+---@param superkanban superkanban
 ---@param conf superkanban.Config
-function M.setup(kanban, conf)
-  config = conf
+function M.setup(superkanban, conf)
+  config = conf -- update config
 
   local file_modes = {
     open = function(file)
-      kanban.open(file)
+      superkanban.open(file)
     end,
     create = function(file)
-      kanban.create(file)
+      superkanban.create(file)
     end,
   }
 
@@ -187,7 +187,7 @@ function M.setup(kanban, conf)
         last = 'jump_last',
       },
       -- pick_date = function()
-      --   run_action(actions.pick_date(), kanban._ctx)
+      --   run_action(actions.pick_date(), superkanban._ctx)
       -- end,
     },
     list = {
@@ -221,7 +221,7 @@ function M.setup(kanban, conf)
       file_modes[mode](file)
       return
     elseif action_groups[mode] then
-      if not kanban.is_opned then
+      if not superkanban.is_opned then
         utils.msg('SuperKanban should be open to perform the action.', 'warn')
         return
       end
@@ -237,7 +237,7 @@ function M.setup(kanban, conf)
         act_name_from_group = action_group
       end
 
-      if execute_command(act_name_from_group, kanban._ctx) then
+      if execute_command(act_name_from_group, superkanban._ctx) then
         return
       end
 

@@ -86,9 +86,9 @@ function M:setup_win(opts)
   local icons = config.icons
   local fname_tail = vim.fn.fnamemodify(opts.data.file_path, ':t')
   local title = {
-    { icons.left_sep, 'KanbanNoteTitleEdge' },
-    { fname_tail, 'KanbanNoteTitle' },
-    { icons.right_sep, 'KanbanNoteTitleEdge' },
+    { icons.left_sep, 'SuperKanbanNoteTitleEdge' },
+    { fname_tail, 'SuperKanbanNoteTitle' },
+    { icons.right_sep, 'SuperKanbanNoteTitleEdge' },
   }
 
   local note_conf = config.note_popup

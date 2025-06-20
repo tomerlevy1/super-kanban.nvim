@@ -1,6 +1,6 @@
 ## Backlog
 
-- [ ] defalut file path
+- [ ] default file path
 
 - [ ] zoom in a list
 

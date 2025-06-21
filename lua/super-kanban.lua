@@ -16,29 +16,14 @@ local config = {
     section_separators = '-----',
     archive_heading = 'Archive',
     default_template = {
-      '** Backlog',
-      '** Todo',
-      '** Work in progress',
-      '** Completed',
+      '** Backlog\n',
+      '** Todo\n',
+      '** Work in progress\n',
+      '** Completed\n',
       '*Complete*',
     },
-    header = {
-      '---',
-      '',
-      'kanban-plugin: basic',
-      '',
-      '---',
-      '',
-    },
-    footer = {
-      '',
-      '',
-      '%% kanban:settings',
-      '```',
-      '{"kanban-plugin":"basic"}',
-      '```',
-      '%%',
-    },
+    header = {},
+    footer = {},
   },
   markdown = {
     description_folder = './tasks/',
@@ -47,10 +32,10 @@ local config = {
     section_separators = '***',
     archive_heading = 'Archive',
     default_template = {
-      '## Backlog',
-      '## Todo',
-      '## Work in progress',
-      '## Completed',
+      '## Backlog\n',
+      '## Todo\n',
+      '## Work in progress\n',
+      '## Completed\n',
       '**Complete**',
     },
     header = {
@@ -62,7 +47,6 @@ local config = {
       '',
     },
     footer = {
-      '',
       '',
       '%% kanban:settings',
       '```',
@@ -277,18 +261,24 @@ function M.create(source_path)
     return
   end
 
-  local default_template = config[filetype].default_template
+  local decorators = config[filetype]
+  local default_template = decorators.default_template
   if type(default_template) ~= 'table' and #default_template < 1 then
     utils.msg(('Invalid configuration: `config.%s.default_template`'):format(filetype), 'error')
     return
   end
 
-  local success = writer.write_lines(source_path, default_template)
+  local lines = {}
+  vim.list_extend(lines, decorators.header)
+  vim.list_extend(lines, default_template)
+  vim.list_extend(lines, decorators.footer)
+
+  local success = writer.write_lines(source_path, lines)
   if not success then
     return
   end
 
-  M.open(source_path)
+  -- M.open(source_path)
 end
 
 ---@param user_conf superkanban.Config

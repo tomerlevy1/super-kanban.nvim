@@ -31,6 +31,7 @@ function M.write_kanban_file(ctx, conf)
   local heading_prefix = utils.get_heading_prefix(decorators.list_heading, ctx.ft)
 
   local new_lines = {}
+  vim.list_extend(new_lines, decorators.header)
 
   for _, list_section in ipairs(ctx.lists) do
     -- Add heading
@@ -58,6 +59,8 @@ function M.write_kanban_file(ctx, conf)
       table.insert(new_lines, format_md_checklist(task_data))
     end
   end
+
+  vim.list_extend(new_lines, decorators.footer)
 
   for _, line in ipairs(new_lines) do
     file:write(line .. '\n')

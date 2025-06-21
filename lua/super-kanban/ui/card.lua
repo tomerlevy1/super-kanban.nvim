@@ -252,7 +252,7 @@ function M:set_events()
     if found_pos then
       vim.cmd.stopinsert()
       vim.schedule(function()
-        self:pick_date(false, found_pos)
+        self:pick_date(found_pos)
       end)
     end
   end, { buf = true })
@@ -445,8 +445,9 @@ function M:move_horizontal(direction, placement)
   self:delete_card(false)
 end
 
-function M:pick_date(create_new_date, at_sign_pos)
-  local data = create_new_date and {} or date.extract_date_obj_from_str(self.data.due[#self.data.due])
+---@param at_sign_pos? {row:number,col:number}
+function M:pick_date(at_sign_pos)
+  local data = date.extract_date_obj_from_str(self.data.due[#self.data.due])
   local picker = DatePicker({ data = data }, self.ctx)
   picker:mount({
     on_select = function(selected_date)
@@ -455,23 +456,36 @@ function M:pick_date(create_new_date, at_sign_pos)
         return
       end
 
-      -- Update task date
+      -- Remove the @ sign, update buffer & data
+      if at_sign_pos then
+        local lines = self.win:lines()
+        local cursorline_text = text.remove_char_at(lines[at_sign_pos.row], at_sign_pos.col)
+        local line_number = at_sign_pos.row
+        local line_empty = vim.trim(cursorline_text) == ''
+
+        vim.api.nvim_buf_set_lines(
+          self.win.buf,
+          line_number - 1,
+          line_number,
+          false,
+          line_empty and {} or { cursorline_text }
+        )
+        self:extract_buffer_and_update_task_data()
+      end
+
+      -- Update data with new date & than update the buffer
       local f_date = date.format_to_date_str(selected_date)
       if #self.data.due > 0 then
         self.data.due[#self.data.due] = f_date
       else
         self.data.due[1] = f_date
       end
-      self.data.title = text.remove_trailing_or_lonely_at_sign(self.data.title)
       self:update_buffer_text()
 
+      -- Focus on last col of last col
       self:focus()
-      if at_sign_pos then
-        vim.schedule(function()
-          local use_bang = at_sign_pos.row >= 2 or utils.is_cursor_at_last_column(at_sign_pos.col)
-          vim.cmd.startinsert({ bang = use_bang })
-        end)
-      end
+      local lines = self.win:lines()
+      vim.api.nvim_win_set_cursor(self.win.win, { #lines, #lines[#lines] })
     end,
     on_close = function()
       self:focus()

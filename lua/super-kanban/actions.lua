@@ -13,19 +13,19 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param placement? "first"|"last"
+---@param placement? 'first'|'last'|'before'|'after'
 local _create_card = function(cardUI, listUI, ctx, placement)
   if not listUI then
     return
   end
-  listUI:create_card(placement)
+  listUI:create_card(placement, cardUI)
 end
 
 ---Create a new card at the begin of the list
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.create_card_at_begin = function(cardUI, listUI, ctx)
+actions.create_card_top = function(cardUI, listUI, ctx)
   _create_card(cardUI, listUI, ctx, 'first')
 end
 
@@ -33,8 +33,24 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.create_card_at_end = function(cardUI, listUI, ctx)
+actions.create_card_bottom = function(cardUI, listUI, ctx)
   _create_card(cardUI, listUI, ctx, 'last')
+end
+
+---Create a new card at the end of the list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_card_before = function(cardUI, listUI, ctx)
+  _create_card(cardUI, listUI, ctx, 'before')
+end
+
+---Create a new card at the end of the list
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create_card_after = function(cardUI, listUI, ctx)
+  _create_card(cardUI, listUI, ctx, 'after')
 end
 
 ---Delete card
@@ -84,7 +100,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param placement? "first"|"last"
+---@param placement? 'first'|'last'
 local _create_list = function(cardUI, listUI, ctx, placement)
   vim.api.nvim_exec_autocmds('BufLeave', {})
   vim.ui.input({
@@ -150,7 +166,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param direction? '"newest_first"'|'"oldest_first"'
+---@param direction? 'newest_first'|'oldest_first'
 local _sort_by_due = function(cardUI, listUI, ctx, direction)
   direction = direction or 'newest_first'
   vim.validate({
@@ -208,7 +224,7 @@ actions.remove_date = function(cardUI, listUI, ctx)
 end
 
 ---@param cardUI superkanban.cardUI|nil
----@param direction "left"|"right"|"up"|"down"
+---@param direction 'left'|'right'|'up'|'down'
 local function _move(cardUI, direction)
   if not cardUI then
     return
@@ -266,7 +282,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param direction "left"|"right"
+---@param direction 'left'|'right'
 local _move_list = function(cardUI, listUI, ctx, direction)
   if not listUI then
     return
@@ -303,7 +319,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param direction "left"|"right"|"up"|"down"|"first"|"last"
+---@param direction 'left'|'right'|'up'|'down'|'first'|'last'
 local _jump = function(cardUI, listUI, ctx, direction)
   local move_directions = {
     left = function()
@@ -396,7 +412,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
----@param direction "left"|"right"|"first"|"last"
+---@param direction 'left'|'right'|'first'|'last'
 local _jump_list = function(cardUI, listUI, ctx, direction)
   if not listUI then
     return

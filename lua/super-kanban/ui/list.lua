@@ -22,7 +22,7 @@ local config
 ---@field complete_task? boolean
 ---@field win snacks.win
 ---@field ctx superkanban.Ctx
----@field type "list"
+---@field type 'list'
 ---@field scroll_info {top:number,bot:number}
 ---@overload fun(opts:superkanban.List.Opts): superkanban.ListUI
 local M = setmetatable({}, {
@@ -95,7 +95,7 @@ function M:setup_win()
       local first_hidden_card_index = 0
 
       for index, card in ipairs(list.cards) do
-        -- calcuate available space for list
+        -- Calculate available space for list
         local card_win = card:setup_win(list)
         local space_available = item_can_fit >= index
 
@@ -321,13 +321,30 @@ function M:set_keymaps()
   actions._set_keymaps(nil, list, self.ctx, self.win.buf, config)
 end
 
----@param placement? "first"|"last"
-function M:create_card(placement)
+---@param placement? 'first'|'last'|'before'|'after'
+---@param current_card superkanban.cardUI|nil
+function M:create_card(placement, current_card)
   placement = placement or 'first'
 
   local list = self.ctx.lists[self.index]
-  local target_index = 1
-  local visual_index = nil
+  local target_index, target_visual_index = 1, nil
+  local item_can_fit = list:item_can_fit()
+
+  local function update_all_card_index(start_index, new_v_index)
+    local list_space_available = new_v_index > 0 and new_v_index <= item_can_fit
+    if list_space_available then
+      target_visual_index = new_v_index
+    end
+
+    for i = start_index, #list.cards, 1 do
+      local card = list.cards[i]
+      if card:in_view() then
+        local v_index = card.visible_index + 1
+        card:update_visible_position((v_index > 0 and v_index <= item_can_fit) and v_index or nil)
+      end
+      card.index = card.index + 1
+    end
+  end
 
   if placement == 'first' then
     for _, card in pairs(list.cards) do
@@ -335,12 +352,17 @@ function M:create_card(placement)
     end
   elseif placement == 'last' then
     target_index = #list.cards + 1
-    local item_can_fit = list:item_can_fit()
     local list_space_available = #list.cards < item_can_fit
 
     if list_space_available then
-      visual_index = target_index
+      target_visual_index = target_index
     end
+  elseif current_card and placement == 'after' then
+    target_index = current_card.index + 1
+    update_all_card_index(current_card.index + 1, current_card.visible_index + 1)
+  elseif current_card and placement == 'before' then
+    target_index = current_card.index
+    update_all_card_index(current_card.index, current_card.visible_index)
   end
 
   local new_card = Card({
@@ -348,13 +370,22 @@ function M:create_card(placement)
     list_index = list.index,
     index = target_index,
     ctx = self.ctx,
-  }):mount(list, { visible_index = visual_index })
+  }):mount(list, { visible_index = target_visual_index })
   table.insert(list.cards, target_index, new_card)
 
   if placement == 'last' then
     list:jump_to_last_card()
-  else
+  elseif placement == 'first' then
     list:jump_to_first_card()
+  elseif placement == 'after' or placement == 'before' then
+    if placement == 'after' and not new_card:in_view() and current_card then
+      self:scroll_list(1, current_card.index)
+    end
+    new_card:focus()
+
+    local bot = #list.cards - target_index
+    local top = #list.cards - (bot + item_can_fit)
+    list:update_scroll_info(top, bot, #list.cards)
   end
   vim.cmd.startinsert()
 end
@@ -624,7 +655,7 @@ function M:scroll_to_a_card(target_index, should_focus)
   end
 end
 
----@param direction '"newest_first"'|'"oldest_first"'
+---@param direction 'newest_first'|'oldest_first'
 function M:sort_cards_by_due(direction)
   local list = self.ctx.lists[self.index]
   if not list then

@@ -115,18 +115,20 @@ local config = {
     ['/'] = 'search_card',
     ['zi'] = 'pick_date',
     ['X'] = 'log_info',
-
     ['<cr>'] = 'open_card_note',
-    ['gn'] = 'create_card_at_begin',
-    ['gN'] = 'create_card_at_end',
+
+    ['gN'] = 'create_card_before',
+    ['gn'] = 'create_card_after',
+    ['gK'] = 'create_card_top',
+    ['gJ'] = 'create_card_bottom',
     ['gD'] = 'delete_card',
     ['g.'] = 'sort_by_due_descending',
     ['g,'] = 'sort_by_due_ascending',
     ['<C-t>'] = 'toggle_complete',
     ['g<C-t>'] = 'archive_card',
 
-    ['zn'] = 'create_list_at_begin',
-    ['zN'] = 'create_list_at_end',
+    ['zN'] = 'create_list_at_begin',
+    ['zn'] = 'create_list_at_end',
     ['zD'] = 'delete_list',
     ['zr'] = 'rename_list',
 

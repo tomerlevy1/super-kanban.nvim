@@ -165,7 +165,12 @@ function M.setup(superkanban, conf)
   local action_groups = {
     -- search = 'search',
     card = {
-      create = 'create_card_at_begin',
+      create = {
+        before = 'create_card_before',
+        after = 'create_card_after',
+        top = 'create_card_top',
+        bottom = 'create_card_bottom',
+      },
       delete = 'delete_card',
       toggle_complete = 'toggle_complete',
       archive = 'archive_card',

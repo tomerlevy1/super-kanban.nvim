@@ -80,7 +80,7 @@ function M:setup_win(list)
     relative = 'win',
     win = list.win.win,
     col = 0,
-    row = calculate_row_pos(self.index, config),
+    row = calculate_row_pos(self.visible_index or self.index, config),
     focusable = true,
     keys = { q = false },
     bo = { modifiable = true, filetype = constants.card.filetype },
@@ -103,13 +103,16 @@ end
 function M:mount(list, opts)
   opts = opts or {}
 
+  if type(opts.visible_index) == 'number' and opts.visible_index > 0 then
+    self.visible_index = opts.visible_index
+  end
+
   local win = opts.win
   if not win then
     win = self:setup_win(list)
   end
 
-  if type(opts.visible_index) == 'number' then
-    self.visible_index = opts.visible_index
+  if self.visible_index then
     win:show()
   end
 

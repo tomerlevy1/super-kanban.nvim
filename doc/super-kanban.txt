@@ -1,0 +1,405 @@
+*super-kanban.txt* *super-kanban*                      Last change: 2025 June 23
+
+------------------------------------------------------------------------------
+                                                *super-kanban-table-of-contents*
+TABLE OF CONTENTS
+
+  1. Introduction ................................ |super-kanban-introduction|
+    - Features .......................... |super-kanban-introduction-features|
+  2. Installation ................................ |super-kanban-installation|
+    - Requirements .................. |super-kanban-installation-requirements|
+    - lazy.nvim ........................ |super-kanban-installation-lazy.nvim|
+    - mini.deps ........................ |super-kanban-installation-mini.deps|
+  3. Configuration ..................................... |super-kanban-config|
+  4. API .................................................. |super-kanban-api|
+  5. Highlight groups ........................ |super-kanban-highlight-groups|
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-introduction*
+1. Introduction ~
+
+super-kanban.nvim is a fast, minimal, and keyboard-centric Kanban board plugin
+for Neovim. It’s fully customizable and supports both Obsidian Kanban-style
+Markdown and Org-mode formats, allowing you to manage tasks
+seamlessly within your Neovim workflow.
+
+------------------------------------------------------------------------------
+                                            *super-kanban-introduction-features*
+FEATURES
+
+- Keyboard-centric Kanban workflow built for Neovim
+- Treesitter-based parsing for `Markdown` and `Orgmode` (`neorg comming soon`)
+- Compatible with obsidian-kanban style markdown
+- Supports tags, checkmarks, due dates, and note links in cards
+- Built-in date picker for assigning due dates and sorting or archiving cards
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-installation*
+2. Installation ~
+
+------------------------------------------------------------------------------
+                                        *super-kanban-installation-requirements*
+REQUIREMENTS
+
+- snacks.nvim https://github.com/folke/snacks.nvim
+- Treesitter parser for 'markdown' or 'org'
+- Neovim version 0.8 or higher
+
+OPTIONAL REQUIREMENTS
+
+- orgmode.nvim https://github.com/nvim-orgmode/orgmode (for Org file support)
+- flash.nvim https://github.com/folke/flash.nvim       (for jump navigation)
+
+------------------------------------------------------------------------------
+                                           *super-kanban-installation-lazy.nvim*
+lazy.nvim ~
+>lua
+  {
+    "hasansujon786/super-kanban.nvim",
+    dependencies = {
+      "folke/snacks.nvim",           -- [required]
+      "nvim-orgmode/orgmode",        -- [optional] Org format support
+    },
+    opts = {}, -- optional: pass your config table here
+  }
+<
+
+------------------------------------------------------------------------------
+                                           *super-kanban-installation-mini.deps*
+mini.deps ~
+>lua
+  require("mini.deps").add({
+    source = "hasansujon786/super-kanban.nvim",
+    depends = {
+      { source = "folke/snacks.nvim" },       -- [required]
+      { source = "nvim-orgmode/orgmode" },    -- [optional] Org format support
+    },
+  })
+<
+
+------------------------------------------------------------------------------
+                                                           *super-kanban-config*
+3. Configuration ~
+
+Use `super-kanban.setup()` to configure the plugin and override default options.
+
+Usage ~
+>lua
+  require('super-kanban').setup() -- use default configuration
+  -- OR
+  require('super-kanban').setup({
+    -- your custom options here
+  })
+<
+See also ~
+|super-kanban-config-defaults| for a full list of available options.
+
+------------------------------------------------------------------------------
+                                                  *super-kanban-config-defaults*
+DEFAULT OPTIONS
+>lua
+  ---@class Navbuddy.config
+  {
+    markdown = {
+      -- Path where markdown task files are stored
+      description_folder = './tasks/',
+      -- Markdown heading level used for lists (e.g. h2)
+      list_heading = 'h2',
+      -- Mark inserted when a list is marked complete
+      list_auto_complete_mark = '**Complete**',
+      -- String used to separate sections in the file
+      section_separators = '***',
+      -- Heading title for archived tasks
+      archive_heading = 'Archive',
+      -- Initial section headings for new boards
+      default_template = {
+        '## Backlog\n',
+        '## Todo\n',
+        '## Work in progress\n',
+        '## Completed\n',
+        '**Complete**',
+      },
+      -- Lines inserted at the top of the file
+      header = {
+        '---',
+        '',
+        'kanban-plugin: basic',
+        '',
+        '---',
+        '',
+      },
+      -- Lines inserted at the bottom of the file
+      footer = {
+        '',
+        '%% kanban:settings',
+        '```',
+        '{"kanban-plugin":"basic"}',
+        '```',
+        '%%',
+      },
+    },
+    org = {
+      -- Path where org-mode task files are stored
+      description_folder = './tasks/',
+      -- Org heading level used for lists (e.g. h2)
+      list_heading = 'h2',
+      -- Mark inserted when a list is marked complete
+      list_auto_complete_mark = '*Complete*',
+      -- String used to separate sections in the file
+      section_separators = '-----',
+      -- Heading title for archived tasks
+      archive_heading = 'Archive',
+      -- Initial section headings for new boards
+      default_template = {
+        '** Backlog\n',
+        '** Todo\n',
+        '** Work in progress\n',
+        '** Completed\n',
+        '*Complete*',
+      },
+      -- Lines inserted at the top of the file
+      header = {},
+      -- Lines inserted at the bottom of the file
+      footer = {},
+    },
+    card = {
+      -- Card window width (0 = auto)
+      width = 0,
+      -- Card window height in lines
+      height = 6,
+      -- Z-index layering of the card window
+      zindex = 7,
+      -- Card border characters (table of 8 sides)
+      border = { '', '', '', ' ', '▁', '▁', '▁', ' ' }, -- Only add border at bottom
+      -- Additional window-local options for the card
+      win_options = {
+        wrap = true,
+        -- spell = true, -- Uncomment this to enable spell checking
+      },
+    },
+    list = {
+      -- Width of the list window (columns)
+      width = 32,
+      -- Height of the list window (0–1 = % of screen height)
+      height = 0.9,
+      -- Z-index layering of the list window
+      zindex = 6,
+      -- List window border characters
+      -- border = { '', '', '', '│', '┘', '─', '└', '│' }, -- bottom single
+      border = { '', '', '', '│', '╯', '─', '╰', '│' }, -- bottom rounded
+      -- border = "rounded",
+      -- Additional window-local options for the list
+      win_options = {},
+    },
+    board = {
+      -- Width of the board window (0 = full width)
+      width = 0,
+      -- Height of the board window
+      height = vim.o.lines - 2,
+      -- Z-index layering of the board
+      zindex = 5,
+      -- Board border characters (empty or filled)
+      border = { '', ' ', '', '', '', '', '', '' }, -- Only add empty space on top border
+      -- Additional window-local options for the board
+      win_options = {},
+      -- Padding around board content (top, left)
+      padding = { top = 1, left = 8 },
+    },
+    date_picker = {
+      -- Z-index for the date picker popup
+      zindex = 10,
+      -- Border style for the date picker (e.g. 'rounded')
+      border = 'rounded',
+      -- Additional window-local options
+      win_options = {},
+      -- Start of the week ('Sunday' or 'Monday')
+      first_day_of_week = 'Sunday',
+    },
+    note_popup = {
+      -- Width of the note popup (0–1 = % of screen width)
+      width = 0.6,
+      -- Height of the note popup (0–1 = % of screen height)
+      height = 0.7,
+      -- Z-index layering of the popup
+      zindex = 8,
+      -- Border style for the note popup window
+      border = 'rounded',
+      -- Additional window-local options
+      win_options = {},
+    },
+    icons = {
+      -- Character for left edge of a list
+      list_left_edge = '║',
+      -- Character for right edge of a list
+      list_right_edge = '║',
+      -- Left decorative separator for elements
+      left_sep = '',
+      -- Right decorative separator for elements
+      right_sep = '',
+      -- Arrows
+      arrow_left = '←',
+      arrow_right = '→',
+      arrow_up = '↑',
+      arrow_down = '↓',
+      -- Symbols for checkbox states in cards
+      card_checkmarks = {
+        ['empty_box'] = '☐',
+        [' '] = ' ',
+        ['x'] = '✔',
+      },
+    },
+    mappings = {
+      -- Close board window
+      ['q'] = 'close',
+      -- Log card info
+      ['X'] = 'log_info',
+
+      -- Create card at various positions
+      ['gN'] = 'create_card_before',
+      ['gn'] = 'create_card_after',
+      ['gK'] = 'create_card_top',
+      ['gJ'] = 'create_card_bottom',
+
+      -- Delete or archive cards
+      ['gD'] = 'delete_card',
+      ['g<C-t>'] = 'archive_card',
+
+      -- Toggle card checkbox
+      ['<C-t>'] = 'toggle_complete',
+
+      -- Sort cards
+      ['g.'] = 'sort_by_due_descending',
+      ['g,'] = 'sort_by_due_ascending',
+
+      -- Search cards
+      ['/'] = 'search_card',
+      -- Open date picker
+      ['zi'] = 'pick_date',
+      -- Open card note
+      ['<cr>'] = 'open_card_note',
+
+      -- List management
+      ['zN'] = 'create_list_at_begin',
+      ['zn'] = 'create_list_at_end',
+      ['zD'] = 'delete_list',
+      ['zr'] = 'rename_list',
+
+      -- Navigation between cards/lists
+      ['<C-k>'] = 'jump_up',
+      ['<C-j>'] = 'jump_down',
+      ['<C-h>'] = 'jump_left',
+      ['<C-l>'] = 'jump_right',
+      ['gg'] = 'jump_first',
+      ['G'] = 'jump_last',
+      ['z0'] = 'jump_list_first',
+      ['z$'] = 'jump_list_last',
+
+      -- Move cards/lists
+      ['<A-k>'] = 'move_up',
+      ['<A-j>'] = 'move_down',
+      ['<A-h>'] = 'move_left',
+      ['<A-l>'] = 'move_right',
+      ['zh'] = 'move_list_left',
+      ['zl'] = 'move_list_right',
+    },
+  }
+<
+Class ~
+{superkanban.Config}
+
+------------------------------------------------------------------------------
+                                                              *super-kanban-api*
+4. API
+
+The following functions are provided by |super-kanban|.
+
+------------------------------------------------------------------------------
+                                                                      *M.open()*
+                            `M.open`({source_path})
+Open super-kanban board.
+Parameters ~
+{source_path} `(string)` Absolute or relative path to the source_path
+
+------------------------------------------------------------------------------
+                                                                    *M.create()*
+                           `M.create`({source_path})
+Scaffold a Kanban file with default template.
+Parameters ~
+{source_path} `(string)` Absolute or relative path to the file used to
+create the Kanban board.
+
+
+==============================================================================
+------------------------------------------------------------------------------
+                                                 *super-kanban-highlight-groups*
+5. Highlight groups ~
+
+
+General highlights ~
+
+* `SuperKanbanNormal`                - Main plugin UI highlight
+* `SuperKanbanBorder`                - Border of all windows
+* `SuperKanbanWinbar`                - Winbar for all windows
+* `SuperKanbanPill`                  - Pill/tab UI element
+* `SuperKanbanPillEdge`              - Edge of pill/tab element
+
+These are base highlight groups used throughout SuperKanban. Other specific
+highlight groups (e.g. `SuperKanbanBoardNormal`, `SuperKanbanListNormal`,
+`SuperKanbanCardNormal`) inherit from them.
+
+Board window ~
+
+* `SuperKanbanBoardNormal`           - Board window content
+* `SuperKanbanBoardBorder`           - Border of board window
+* `SuperKanbanBoardWinbar`           - Winbar of board window
+* `SuperKanbanBoardFileName`         - Name of board file
+* `SuperKanbanBoardFileNameEdge`     - Edge of file name field
+* `SuperKanbanBoardScrollInfo`       - Scroll info display
+* `SuperKanbanBoardScrollInfoEdge`   - Edge of scroll info
+
+List window ~
+
+* `SuperKanbanListNormal`            - List window content
+* `SuperKanbanListBorder`            - Border of list window
+* `SuperKanbanListWinbar`            - Winbar of list window
+* `SuperKanbanListTitleBottom`       - Title label below list
+
+Card window ~
+
+* `SuperKanbanCardNormal`            - Card window content
+* `SuperKanbanCardNormalNC`          - Card content (unfocused)
+* `SuperKanbanCardBorder`            - Card window border
+* `SuperKanbanCardBorderNC`          - Border (unfocused card)
+* `SuperKanbanCardWinBar`            - Winbar of card window
+* `SuperKanbanCardWinbarNC`          - Winbar (unfocused card)
+
+Card content ~
+
+* `SuperKanbanNone`                  - Empty or default content
+* `SuperKanbanTag`                   - Tag inside a card
+* `SuperKanbanDueDate`               - Due date field
+* `SuperKanbanCheckMark`             - Checkbox (unchecked)
+* `SuperKanbanCheckMarkDone`         - Checkbox (checked)
+* `SuperKanbanLink`                  - Link text inside card
+* `SuperKanbanLinkDelimiter`         - Link brackets/edges
+
+Note window ~
+
+* `SuperKanbanNoteNormal`            - Note window content
+* `SuperKanbanNoteNormalNC`          - Note content (unfocused)
+* `SuperKanbanNoteBorder`            - Border of note window
+* `SuperKanbanNoteTitle`             - Note title text
+* `SuperKanbanNoteTitleEdge`         - Edge of note title
+
+Date Picker window ~
+
+* `SuperKanbanDatePickerNormal`      - Date picker content
+* `SuperKanbanDatePickerBorder`      - Date picker border
+* `SuperKanbanDatePickerTitle`       - Date picker title
+* `SuperKanbanDatePickerWeekDays`    - Weekday labels `(Su Mo Tu We Th Fr Sa)`
+* `SuperKanbanDatePickerSeparator`   - Line between Weekday labels & dates
+* `SuperKanbanDatePickerToday`       - Highlight for today
+* `SuperKanbanDatePickerCursor`      - Highlighted cursor date
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

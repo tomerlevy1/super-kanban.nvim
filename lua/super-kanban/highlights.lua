@@ -1,5 +1,75 @@
-local prefix = 'SuperKanban'
+---@text 5. Highlight groups ~
+---
+---
+--- General highlights ~
+---
+--- * `SuperKanbanNormal`                - Main plugin UI highlight
+--- * `SuperKanbanBorder`                - Border of all windows
+--- * `SuperKanbanWinbar`                - Winbar for all windows
+--- * `SuperKanbanPill`                  - Pill/tab UI element
+--- * `SuperKanbanPillEdge`              - Edge of pill/tab element
+---
+--- These are base highlight groups used throughout SuperKanban. Other specific
+--- highlight groups (e.g. `SuperKanbanBoardNormal`, `SuperKanbanListNormal`,
+--- `SuperKanbanCardNormal`) inherit from them.
+---
+--- Board window ~
+---
+--- * `SuperKanbanBoardNormal`           - Board window content
+--- * `SuperKanbanBoardBorder`           - Border of board window
+--- * `SuperKanbanBoardWinbar`           - Winbar of board window
+--- * `SuperKanbanBoardFileName`         - Name of board file
+--- * `SuperKanbanBoardFileNameEdge`     - Edge of file name field
+--- * `SuperKanbanBoardScrollInfo`       - Scroll info display
+--- * `SuperKanbanBoardScrollInfoEdge`   - Edge of scroll info
+---
+--- List window ~
+---
+--- * `SuperKanbanListNormal`            - List window content
+--- * `SuperKanbanListBorder`            - Border of list window
+--- * `SuperKanbanListWinbar`            - Winbar of list window
+--- * `SuperKanbanListTitleBottom`       - Title label below list
+---
+--- Card window ~
+---
+--- * `SuperKanbanCardNormal`            - Card window content
+--- * `SuperKanbanCardNormalNC`          - Card content (unfocused)
+--- * `SuperKanbanCardBorder`            - Card window border
+--- * `SuperKanbanCardBorderNC`          - Border (unfocused card)
+--- * `SuperKanbanCardWinBar`            - Winbar of card window
+--- * `SuperKanbanCardWinbarNC`          - Winbar (unfocused card)
+---
+--- Card content ~
+---
+--- * `SuperKanbanNone`                  - Empty or default content
+--- * `SuperKanbanTag`                   - Tag inside a card
+--- * `SuperKanbanDueDate`               - Due date field
+--- * `SuperKanbanCheckMark`             - Checkbox (unchecked)
+--- * `SuperKanbanCheckMarkDone`         - Checkbox (checked)
+--- * `SuperKanbanLink`                  - Link text inside card
+--- * `SuperKanbanLinkDelimiter`         - Link brackets/edges
+---
+--- Note window ~
+---
+--- * `SuperKanbanNoteNormal`            - Note window content
+--- * `SuperKanbanNoteNormalNC`          - Note content (unfocused)
+--- * `SuperKanbanNoteBorder`            - Border of note window
+--- * `SuperKanbanNoteTitle`             - Note title text
+--- * `SuperKanbanNoteTitleEdge`         - Edge of note title
+---
+--- Date Picker window ~
+---
+--- * `SuperKanbanDatePickerNormal`      - Date picker content
+--- * `SuperKanbanDatePickerBorder`      - Date picker border
+--- * `SuperKanbanDatePickerTitle`       - Date picker title
+--- * `SuperKanbanDatePickerWeekDays`    - Weekday labels `(Su Mo Tu We Th Fr Sa)`
+--- * `SuperKanbanDatePickerSeparator`   - Line between Weekday labels & dates
+--- * `SuperKanbanDatePickerToday`       - Highlight for today
+--- * `SuperKanbanDatePickerCursor`      - Highlighted cursor date
+---@tag super-kanban-highlight-groups
+---@toc_entry 5. Highlight groups
 
+local prefix = 'SuperKanban'
 local winhighlight = function(highlights)
   return table.concat(
     vim.tbl_map(function(key)
@@ -112,7 +182,7 @@ function M.setup()
     DatePickerSeparator   = 'NonText',
     DatePickerToday       = 'SuperKanbanTag',
     DatePickerCursor      = { fg = darker_bg,  bg = cursor_bg },
-  }, { prefix = prefix, default = false })
+  }, { prefix = prefix, default = true })
 end
 
 vim.api.nvim_create_autocmd('ColorScheme', {

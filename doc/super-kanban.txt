@@ -13,6 +13,11 @@ TABLE OF CONTENTS
   3. Configuration ..................................... |super-kanban-config|
   4. API .................................................. |super-kanban-api|
   5. Highlight groups ........................ |super-kanban-highlight-groups|
+  6. Commands ............................ |:SuperKanban| |super-kanban-command|
+    - SuperKanban open ........................... |super-kanban-command-open|
+    - SuperKanban create ....................... |super-kanban-command-create|
+    - SuperKanban list ........................... |super-kanban-command-list|
+    - SuperKanban card ........................... |super-kanban-command-card|
 
 ------------------------------------------------------------------------------
                                                      *super-kanban-introduction*
@@ -400,6 +405,115 @@ Date Picker window ~
 * `SuperKanbanDatePickerSeparator`   - Line between Weekday labels & dates
 * `SuperKanbanDatePickerToday`       - Highlight for today
 * `SuperKanbanDatePickerCursor`      - Highlighted cursor date
+
+
+==============================================================================
+------------------------------------------------------------------------------
+                                             *:SuperKanban* *super-kanban-command*
+6. Commands ~
+
+    :SuperKanban open                |super-kanban-command-open|
+    :SuperKanban create              |super-kanban-command-create|
+    :SuperKanban list                |super-kanban-command-list|
+    :SuperKanban card                |super-kanban-command-card|
+
+These commands are provided by |super-kanban.nvim| to control board behavior.
+Read below for more details on subcommands and their functionality.
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-open*
+:SuperKanban [file] ~
+:SuperKanban open [file] ~
+
+    Open the main Kanban board window with the given file.
+
+------------------------------------------------------------------------------
+                                                   *super-kanban-command-create*
+:SuperKanban create [file] ~
+
+    Create a new board file.
+    - If no argument is passed, prompts for a file. (TODO: work on this)
+    - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-list*
+:SuperKanban list ~
+
+    Perform list-related actions like creating, renaming, deleting,
+    moving, or jumping between lists in the Kanban board.
+
+Available subcommands: ~
+
+create=[position]
+  - `begin` : Create a list at the beginning of the board.
+  - `end`   : Create a list at the end of the board.
+
+rename
+  Rename the currently selected list.
+
+delete
+  Delete the currently selected list.
+
+move=[direction]
+  - `left`  : Move the list one position to the left.
+  - `right` : Move the list one position to the right.
+
+jump=[direction]
+  - `left`  : Move focus to the list on the left.
+  - `right` : Move focus to the list on the right.
+  - `begin` : Jump focus to the first list.
+  - `end`   : Jump focus to the last list.
+
+sort=[option]
+  - `descending` : Sort cards in the list by due date (latest first).
+  - `ascending`  : Sort cards in the list by due date (earliest first).
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-card*
+:SuperKanban card ~
+
+    Perform card-related actions such as creating, moving, jumping,
+    toggling completion, assigning due dates, and more.
+
+Available subcommands: ~
+
+create=[position]
+  - `before` : Create a card before the current card.
+  - `after`  : Create a card after the current card.
+  - `top`    : Create a card at the top of the current list.
+  - `bottom` : Create a card at the bottom of the current list.
+
+delete
+  Delete the currently selected card.
+
+toggle_complete
+  Toggle the completion status of the card.
+
+archive
+  Archive the currently selected card.
+
+pick_date
+  Open the date picker to assign a due date.
+
+remove_date
+  Remove the due date from the current card.
+
+search
+  Search for cards globally across the board.
+
+move=[direction]
+  - `up`     : Move the current card upward within the list.
+  - `down`   : Move the current card downward within the list.
+  - `left`   : Move the card to the previous list.
+  - `right`  : Move the card to the next list.
+
+jump=[direction]
+  - `up`     : Jump focus to the card above.
+  - `down`   : Jump focus to the card below.
+  - `left`   : Jump to the previous list.
+  - `right`  : Jump to the next list.
+  - `top`    : Jump to the top of the current list.
+  - `bottom` : Jump to the bottom of the current list.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

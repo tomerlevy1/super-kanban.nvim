@@ -1,13 +1,123 @@
+---@text 6. Commands ~
+---
+---     :SuperKanban open                |super-kanban-command-open|
+---     :SuperKanban create              |super-kanban-command-create|
+---     :SuperKanban list                |super-kanban-command-list|
+---     :SuperKanban card                |super-kanban-command-card|
+---
+--- These commands are provided by |super-kanban.nvim| to control board behavior.
+--- Read below for more details on subcommands and their functionality.
+---@tag :SuperKanban super-kanban-command
+---@toc_entry 6. Commands
+
+--- :SuperKanban [file] ~
+--- :SuperKanban open [file] ~
+---
+---     Open the main Kanban board window with the given file.
+---@toc_entry   - SuperKanban open
+---@tag super-kanban-command-open
+
+--- :SuperKanban create [file] ~
+---
+---     Create a new board file.
+---     - If no argument is passed, prompts for a file. (TODO: work on this)
+---     - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+---@toc_entry   - SuperKanban create
+---@tag super-kanban-command-create
+
+--- :SuperKanban list ~
+---
+---     Perform list-related actions like creating, renaming, deleting,
+---     moving, or jumping between lists in the Kanban board.
+---
+--- Available subcommands: ~
+---
+--- create=[position]
+---   - `begin` : Create a list at the beginning of the board.
+---   - `end`   : Create a list at the end of the board.
+---
+--- rename
+---   Rename the currently selected list.
+---
+--- delete
+---   Delete the currently selected list.
+---
+--- move=[direction]
+---   - `left`  : Move the list one position to the left.
+---   - `right` : Move the list one position to the right.
+---
+--- jump=[direction]
+---   - `left`  : Move focus to the list on the left.
+---   - `right` : Move focus to the list on the right.
+---   - `begin` : Jump focus to the first list.
+---   - `end`   : Jump focus to the last list.
+---
+--- sort=[option]
+---   - `descending` : Sort cards in the list by due date (latest first).
+---   - `ascending`  : Sort cards in the list by due date (earliest first).
+---@toc_entry   - SuperKanban list
+---@tag super-kanban-command-list
+
+--- :SuperKanban card ~
+---
+---     Perform card-related actions such as creating, moving, jumping,
+---     toggling completion, assigning due dates, and more.
+---
+--- Available subcommands: ~
+---
+--- create=[position]
+---   - `before` : Create a card before the current card.
+---   - `after`  : Create a card after the current card.
+---   - `top`    : Create a card at the top of the current list.
+---   - `bottom` : Create a card at the bottom of the current list.
+---
+--- delete
+---   Delete the currently selected card.
+---
+--- toggle_complete
+---   Toggle the completion status of the card.
+---
+--- archive
+---   Archive the currently selected card.
+---
+--- pick_date
+---   Open the date picker to assign a due date.
+---
+--- remove_date
+---   Remove the due date from the current card.
+---
+--- search
+---   Search for cards globally across the board.
+---
+--- move=[direction]
+---   - `up`     : Move the current card upward within the list.
+---   - `down`   : Move the current card downward within the list.
+---   - `left`   : Move the card to the previous list.
+---   - `right`  : Move the card to the next list.
+---
+--- jump=[direction]
+---   - `up`     : Jump focus to the card above.
+---   - `down`   : Jump focus to the card below.
+---   - `left`   : Jump to the previous list.
+---   - `right`  : Jump to the next list.
+---   - `top`    : Jump to the top of the current list.
+---   - `bottom` : Jump to the bottom of the current list.
+---@toc_entry   - SuperKanban card
+---@tag super-kanban-command-card
+
+
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local actions = require('super-kanban.actions')
 local completion = require('super-kanban.command.completion')
 local superkanban = require('super-kanban')
 
+---@private
 ---@type superkanban.Config
 local config
 
 ---Parse key=value inputs
+---@private
 ---@param arg_str string
 local function parse_key_value(arg_str)
   if arg_str == nil or type(arg_str) ~= 'string' then
@@ -25,6 +135,7 @@ local function parse_key_value(arg_str)
   return arg_str, nil
 end
 
+---@private
 ---@param fn fun(cardUI:superkanban.cardUI|nil,listUI:superkanban.ListUI|nil,ctx:superkanban.Ctx)
 ---@param ctx superkanban.Ctx
 local function run_action_with_data(fn, ctx)
@@ -33,6 +144,7 @@ local function run_action_with_data(fn, ctx)
   fn(card, list, ctx)
 end
 
+---@private
 ---@param action_name string
 ---@param ctx superkanban.Ctx
 local execute_command = function(action_name, ctx)
@@ -94,6 +206,7 @@ M._command = function(opts)
   end
 end
 
+---@private
 ---@param conf superkanban.Config
 function M.setup(conf)
   config = conf

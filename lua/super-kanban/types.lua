@@ -36,7 +36,7 @@
 ---@field location {list:number,card:number}
 
 ---@class superkanban.MarkdownConfig
----@field description_folder string
+---@field notes_dir string
 ---@field list_heading "h1"|"h2"|"h3"|"h4"|"h5"|"h6"
 ---@field default_template string[]
 ---@field header string[]

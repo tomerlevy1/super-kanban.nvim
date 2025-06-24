@@ -105,8 +105,8 @@ local M = {}
 local default_config = {
 --minidoc_replace_end
   markdown = {
-    -- Path where markdown task files are stored
-    description_folder = './tasks/',
+    -- Absolute or relative path where markdown note files are stored
+    notes_dir = './.notes/',
     -- Markdown heading level used for lists (e.g. h2)
     list_heading = 'h2',
     -- Mark inserted when a list is marked complete
@@ -143,8 +143,8 @@ local default_config = {
     },
   },
   org = {
-    -- Path where org-mode task files are stored
-    description_folder = './tasks/',
+    -- Absolute or relative path where org note files are stored
+    notes_dir = './.notes/',
     -- Org heading level used for lists (e.g. h2)
     list_heading = 'h2',
     -- Mark inserted when a list is marked complete
@@ -293,10 +293,10 @@ local default_config = {
     ['<C-j>'] = 'jump_down',
     ['<C-h>'] = 'jump_left',
     ['<C-l>'] = 'jump_right',
-    ['gg'] = 'jump_first',
-    ['G'] = 'jump_last',
-    ['z0'] = 'jump_list_first',
-    ['z$'] = 'jump_list_last',
+    ['gg'] = 'jump_top',
+    ['G'] = 'jump_bottom',
+    ['z0'] = 'jump_list_begin',
+    ['z$'] = 'jump_list_end',
 
     -- Move cards/lists
     ['<A-k>'] = 'move_up',
@@ -317,8 +317,7 @@ function M.setup(config)
     default_config = vim.tbl_deep_extend('keep', config, default_config)
   end
 
-  require('super-kanban.highlights').setup()
-  require('super-kanban.user_command').setup(M, default_config)
+  require('super-kanban.command').setup(default_config)
   require('super-kanban.ui').setup(default_config)
 end
 

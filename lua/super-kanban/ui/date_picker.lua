@@ -280,7 +280,7 @@ function M:mount(opts)
     }, conf.date_picker.win_options),
     -- Non config values
     backdrop = false,
-    bo = { filetype = constants.date_picker.filetype_border },
+    bo = { filetype = constants.date_picker.filetype .. '_border' },
     width = border_width,
     height = info.border_height,
     col = self.win_opts.col,

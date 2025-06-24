@@ -22,7 +22,7 @@ hooks.write_pre = function(lines)
   -- Insert last modified date into the first line
   local formatted_date = 'Last change: ' .. os.date('%Y %B %d')
   local left_width = visual_text_width(lines[1])
-  local n_left = 78 - (left_width + #formatted_date) - 2
+  local n_left = 78 - (left_width + #formatted_date)
   lines[1] = lines[1] .. (' '):rep(n_left) .. formatted_date
 
   return lines
@@ -32,5 +32,3 @@ MiniDoc.generate({
   'lua/super-kanban.lua',
   'lua/super-kanban/highlights.lua',
 }, 'doc/super-kanban.txt', { hooks = hooks })
-
--- R('scripts.doc')

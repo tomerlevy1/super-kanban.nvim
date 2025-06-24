@@ -119,6 +119,7 @@ end
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
 actions.create_list_at_begin = function(cardUI, listUI, ctx)
+  -- FIXME: index is not working properly
   _create_list(cardUI, listUI, ctx, 'first')
 end
 
@@ -397,7 +398,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.jump_first = function(cardUI, listUI, ctx)
+actions.jump_top = function(cardUI, listUI, ctx)
   _jump(cardUI, listUI, ctx, 'first')
 end
 
@@ -405,7 +406,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.jump_last = function(cardUI, listUI, ctx)
+actions.jump_bottom = function(cardUI, listUI, ctx)
   _jump(cardUI, listUI, ctx, 'last')
 end
 
@@ -456,7 +457,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.jump_list_first = function(cardUI, listUI, ctx)
+actions.jump_list_begin = function(cardUI, listUI, ctx)
   _jump_list(cardUI, listUI, ctx, 'first')
 end
 
@@ -464,7 +465,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.jump_list_last = function(cardUI, listUI, ctx)
+actions.jump_list_end = function(cardUI, listUI, ctx)
   _jump_list(cardUI, listUI, ctx, 'last')
 end
 

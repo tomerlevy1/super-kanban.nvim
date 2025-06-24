@@ -61,7 +61,7 @@ function M.create_note_and_get_path(lines, ft)
     return false
   end
 
-  local dir = config[ft].description_folder
+  local dir = config[ft].notes_dir
   local file_path = vim.fs.normalize(dir .. '/' .. link_title .. '.md')
 
   -- Create a new dir if not exists

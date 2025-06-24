@@ -185,11 +185,4 @@ function M.setup()
   }, { prefix = prefix, default = true })
 end
 
-vim.api.nvim_create_autocmd('ColorScheme', {
-  group = vim.api.nvim_create_augroup('superkanban_hl', { clear = true }),
-  callback = function()
-    M.setup()
-  end,
-})
-
 return M

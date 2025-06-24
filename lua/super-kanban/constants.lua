@@ -21,10 +21,6 @@ local M = {
       h6 = '######',
     },
   },
-  date_picker = {
-    filetype = 'superkanban_datepicker',
-    filetype_border = 'superkanban_datepicker_border',
-  },
   board = {
     filetype = 'superkanban_board'
   },
@@ -33,6 +29,9 @@ local M = {
   },
   card = {
     filetype = 'superkanban_card'
+  },
+  date_picker = {
+    filetype = 'superkanban_datepicker',
   },
 }
 

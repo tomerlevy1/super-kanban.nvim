@@ -1,4 +1,4 @@
-*super-kanban.txt* *super-kanban*                      Last change: 2025 June 23
+*super-kanban.txt* *super-kanban*                        Last change: 2025 June 25
 
 ------------------------------------------------------------------------------
                                                 *super-kanban-table-of-contents*
@@ -101,8 +101,8 @@ DEFAULT OPTIONS
   ---@class Navbuddy.config
   {
     markdown = {
-      -- Path where markdown task files are stored
-      description_folder = './tasks/',
+      -- Absolute or relative path where markdown note files are stored
+      notes_dir = './.notes/',
       -- Markdown heading level used for lists (e.g. h2)
       list_heading = 'h2',
       -- Mark inserted when a list is marked complete
@@ -139,8 +139,8 @@ DEFAULT OPTIONS
       },
     },
     org = {
-      -- Path where org-mode task files are stored
-      description_folder = './tasks/',
+      -- Absolute or relative path where org note files are stored
+      notes_dir = './.notes/',
       -- Org heading level used for lists (e.g. h2)
       list_heading = 'h2',
       -- Mark inserted when a list is marked complete
@@ -289,10 +289,10 @@ DEFAULT OPTIONS
       ['<C-j>'] = 'jump_down',
       ['<C-h>'] = 'jump_left',
       ['<C-l>'] = 'jump_right',
-      ['gg'] = 'jump_first',
-      ['G'] = 'jump_last',
-      ['z0'] = 'jump_list_first',
-      ['z$'] = 'jump_list_last',
+      ['gg'] = 'jump_top',
+      ['G'] = 'jump_bottom',
+      ['z0'] = 'jump_list_begin',
+      ['z$'] = 'jump_list_end',
 
       -- Move cards/lists
       ['<A-k>'] = 'move_up',

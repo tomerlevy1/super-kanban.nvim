@@ -200,6 +200,9 @@ function M:create_list(list_name, placement)
   if placement == 'first' then
     for _, list in pairs(self.ctx.lists) do
       list.index = list.index + 1
+      for _, card in pairs(list.cards) do
+        card.list_index = list.index
+      end
     end
   elseif placement == 'last' then
     target_index = #self.ctx.lists + 1
@@ -228,7 +231,7 @@ function M:create_list(list_name, placement)
 
   if placement == 'last' then
     self:jump_to_last_list()
-  else
+  elseif placement == 'first' then
     self:jump_to_first_list()
   end
 end

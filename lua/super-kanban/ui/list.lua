@@ -466,10 +466,6 @@ function M:move_horizontal(direction)
   cur_list.index, target_list.index = target_index, cur_index
   self.ctx.lists[target_index], self.ctx.lists[cur_index] = cur_list, target_list
 
-  cur_list:update_visible_position(cur_v_index)
-  target_list:update_visible_position(target_v_index)
-  cur_list:focus()
-
   -- Update list_index of every cards
   for _, card in pairs(target_list.cards) do
     card.list_index = target_list.index
@@ -477,6 +473,10 @@ function M:move_horizontal(direction)
   for _, card in pairs(cur_list.cards) do
     card.list_index = cur_list.index
   end
+
+  cur_list:update_visible_position(cur_v_index)
+  target_list:update_visible_position(target_v_index)
+  cur_list:focus()
 end
 
 function M:jump_to_first_card()

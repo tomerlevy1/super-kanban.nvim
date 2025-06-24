@@ -119,7 +119,6 @@ end
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
 actions.create_list_at_begin = function(cardUI, listUI, ctx)
-  -- FIXME: index is not working properly
   _create_list(cardUI, listUI, ctx, 'first')
 end
 

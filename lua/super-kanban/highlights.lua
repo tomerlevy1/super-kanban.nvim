@@ -1,4 +1,4 @@
----@text 5. Highlight groups ~
+---@text 7. Highlight groups ~
 ---
 ---
 --- General highlights ~
@@ -67,7 +67,7 @@
 --- * `SuperKanbanDatePickerToday`       - Highlight for today
 --- * `SuperKanbanDatePickerCursor`      - Highlighted cursor date
 ---@tag super-kanban-highlight-groups
----@toc_entry 5. Highlight groups
+---@toc_entry 7. Highlight groups
 
 local prefix = 'SuperKanban'
 local winhighlight = function(highlights)

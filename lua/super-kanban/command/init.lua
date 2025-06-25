@@ -1,4 +1,4 @@
----@text 6. Commands ~
+---@text 5. Commands ~
 ---
 ---     :SuperKanban open                |super-kanban-command-open|
 ---     :SuperKanban create              |super-kanban-command-create|
@@ -8,7 +8,7 @@
 --- These commands are provided by |super-kanban.nvim| to control board behavior.
 --- Read below for more details on subcommands and their functionality.
 ---@tag :SuperKanban super-kanban-command
----@toc_entry 6. Commands
+---@toc_entry 5. Commands
 
 --- :SuperKanban [file] ~
 --- :SuperKanban open [file] ~
@@ -47,8 +47,8 @@
 ---   - `right` : Move the list one position to the right.
 ---
 --- jump=[direction]
----   - `left`  : Move focus to the list on the left.
----   - `right` : Move focus to the list on the right.
+---   - `left`  : Jump focus to the list on the left.
+---   - `right` : Jump focus to the list on the right.
 ---   - `begin` : Jump focus to the first list.
 ---   - `end`   : Jump focus to the last list.
 ---

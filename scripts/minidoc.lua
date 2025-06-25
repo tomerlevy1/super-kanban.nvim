@@ -30,6 +30,7 @@ end
 
 MiniDoc.generate({
   'lua/super-kanban.lua',
-  'lua/super-kanban/highlights.lua',
   'lua/super-kanban/command/init.lua',
+  'lua/super-kanban/actions.lua',
+  'lua/super-kanban/highlights.lua',
 }, 'doc/super-kanban.txt', { hooks = hooks })

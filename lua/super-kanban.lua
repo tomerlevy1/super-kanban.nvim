@@ -1,4 +1,4 @@
---- *super-kanban.txt* *super-kanban*
+--- *super-kanban.txt* *super-kanban.nvim*
 
 ---@text TABLE OF CONTENTS
 ---
@@ -10,8 +10,8 @@
 ---
 --- super-kanban.nvim is a fast, minimal, and keyboard-centric Kanban board plugin
 --- for Neovim. It’s fully customizable and supports both Obsidian Kanban-style
---- Markdown and Org-mode formats, allowing you to manage tasks
---- seamlessly within your Neovim workflow.
+--- Markdown and Org-mode formats, allowing you to manage tasks seamlessly within
+--- your Neovim workflow.
 ---@tag super-kanban-introduction
 ---@toc_entry 1. Introduction
 
@@ -22,6 +22,7 @@
 --- - Compatible with obsidian-kanban style markdown
 --- - Supports tags, checkmarks, due dates, and note links in cards
 --- - Built-in date picker for assigning due dates and sorting or archiving cards
+--- - Time tracking support to log and review time spent on each task (`comming soon`)
 ---@tag super-kanban-introduction-features
 ---@toc_entry   - Features
 
@@ -33,7 +34,6 @@
 ---
 --- - snacks.nvim https://github.com/folke/snacks.nvim
 --- - Treesitter parser for 'markdown' or 'org'
---- - Neovim version 0.8 or higher
 ---
 ---@text OPTIONAL REQUIREMENTS
 ---
@@ -77,9 +77,10 @@ local writer = require('super-kanban.parser.writer')
 
 ---@private
 ---@class superkanban
-local M = {}
+local M = {
+  is_opned = false,
+}
 
--- stylua: ignore start
 ---@text 3. Configuration ~
 ---
 --- Use `super-kanban.setup()` to configure the plugin and override default options.
@@ -87,16 +88,70 @@ local M = {}
 ---@usage >lua
 ---   require('super-kanban').setup() -- use default configuration
 ---   -- OR
----   require('super-kanban').setup({
----     -- your custom options here
+---   require('super-kanban').setup({ -- your custom options here
+---     markdown = {...},
+---     org = {...},
+---     card = {...}
+---     list = {...},
+---     board = {...},
+---     date_picker = {...},
+---     note_popup = {...},
+---     icons = {...},
+---     mappings = {...},
 ---   })
 --- <
 ---@seealso |super-kanban-config-defaults| for a full list of available options.
 ---@tag super-kanban-config
 ---@toc_entry 3. Configuration
 
+---@text MAPPINGS
+---
+--- Customize key mappings via the `mappings` option in `setup()`. Each mapping can
+--- be a `string` (name of a built-in action), a `table`, or `false` to disable it.
+---
+---@usage >lua
+---   require('super-kanban').setup({
+---     mappings = {
+---       -- Map 'g<cr>' to a built-in action by name
+---       ['g<cr>'] = 'open_card_note',
+---
+---       -- Disable a default mapping
+---       ['<cr>'] = false,
+---
+---       -- Map 's' to a custom function
+---       ['s'] = {
+---         callback = function()
+---           pick_window()
+---         end,
+---         desc = 'Flash',
+---       },
+---
+---       -- Map '/' to a built-in action with custom behavior
+---       ['/'] = {
+---         callback = function(card, list, ctx)
+---           require('super-kanban.actions').search_card(card, list, ctx)
+---         end,
+---         nowait = true, -- optional
+---       },
+---     },
+---   })
+--- <
+--- Notes ~
+---
+--- - `callback`: a function that receives `(card, list, ctx)` if applicable.
+--- - `desc`: shown in which-key or similar plugins (optional).
+--- - `nowait`: prevent key timeout (optional).
+--- - You can use all standard mapping options supported by `vim.keymap.set()`.
+---   See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
+---
+---@seealso |super-kanban-actions| for a full list of built-in actions.
+---@tag super-kanban-config-mappings
+---@toc_entry   - Mappings
+
+-- stylua: ignore start
 ---@text DEFAULT OPTIONS
 ---@tag super-kanban-config-defaults
+---@toc_entry   - Default Options
 ---@eval return MiniDoc.afterlines_to_code(MiniDoc.current.eval_section)
 ---@class superkanban.Config
 --minidoc_replace_start ---@class Navbuddy.config
@@ -311,21 +366,8 @@ local default_config = {
 -- stylua: ignore end
 
 ---@private
----@param config? superkanban.Config
-function M.setup(config)
-  if config ~= nil then
-    default_config = vim.tbl_deep_extend('keep', config, default_config)
-  end
-
-  require('super-kanban.command').setup(default_config)
-  require('super-kanban.ui').setup(default_config)
-end
-
-M.is_opned = false
-
----@private
 ---@param source_path string
-local function open_board(source_path)
+local function _open_board(source_path)
   if not source_path or type(source_path) ~= 'string' or source_path == '' then
     utils.msg('Filename is missing. Please provide a valid file name.', 'warn')
     return
@@ -397,11 +439,13 @@ end
 
 ---@text 4. API
 ---
---- The following functions are provided by |super-kanban|.
+--- The following functions are provided by |super-kanban.nvim|.
 ---@tag super-kanban-api
 ---@toc_entry 4. API
 
+---
 --- Open super-kanban board.
+---
 ---@param source_path string Absolute or relative path to the source_path
 function M.open(source_path)
   if M.is_opned and M._ctx.source_path == source_path then
@@ -412,15 +456,17 @@ function M.open(source_path)
     end
 
     vim.schedule(function()
-      open_board(source_path)
+      _open_board(source_path)
     end)
     return
   end
 
-  open_board(source_path)
+  _open_board(source_path)
 end
 
+---
 --- Scaffold a Kanban file with default template.
+---
 ---@param source_path string Absolute or relative path to the file used to
 --- create the Kanban board.
 function M.create(source_path)
@@ -459,6 +505,19 @@ function M.create(source_path)
   end
 
   M.open(source_path)
+end
+
+---
+--- Setup super-kanban with optional user configuration.
+---
+---@param config? superkanban.Config Override defaults.
+function M.setup(config)
+  if config ~= nil then
+    default_config = vim.tbl_deep_extend('keep', config, default_config)
+  end
+
+  require('super-kanban.command').setup(default_config)
+  require('super-kanban.ui').setup(default_config)
 end
 
 return M

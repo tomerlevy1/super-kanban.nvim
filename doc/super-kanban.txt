@@ -1,4 +1,4 @@
-*super-kanban.txt* *super-kanban*                        Last change: 2025 June 25
+*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 25
 
 ------------------------------------------------------------------------------
                                                 *super-kanban-table-of-contents*
@@ -11,13 +11,16 @@ TABLE OF CONTENTS
     - lazy.nvim ........................ |super-kanban-installation-lazy.nvim|
     - mini.deps ........................ |super-kanban-installation-mini.deps|
   3. Configuration ..................................... |super-kanban-config|
+    - Mappings ................................ |super-kanban-config-mappings|
+    - Default Options ......................... |super-kanban-config-defaults|
   4. API .................................................. |super-kanban-api|
-  5. Highlight groups ........................ |super-kanban-highlight-groups|
-  6. Commands ............................ |:SuperKanban| |super-kanban-command|
+  5. Commands ............................ |:SuperKanban| |super-kanban-command|
     - SuperKanban open ........................... |super-kanban-command-open|
     - SuperKanban create ....................... |super-kanban-command-create|
     - SuperKanban list ........................... |super-kanban-command-list|
     - SuperKanban card ........................... |super-kanban-command-card|
+  6. Actions .......................................... |super-kanban-actions|
+  7. Highlight groups ........................ |super-kanban-highlight-groups|
 
 ------------------------------------------------------------------------------
                                                      *super-kanban-introduction*
@@ -25,8 +28,8 @@ TABLE OF CONTENTS
 
 super-kanban.nvim is a fast, minimal, and keyboard-centric Kanban board plugin
 for Neovim. It’s fully customizable and supports both Obsidian Kanban-style
-Markdown and Org-mode formats, allowing you to manage tasks
-seamlessly within your Neovim workflow.
+Markdown and Org-mode formats, allowing you to manage tasks seamlessly within
+your Neovim workflow.
 
 ------------------------------------------------------------------------------
                                             *super-kanban-introduction-features*
@@ -37,6 +40,7 @@ FEATURES
 - Compatible with obsidian-kanban style markdown
 - Supports tags, checkmarks, due dates, and note links in cards
 - Built-in date picker for assigning due dates and sorting or archiving cards
+- Time tracking support to log and review time spent on each task (`comming soon`)
 
 ------------------------------------------------------------------------------
                                                      *super-kanban-installation*
@@ -48,7 +52,6 @@ REQUIREMENTS
 
 - snacks.nvim https://github.com/folke/snacks.nvim
 - Treesitter parser for 'markdown' or 'org'
-- Neovim version 0.8 or higher
 
 OPTIONAL REQUIREMENTS
 
@@ -92,12 +95,66 @@ Usage ~
 >lua
   require('super-kanban').setup() -- use default configuration
   -- OR
-  require('super-kanban').setup({
-    -- your custom options here
+  require('super-kanban').setup({ -- your custom options here
+    markdown = {...},
+    org = {...},
+    card = {...}
+    list = {...},
+    board = {...},
+    date_picker = {...},
+    note_popup = {...},
+    icons = {...},
+    mappings = {...},
   })
 <
 See also ~
 |super-kanban-config-defaults| for a full list of available options.
+
+------------------------------------------------------------------------------
+                                                  *super-kanban-config-mappings*
+MAPPINGS
+
+Customize key mappings via the `mappings` option in `setup()`. Each mapping can
+be a `string` (name of a built-in action), a `table`, or `false` to disable it.
+
+Usage ~
+>lua
+  require('super-kanban').setup({
+    mappings = {
+      -- Map 'g<cr>' to a built-in action by name
+      ['g<cr>'] = 'open_card_note',
+
+      -- Disable a default mapping
+      ['<cr>'] = false,
+
+      -- Map 's' to a custom function
+      ['s'] = {
+        callback = function()
+          pick_window()
+        end,
+        desc = 'Flash',
+      },
+
+      -- Map '/' to a built-in action with custom behavior
+      ['/'] = {
+        callback = function(card, list, ctx)
+          require('super-kanban.actions').search_card(card, list, ctx)
+        end,
+        nowait = true, -- optional
+      },
+    },
+  })
+<
+Notes ~
+
+- `callback`: a function that receives `(card, list, ctx)` if applicable.
+- `desc`: shown in which-key or similar plugins (optional).
+- `nowait`: prevent key timeout (optional).
+- You can use all standard mapping options supported by `vim.keymap.set()`.
+  See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
+
+See also ~
+|super-kanban-actions| for a full list of built-in actions.
 
 ------------------------------------------------------------------------------
                                                   *super-kanban-config-defaults*
@@ -316,28 +373,533 @@ Class ~
                                                               *super-kanban-api*
 4. API
 
-The following functions are provided by |super-kanban|.
+The following functions are provided by |super-kanban.nvim|.
 
 ------------------------------------------------------------------------------
                                                                       *M.open()*
                             `M.open`({source_path})
+
 Open super-kanban board.
+
 Parameters ~
 {source_path} `(string)` Absolute or relative path to the source_path
 
 ------------------------------------------------------------------------------
                                                                     *M.create()*
                            `M.create`({source_path})
+
 Scaffold a Kanban file with default template.
+
 Parameters ~
 {source_path} `(string)` Absolute or relative path to the file used to
 create the Kanban board.
+
+------------------------------------------------------------------------------
+                                                                     *M.setup()*
+                              `M.setup`({config})
+
+Setup super-kanban with optional user configuration.
+
+Parameters ~
+{config} `(optional)` `(superkanban.Config)` Override defaults.
+
+
+==============================================================================
+------------------------------------------------------------------------------
+                                             *:SuperKanban* *super-kanban-command*
+5. Commands ~
+
+    :SuperKanban open                |super-kanban-command-open|
+    :SuperKanban create              |super-kanban-command-create|
+    :SuperKanban list                |super-kanban-command-list|
+    :SuperKanban card                |super-kanban-command-card|
+
+These commands are provided by |super-kanban.nvim| to control board behavior.
+Read below for more details on subcommands and their functionality.
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-open*
+:SuperKanban [file] ~
+:SuperKanban open [file] ~
+
+    Open the main Kanban board window with the given file.
+
+------------------------------------------------------------------------------
+                                                   *super-kanban-command-create*
+:SuperKanban create [file] ~
+
+    Create a new board file.
+    - If no argument is passed, prompts for a file. (TODO: work on this)
+    - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-list*
+:SuperKanban list ~
+
+    Perform list-related actions like creating, renaming, deleting,
+    moving, or jumping between lists in the Kanban board.
+
+Available subcommands: ~
+
+create=[position]
+  - `begin` : Create a list at the beginning of the board.
+  - `end`   : Create a list at the end of the board.
+
+rename
+  Rename the currently selected list.
+
+delete
+  Delete the currently selected list.
+
+move=[direction]
+  - `left`  : Move the list one position to the left.
+  - `right` : Move the list one position to the right.
+
+jump=[direction]
+  - `left`  : Jump focus to the list on the left.
+  - `right` : Jump focus to the list on the right.
+  - `begin` : Jump focus to the first list.
+  - `end`   : Jump focus to the last list.
+
+sort=[option]
+  - `descending` : Sort cards in the list by due date (latest first).
+  - `ascending`  : Sort cards in the list by due date (earliest first).
+
+------------------------------------------------------------------------------
+                                                     *super-kanban-command-card*
+:SuperKanban card ~
+
+    Perform card-related actions such as creating, moving, jumping,
+    toggling completion, assigning due dates, and more.
+
+Available subcommands: ~
+
+create=[position]
+  - `before` : Create a card before the current card.
+  - `after`  : Create a card after the current card.
+  - `top`    : Create a card at the top of the current list.
+  - `bottom` : Create a card at the bottom of the current list.
+
+delete
+  Delete the currently selected card.
+
+toggle_complete
+  Toggle the completion status of the card.
+
+archive
+  Archive the currently selected card.
+
+pick_date
+  Open the date picker to assign a due date.
+
+remove_date
+  Remove the due date from the current card.
+
+search
+  Search for cards globally across the board.
+
+move=[direction]
+  - `up`     : Move the current card upward within the list.
+  - `down`   : Move the current card downward within the list.
+  - `left`   : Move the card to the previous list.
+  - `right`  : Move the card to the next list.
+
+jump=[direction]
+  - `up`     : Jump focus to the card above.
+  - `down`   : Jump focus to the card below.
+  - `left`   : Jump to the previous list.
+  - `right`  : Jump to the next list.
+  - `top`    : Jump to the top of the current list.
+  - `bottom` : Jump to the bottom of the current list.
+
+
+==============================================================================
+------------------------------------------------------------------------------
+                                                          *super-kanban-actions*
+6. Actions ~
+
+Customize key mappings using the `mappings` option in setup().
+Read below to find available built-in action names and their functionality.
+
+------------------------------------------------------------------------------
+                                                               *actions.close()*
+                   `actions.close`({cardUI}, {listUI}, {ctx})
+
+Open the main Kanban board window.
+
+Parameters ~
+{cardUI} `(vim.keymap.set.Opts)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                *actions.create_list_at_begin()*
+           `actions.create_list_at_begin`({cardUI}, {listUI}, {ctx})
+
+Create a list at the beginning of the board.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                  *actions.create_list_at_end()*
+            `actions.create_list_at_end`({cardUI}, {listUI}, {ctx})
+
+Create a list at the end of the board.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.rename_list()*
+                `actions.rename_list`({cardUI}, {listUI}, {ctx})
+
+Rename the currently selected list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.delete_list()*
+                `actions.delete_list`({cardUI}, {listUI}, {ctx})
+
+Delete the currently selected list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                      *actions.move_list_left()*
+              `actions.move_list_left`({cardUI}, {listUI}, {ctx})
+
+Move the list one position to the left.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                     *actions.move_list_right()*
+              `actions.move_list_right`({cardUI}, {listUI}, {ctx})
+
+Move the list one position to the right.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                      *actions.jump_list_left()*
+              `actions.jump_list_left`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the list on the left.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                     *actions.jump_list_right()*
+              `actions.jump_list_right`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the list on the right.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                     *actions.jump_list_begin()*
+              `actions.jump_list_begin`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the first list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                       *actions.jump_list_end()*
+               `actions.jump_list_end`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the last list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                              *actions.sort_by_due_descending()*
+          `actions.sort_by_due_descending`({cardUI}, {listUI}, {ctx})
+
+Sort cards in the list by due date (latest first).
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                               *actions.sort_by_due_ascending()*
+           `actions.sort_by_due_ascending`({cardUI}, {listUI}, {ctx})
+
+Sort cards in the list by due date (earliest first).
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                     *actions.create_card_top()*
+              `actions.create_card_top`({cardUI}, {listUI}, {ctx})
+
+Create a card at the top of the current list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                  *actions.create_card_bottom()*
+            `actions.create_card_bottom`({cardUI}, {listUI}, {ctx})
+
+Create a card at the bottom of the current list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                  *actions.create_card_before()*
+            `actions.create_card_before`({cardUI}, {listUI}, {ctx})
+
+Create a card before the current card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                   *actions.create_card_after()*
+             `actions.create_card_after`({cardUI}, {listUI}, {ctx})
+
+Create a card after the current card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.delete_card()*
+                `actions.delete_card`({cardUI}, {listUI}, {ctx})
+
+Delete the currently selected card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                     *actions.toggle_complete()*
+              `actions.toggle_complete`({cardUI}, {listUI}, {ctx})
+
+Toggle the completion status of the card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                        *actions.archive_card()*
+               `actions.archive_card`({cardUI}, {listUI}, {ctx})
+
+Archive the currently selected card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                           *actions.pick_date()*
+                 `actions.pick_date`({cardUI}, {listUI}, {ctx})
+
+Open the date picker to assign a due date.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.remove_date()*
+                `actions.remove_date`({cardUI}, {listUI}, {ctx})
+
+Remove the due date from the current card.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.search_card()*
+               `actions.search_card`({cardUI}, {listUI}, {ctxl})
+
+Search for cards globally across the board.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                             *actions.move_up()*
+                  `actions.move_up`({cardUI}, {listUI}, {ctx})
+
+Move the current card upward within the list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                           *actions.move_down()*
+                 `actions.move_down`({cardUI}, {listUI}, {ctx})
+
+Move the current card downward within the list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                           *actions.move_left()*
+                 `actions.move_left`({cardUI}, {listUI}, {ctx})
+
+Move the card to the previous list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                          *actions.move_right()*
+                `actions.move_right`({cardUI}, {listUI}, {ctx})
+
+Move the card to the next list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                             *actions.jump_up()*
+                  `actions.jump_up`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the card above.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                           *actions.jump_down()*
+                 `actions.jump_down`({cardUI}, {listUI}, {ctx})
+
+Jump focus to the card below.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                           *actions.jump_left()*
+                 `actions.jump_left`({cardUI}, {listUI}, {ctx})
+
+Jump to the previous list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                          *actions.jump_right()*
+                `actions.jump_right`({cardUI}, {listUI}, {ctx})
+
+Jump to the next list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                            *actions.jump_top()*
+                 `actions.jump_top`({cardUI}, {listUI}, {ctx})
+
+Jump to the top of the current list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                         *actions.jump_bottom()*
+                `actions.jump_bottom`({cardUI}, {listUI}, {ctx})
+
+Jump to the bottom of the current list.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                      *actions.open_card_note()*
+              `actions.open_card_note`({cardUI}, {listUI}, {ctx})
+
+Open card note
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
 
 
 ==============================================================================
 ------------------------------------------------------------------------------
                                                  *super-kanban-highlight-groups*
-5. Highlight groups ~
+7. Highlight groups ~
 
 
 General highlights ~
@@ -405,115 +967,6 @@ Date Picker window ~
 * `SuperKanbanDatePickerSeparator`   - Line between Weekday labels & dates
 * `SuperKanbanDatePickerToday`       - Highlight for today
 * `SuperKanbanDatePickerCursor`      - Highlighted cursor date
-
-
-==============================================================================
-------------------------------------------------------------------------------
-                                             *:SuperKanban* *super-kanban-command*
-6. Commands ~
-
-    :SuperKanban open                |super-kanban-command-open|
-    :SuperKanban create              |super-kanban-command-create|
-    :SuperKanban list                |super-kanban-command-list|
-    :SuperKanban card                |super-kanban-command-card|
-
-These commands are provided by |super-kanban.nvim| to control board behavior.
-Read below for more details on subcommands and their functionality.
-
-------------------------------------------------------------------------------
-                                                     *super-kanban-command-open*
-:SuperKanban [file] ~
-:SuperKanban open [file] ~
-
-    Open the main Kanban board window with the given file.
-
-------------------------------------------------------------------------------
-                                                   *super-kanban-command-create*
-:SuperKanban create [file] ~
-
-    Create a new board file.
-    - If no argument is passed, prompts for a file. (TODO: work on this)
-    - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
-
-------------------------------------------------------------------------------
-                                                     *super-kanban-command-list*
-:SuperKanban list ~
-
-    Perform list-related actions like creating, renaming, deleting,
-    moving, or jumping between lists in the Kanban board.
-
-Available subcommands: ~
-
-create=[position]
-  - `begin` : Create a list at the beginning of the board.
-  - `end`   : Create a list at the end of the board.
-
-rename
-  Rename the currently selected list.
-
-delete
-  Delete the currently selected list.
-
-move=[direction]
-  - `left`  : Move the list one position to the left.
-  - `right` : Move the list one position to the right.
-
-jump=[direction]
-  - `left`  : Move focus to the list on the left.
-  - `right` : Move focus to the list on the right.
-  - `begin` : Jump focus to the first list.
-  - `end`   : Jump focus to the last list.
-
-sort=[option]
-  - `descending` : Sort cards in the list by due date (latest first).
-  - `ascending`  : Sort cards in the list by due date (earliest first).
-
-------------------------------------------------------------------------------
-                                                     *super-kanban-command-card*
-:SuperKanban card ~
-
-    Perform card-related actions such as creating, moving, jumping,
-    toggling completion, assigning due dates, and more.
-
-Available subcommands: ~
-
-create=[position]
-  - `before` : Create a card before the current card.
-  - `after`  : Create a card after the current card.
-  - `top`    : Create a card at the top of the current list.
-  - `bottom` : Create a card at the bottom of the current list.
-
-delete
-  Delete the currently selected card.
-
-toggle_complete
-  Toggle the completion status of the card.
-
-archive
-  Archive the currently selected card.
-
-pick_date
-  Open the date picker to assign a due date.
-
-remove_date
-  Remove the due date from the current card.
-
-search
-  Search for cards globally across the board.
-
-move=[direction]
-  - `up`     : Move the current card upward within the list.
-  - `down`   : Move the current card downward within the list.
-  - `left`   : Move the card to the previous list.
-  - `right`  : Move the card to the next list.
-
-jump=[direction]
-  - `up`     : Jump focus to the card above.
-  - `down`   : Jump focus to the card below.
-  - `left`   : Jump to the previous list.
-  - `right`  : Jump to the next list.
-  - `top`    : Jump to the top of the current list.
-  - `bottom` : Jump to the bottom of the current list.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

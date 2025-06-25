@@ -26,7 +26,8 @@ local winbar_format = ''
 ---@param end_count number
 ---@return string
 local function generate_winbar(title, start_count, end_count)
-  return winbar_format:format(start_count, title, end_count)
+  local fname_tail = title and vim.fn.fnamemodify(title, ':t') or 'kanban'
+  return winbar_format:format(start_count, fname_tail, end_count)
 end
 
 function M.new()
@@ -52,7 +53,7 @@ function M:setup_win(ctx, opts)
     zindex = conf.board.zindex,
     wo = utils.merge({
       winhighlight = hl.board,
-      winbar = generate_winbar('Kanban', 0, 0),
+      winbar = generate_winbar(ctx.source_path, 0, 0),
     }, conf.board.win_options),
     -- Non config values
     backdrop = false,
@@ -123,7 +124,7 @@ function M:update_scroll_info(first, last)
   self.scroll_info.first = first > 0 and first or 0
   self.scroll_info.last = last > 0 and last or 0
 
-  vim.api.nvim_set_option_value('winbar', generate_winbar('Kanban', first, last), { win = self.win.win })
+  vim.api.nvim_set_option_value('winbar', generate_winbar(self.ctx.source_path, first, last), { win = self.win.win })
 end
 
 ---@param opts {from:number,to:number}

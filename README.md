@@ -1,8 +1,12 @@
+<div align="centr">
+
 # 🗂️ super-kanban.nvim
 
 **A keyboard-centric, minimal, and customizable Kanban board plugin for Neovim.**
 
 It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered parsing and a focus on speed and clarity - right inside your editor.
+
+</div>
 
 ---
 
@@ -19,12 +23,12 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 ## ⚙️ Requirements
 
-### Required
+#### Required
 
 - [snacks.nvim](https://github.com/folke/snacks.nvim) - component layout engine
 - Treesitter parser for `markdown` or `org`
 
-### Optional (but recommended)
+#### Optional
 
 - [orgmode.nvim](https://github.com/nvim-orgmode/orgmode) - for Org file support
 - [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation
@@ -93,7 +97,7 @@ See [`:h super-kanban-config-defaults`](https://github.com/hasansujon786/super-k
 Define custom mappings using the `mappings` option. Each mapping can be:
 
 - a string (built-in action name)
-- a Lua function
+- a table: with a `callback` function and optional mapping options
 - `false` (to disable the default)
 
 Example:

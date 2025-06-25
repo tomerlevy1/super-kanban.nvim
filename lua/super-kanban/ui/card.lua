@@ -510,11 +510,13 @@ end
 
 function M:open_note()
   local lines = self.win:lines()
-  local file_path, note_title, create_link = NotePopup.create_note_and_get_path(lines, self.ctx.ft)
+  local file_path, note_title, should_create_link = NotePopup.create_note_and_get_path(lines, self.ctx.ft)
   if not file_path or not note_title then
     return
   end
-  if create_link then
+
+  -- Create link & update buffer if link don't exists
+  if should_create_link then
     local line_number = 1
     vim.api.nvim_buf_set_lines(self.win.buf, line_number - 1, line_number, false, { '[[' .. note_title .. ']]' })
     self:extract_buffer_and_update_task_data()

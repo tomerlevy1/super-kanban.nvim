@@ -60,9 +60,14 @@ function M.create_note_and_get_path(lines, ft)
     utils.msg('No name found', 'warn')
     return false
   end
+  local file_extension, heading_level = '.md', '# '
+  if ft == 'org' then
+    file_extension = '.org'
+    heading_level = '* '
+  end
 
   local dir = config[ft].notes_dir
-  local file_path = vim.fs.normalize(dir .. '/' .. link_title .. '.md')
+  local file_path = vim.fs.normalize(dir .. '/' .. link_title .. file_extension)
 
   -- Create a new dir if not exists
   if not vim.uv.fs_stat(dir) then
@@ -71,7 +76,7 @@ function M.create_note_and_get_path(lines, ft)
 
   -- Create a new file if not exists
   if not vim.uv.fs_stat(file_path) then
-    local success = writer.write_lines(file_path, { '# ' .. link_title })
+    local success = writer.write_lines(file_path, { heading_level .. link_title })
     if not success then
       return false
     end

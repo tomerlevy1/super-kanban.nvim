@@ -1,4 +1,4 @@
-<div align="centr">
+<div align="center">
 
 # 🗂️ super-kanban.nvim
 

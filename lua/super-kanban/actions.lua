@@ -9,7 +9,6 @@ local utils = require('super-kanban.utils')
 
 local actions = {}
 
--- TODO: add to commands
 ---
 --- Open the main Kanban board window.
 ---
@@ -375,6 +374,19 @@ actions.search_card = function(cardUI, listUI, ctxl)
   require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI)
 end
 
+---
+--- Open or create note file for current card
+---
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.open_note = function(cardUI, listUI, ctx)
+  if not cardUI then
+    return
+  end
+  cardUI:open_note()
+end
+
 ---@private
 ---@param cardUI superkanban.cardUI|nil
 ---@param direction 'left'|'right'|'up'|'down'
@@ -544,20 +556,6 @@ end
 ---@param ctx superkanban.Ctx
 actions.jump_bottom = function(cardUI, listUI, ctx)
   _jump(cardUI, listUI, ctx, 'last')
-end
-
--- TODO: add to commands
----
---- Open card note
----
----@param cardUI superkanban.cardUI|nil
----@param listUI superkanban.ListUI|nil
----@param ctx superkanban.Ctx
-actions.open_card_note = function(cardUI, listUI, ctx)
-  if not cardUI then
-    return
-  end
-  cardUI:open_note()
 end
 
 ---@private

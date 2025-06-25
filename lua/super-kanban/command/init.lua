@@ -2,6 +2,7 @@
 ---
 ---     :SuperKanban open                |super-kanban-command-open|
 ---     :SuperKanban create              |super-kanban-command-create|
+---     :SuperKanban close               |super-kanban-command-close|
 ---     :SuperKanban list                |super-kanban-command-list|
 ---     :SuperKanban card                |super-kanban-command-card|
 ---
@@ -24,6 +25,12 @@
 ---     - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
 ---@toc_entry   - SuperKanban create
 ---@tag super-kanban-command-create
+
+--- :SuperKanban close ~
+---
+---     Exit out the main Kanban board window
+---@toc_entry   - SuperKanban close
+---@tag super-kanban-command-close
 
 --- :SuperKanban list ~
 ---
@@ -88,6 +95,9 @@
 ---
 --- search
 ---   Search for cards globally across the board.
+---
+--- open_note
+---   Open or create note file for current card.
 ---
 --- move=[direction]
 ---   - `up`     : Move the current card upward within the list.
@@ -221,7 +231,7 @@ function M.setup(conf)
   }
 
   local action_groups = {
-    -- search = 'search',
+    close = 'close',
     card = {
       create = {
         before = 'create_card_before',
@@ -234,6 +244,7 @@ function M.setup(conf)
       archive = 'archive_card',
       pick_date = 'pick_date',
       remove_date = 'remove_date',
+      open_note = 'open_note',
       search = 'search_card',
       move = { -- move=direction
         up = 'move_up',

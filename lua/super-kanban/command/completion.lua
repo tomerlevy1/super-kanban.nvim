@@ -11,7 +11,7 @@ local function make_kv_completion(prefix, arg_lead, completions)
   )
 end
 
-local top_level_mode_completion = { 'open', 'create', 'card', 'list' }
+local top_level_mode_completion = { 'open', 'create', 'close', 'card', 'list' }
 local nested_mode_completion = {
   open = function(arg_lead)
     return vim.fn.getcompletion(arg_lead, 'file')
@@ -26,6 +26,7 @@ local nested_mode_completion = {
     'archive',
     'pick_date',
     'remove_date',
+    'open_note',
     'search',
     'move=',
     'jump=',

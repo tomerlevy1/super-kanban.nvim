@@ -113,7 +113,7 @@ local M = {
 ---   require('super-kanban').setup({
 ---     mappings = {
 ---       -- Map 'g<cr>' to a built-in action by name
----       ['g<cr>'] = 'open_card_note',
+---       ['g<cr>'] = 'open_note',
 ---
 ---       -- Disable a default mapping
 ---       ['<cr>'] = false,
@@ -335,7 +335,7 @@ local default_config = {
     -- Open date picker
     ['zi'] = 'pick_date',
     -- Open card note
-    ['<cr>'] = 'open_card_note',
+    ['<cr>'] = 'open_note',
 
     -- List management
     ['zN'] = 'create_list_at_begin',

@@ -1,4 +1,4 @@
-*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 25
+*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 26
 
 ------------------------------------------------------------------------------
                                                 *super-kanban-table-of-contents*
@@ -17,6 +17,7 @@ TABLE OF CONTENTS
   5. Commands ............................ |:SuperKanban| |super-kanban-command|
     - SuperKanban open ........................... |super-kanban-command-open|
     - SuperKanban create ....................... |super-kanban-command-create|
+    - SuperKanban close ......................... |super-kanban-command-close|
     - SuperKanban list ........................... |super-kanban-command-list|
     - SuperKanban card ........................... |super-kanban-command-card|
   6. Actions .......................................... |super-kanban-actions|
@@ -122,7 +123,7 @@ Usage ~
   require('super-kanban').setup({
     mappings = {
       -- Map 'g<cr>' to a built-in action by name
-      ['g<cr>'] = 'open_card_note',
+      ['g<cr>'] = 'open_note',
 
       -- Disable a default mapping
       ['<cr>'] = false,
@@ -338,7 +339,7 @@ DEFAULT OPTIONS
       -- Open date picker
       ['zi'] = 'pick_date',
       -- Open card note
-      ['<cr>'] = 'open_card_note',
+      ['<cr>'] = 'open_note',
 
       -- List management
       ['zN'] = 'create_list_at_begin',
@@ -411,6 +412,7 @@ Parameters ~
 
     :SuperKanban open                |super-kanban-command-open|
     :SuperKanban create              |super-kanban-command-create|
+    :SuperKanban close               |super-kanban-command-close|
     :SuperKanban list                |super-kanban-command-list|
     :SuperKanban card                |super-kanban-command-card|
 
@@ -431,6 +433,12 @@ Read below for more details on subcommands and their functionality.
     Create a new board file.
     - If no argument is passed, prompts for a file. (TODO: work on this)
     - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+
+------------------------------------------------------------------------------
+                                                    *super-kanban-command-close*
+:SuperKanban close ~
+
+    Exit out the main Kanban board window
 
 ------------------------------------------------------------------------------
                                                      *super-kanban-command-list*
@@ -497,6 +505,9 @@ remove_date
 
 search
   Search for cards globally across the board.
+
+open_note
+  Open or create note file for current card.
 
 move=[direction]
   - `up`     : Move the current card upward within the list.
@@ -775,6 +786,17 @@ Parameters ~
 {ctx} `(superkanban.Ctx)`
 
 ------------------------------------------------------------------------------
+                                                           *actions.open_note()*
+                 `actions.open_note`({cardUI}, {listUI}, {ctx})
+
+Open or create note file for current card
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
                                                              *actions.move_up()*
                   `actions.move_up`({cardUI}, {listUI}, {ctx})
 
@@ -878,17 +900,6 @@ Parameters ~
                 `actions.jump_bottom`({cardUI}, {listUI}, {ctx})
 
 Jump to the bottom of the current list.
-
-Parameters ~
-{cardUI} `(superkanban.cardUI|nil)`
-{listUI} `(superkanban.ListUI|nil)`
-{ctx} `(superkanban.Ctx)`
-
-------------------------------------------------------------------------------
-                                                      *actions.open_card_note()*
-              `actions.open_card_note`({cardUI}, {listUI}, {ctx})
-
-Open card note
 
 Parameters ~
 {cardUI} `(superkanban.cardUI|nil)`

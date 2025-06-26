@@ -706,11 +706,11 @@ end
 local function _build_winbar_format_str(conf)
   local icons = conf.icons
   return table.concat({
-    icons.list_left_edge,
+    icons.list_edge_left,
     ' %s %%= %d ',
     -- │      ╰> Card count
     -- ╰─> List heading
-    icons.list_right_edge,
+    icons.list_edge_right,
   })
 end
 

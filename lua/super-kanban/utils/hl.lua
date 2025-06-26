@@ -17,12 +17,14 @@ function M.set_hl(groups, opts)
 end
 
 ---@param hl_name string
+---@param default_fg? string
+---@param default_bg? string
 ---@return string?
 ---@return string?
-function M.get_hl(hl_name)
+function M.get_hl(hl_name, default_fg, default_bg)
   local hl = vim.api.nvim_get_hl(0, { name = hl_name, link = false })
-  local fg = hl.fg and string.format('#%06x', hl.fg)
-  local bg = hl.bg and string.format('#%06x', hl.bg)
+  local fg = hl.fg and string.format('#%06x', hl.fg) or default_fg
+  local bg = hl.bg and string.format('#%06x', hl.bg) or default_bg
   return fg, bg
 end
 

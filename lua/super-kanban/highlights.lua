@@ -6,8 +6,8 @@
 --- * `SuperKanbanNormal`                - Main plugin UI highlight
 --- * `SuperKanbanBorder`                - Border of all windows
 --- * `SuperKanbanWinbar`                - Winbar for all windows
---- * `SuperKanbanPill`                  - Pill/tab UI element
---- * `SuperKanbanPillEdge`              - Edge of pill/tab element
+--- * `SuperKanbanBubble`                  - Bubble/tab UI element
+--- * `SuperKanbanBubbleEdge`              - Edge of Bubble/tab element
 ---
 --- These are base highlight groups used throughout SuperKanban. Other specific
 --- highlight groups (e.g. `SuperKanbanBoardNormal`, `SuperKanbanListNormal`,
@@ -123,44 +123,41 @@ local M = {
 }
 
 function M.setup()
-  local darker_bg = '#21252B'
-  local constant_fg = require('super-kanban.utils.hl').get_hl('Constant')
-  local border_fg = require('super-kanban.utils.hl').get_hl('FloatBorder')
-  local _, cursor_bg = require('super-kanban.utils.hl').get_hl('Cursor')
+  local get_hl = require('super-kanban.utils.hl').get_hl
+  local default = true
 
   -- stylua: ignore
   require('super-kanban.utils.hl').set_hl({
     Normal                = 'NormalFloat',
-    Winbar                = 'SuperKanbanNormal' ,
     Border                = 'FloatBorder',
-    Pill                  = { fg = darker_bg, bg = border_fg },
-    PillEdge              = 'FloatBorder',
+    Bubble                = 'String',
+    BubbleEdge            = 'SuperKanbanBubble',
 
     BoardNormal           = 'SuperKanbanNormal',
     BoardBorder           = 'SuperKanbanBorder',
-    BoardWinbar           = 'SuperKanbanWinbar',
-    BoardFileName         = { fg = darker_bg, bg = constant_fg },
-    BoardFileNameEdge     = { fg = constant_fg },
-    BoardScrollInfo       = 'SuperKanbanPill',
-    BoardScrollInfoEdge   = 'SuperKanbanPillEdge',
+    BoardWinbar           = 'SuperKanbanBoardNormal',
+    BoardFileName         = 'Constant',
+    BoardFileNameEdge     = 'Constant',
+    BoardScrollInfo       = 'SuperKanbanBubble',
+    BoardScrollInfoEdge   = 'SuperKanbanBubbleEdge',
 
     -- List window
     ListNormal            = 'SuperKanbanNormal',
     ListBorder            = 'SuperKanbanBorder',
-    ListWinbar            = 'SuperKanbanPill', -- it is revers of ListBorder
+    -- ListWinbar
     ListTitleBottom       = 'String',
 
     -- Card window
-    CardNormal            = { bg = darker_bg }, -- Use darker color use to show active card
-    CardNormalNC          = 'SuperKanbanNormal',
-    CardBorder            = { fg = border_fg, bg = darker_bg }, -- Use darker color use to show active card
-    CardBorderNC          = 'SuperKanbanBorder',
+    CardNormal            = 'CursorLine', -- Use darker color use to show active card
+    CardNormalNC          = 'SuperKanbanListNormal',
+    -- CardBorder
+    CardBorderNC          = 'SuperKanbanListBorder',
     CardWinBar            = 'SuperKanbanCardNormal',
     CardWinbarNC          = 'LineNr',
 
     -- Card content
     None                  = { fg = 'NONE' },
-    Tag                   = { fg = constant_fg, bg = '#4C4944' },
+    Tag                   = 'Constant' ,
     DueDate               = 'Keyword',
     CheckMark             = 'SuperKanbanNone',
     CheckMarkDone         = 'String',
@@ -171,18 +168,33 @@ function M.setup()
     NoteNormal            = 'SuperKanbanNormal',
     NoteNormalNC          = 'SuperKanbanNoteNormal',
     NoteBorder            = 'SuperKanbanBorder',
-    NoteTitle             = 'SuperKanbanPill' ,
-    NoteTitleEdge         = 'SuperKanbanPillEdge' ,
+    NoteTitle             = 'SuperKanbanBubble' ,
+    NoteTitleEdge         = 'SuperKanbanBubbleEdge' ,
 
     -- Date Picker window
     DatePickerNormal      = 'SuperKanbanNormal' ,
     DatePickerBorder      = 'SuperKanbanBorder',
-    DatePickerTitle       = 'Type' ,
+    DatePickerTitle       = 'Constant' ,
     DatePickerWeekDays    = 'SuperKanbanBorder',
     DatePickerSeparator   = 'NonText',
     DatePickerToday       = 'SuperKanbanTag',
-    DatePickerCursor      = { fg = darker_bg,  bg = cursor_bg },
-  }, { prefix = prefix, default = true })
+    -- DatePickerCursor
+  }, { prefix = prefix, default = default })
+
+  local _, normal_bg = get_hl('Normal', nil, '#333333')
+  local border_fg = get_hl('SuperKanbanListBorder')
+  local _, card_focus_bg = get_hl('SuperKanbanCardNormal', nil, normal_bg)
+  local _, cursor_bg = get_hl('Cursor')
+
+  -- stylua: ignore
+  require('super-kanban.utils.hl').set_hl({
+    -- List window
+    ListWinbar            = { fg = normal_bg, bg = border_fg }, -- it is revers of ListBorder
+    -- Card window
+    CardBorder            = { fg = border_fg, bg = card_focus_bg }, -- Use darker color use to show active card
+    -- Date Picker window
+    DatePickerCursor      = { fg = normal_bg,  bg = cursor_bg },
+  }, { prefix = prefix, default = default })
 end
 
 return M

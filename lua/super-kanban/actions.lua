@@ -370,7 +370,7 @@ end
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
-actions.search_card = function(cardUI, listUI, ctxl)
+actions.search_card = function(cardUI, listUI, ctx)
   require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI)
 end
 

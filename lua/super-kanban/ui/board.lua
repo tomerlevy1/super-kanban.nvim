@@ -421,7 +421,7 @@ end
 local function _build_winbar_format_str(conf)
   local with_separator = require('super-kanban.utils.hl').build_str_with_separator
   local icons = conf.icons
-  local left_sep, right_sep = icons.left_sep, icons.right_sep
+  local left_sep, right_sep = icons.bubble_edge_left, icons.bubble_edge_right
 
   local title_format = with_separator('%s', {
     left_sep = left_sep,

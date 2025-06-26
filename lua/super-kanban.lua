@@ -223,13 +223,13 @@ local default_config = {
   },
   card = {
     -- Card window width (0 = auto)
-    width = 0,
+    width = 32,
     -- Card window height in lines
     height = 6,
     -- Z-index layering of the card window
     zindex = 7,
     -- Card border characters (table of 8 sides)
-    border = { '', '', '', ' ', '▁', '▁', '▁', ' ' }, -- Only add border at bottom
+    border = { '', '', '', '', '', '▁', '', '' }, -- Only add border at bottom
     -- Additional window-local options for the card
     win_options = {
       wrap = true,
@@ -288,13 +288,13 @@ local default_config = {
   },
   icons = {
     -- Character for left edge of a list
-    list_left_edge = '║',
+    list_edge_left = '', -- ║
     -- Character for right edge of a list
-    list_right_edge = '║',
+    list_edge_right = '', -- ║
     -- Left decorative separator for elements
-    left_sep = '',
+    bubble_edge_left = '', -- 
     -- Right decorative separator for elements
-    right_sep = '',
+    bubble_edge_right = '', -- 
     -- Arrows
     arrow_left = '←',
     arrow_right = '→',

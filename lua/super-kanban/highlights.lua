@@ -28,6 +28,7 @@
 --- * `SuperKanbanListNormal`            - List window content
 --- * `SuperKanbanListBorder`            - Border of list window
 --- * `SuperKanbanListWinbar`            - Winbar of list window
+--- * `SuperKanbanListWinbarEdge`        - Edge of winbar
 --- * `SuperKanbanListTitleBottom`       - Title label below list
 ---
 --- Card window ~
@@ -122,7 +123,7 @@ local M = {
   }),
 }
 
-local default = false
+local default = true
 function M.setup()
   local get_hl = require('super-kanban.utils.hl').get_hl
 
@@ -145,6 +146,7 @@ function M.setup()
     ListNormal            = 'SuperKanbanNormal',
     ListBorder            = 'SuperKanbanBorder',
     ListWinbar            = 'Search',
+    ListWinbarEdge        = 'Search',
     ListTitleBottom       = 'String',
 
     -- Card window

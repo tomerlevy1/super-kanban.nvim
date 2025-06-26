@@ -706,11 +706,15 @@ end
 local function _build_winbar_format_str(conf)
   local icons = conf.icons
   return table.concat({
+    '%%#SuperKanbanListWinbar#%%#SuperKanbanListWinbarEdge#',
     icons.list_edge_left,
+    '%%#SuperKanbanListWinbar#',
     ' %s %%= %d ',
     -- │      ╰> Card count
     -- ╰─> List heading
+    '%%#SuperKanbanListWinbarEdge#',
     icons.list_edge_right,
+    '%%#SuperKanbanListWinbar#',
   })
 end
 

@@ -25,7 +25,7 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 #### Required
 
-- [snacks.nvim](https://github.com/folke/snacks.nvim) - component layout engine
+- [snacks.nvim](https://github.com/folke/snacks.nvim) - search & component layout engine
 - Treesitter parser for `markdown` or `org`
 
 #### Optional

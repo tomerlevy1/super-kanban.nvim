@@ -314,8 +314,8 @@ local default_config = {
     ['X'] = 'log_info',
 
     -- Create card at various positions
-    ['gn'] = 'create_card_before',
-    ['gN'] = 'create_card_after',
+    ['gN'] = 'create_card_before',
+    ['gn'] = 'create_card_after',
     ['gK'] = 'create_card_top',
     ['gJ'] = 'create_card_bottom',
 

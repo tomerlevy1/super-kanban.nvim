@@ -1,4 +1,4 @@
-*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 26
+*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 27
 
 ------------------------------------------------------------------------------
                                                 *super-kanban-table-of-contents*
@@ -318,8 +318,8 @@ DEFAULT OPTIONS
       ['X'] = 'log_info',
 
       -- Create card at various positions
-      ['gn'] = 'create_card_before',
-      ['gN'] = 'create_card_after',
+      ['gN'] = 'create_card_before',
+      ['gn'] = 'create_card_after',
       ['gK'] = 'create_card_top',
       ['gJ'] = 'create_card_bottom',
 

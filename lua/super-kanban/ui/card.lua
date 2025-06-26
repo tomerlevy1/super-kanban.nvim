@@ -534,7 +534,7 @@ end
 
 ---@param conf superkanban.Config
 local function _build_winbar_format_str(conf)
-  return '%%=%s%%#SuperKanbanNone#%s'
+  return '%%=%s%%#CardWinbarNC#%s'
   --          │               ╰> Date
   --          ╰─> Card check mark
 end

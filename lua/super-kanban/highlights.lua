@@ -122,9 +122,9 @@ local M = {
   }),
 }
 
+local default = false
 function M.setup()
   local get_hl = require('super-kanban.utils.hl').get_hl
-  local default = true
 
   -- stylua: ignore
   require('super-kanban.utils.hl').set_hl({
@@ -144,7 +144,7 @@ function M.setup()
     -- List window
     ListNormal            = 'SuperKanbanNormal',
     ListBorder            = 'SuperKanbanBorder',
-    -- ListWinbar
+    ListWinbar            = 'Search',
     ListTitleBottom       = 'String',
 
     -- Card window
@@ -153,7 +153,7 @@ function M.setup()
     -- CardBorder
     CardBorderNC          = 'SuperKanbanListBorder',
     CardWinBar            = 'SuperKanbanCardNormal',
-    CardWinbarNC          = 'LineNr',
+    CardWinbarNC          = 'SuperKanbanCardNormalNC',
 
     -- Card content
     None                  = { fg = 'NONE' },
@@ -175,25 +175,19 @@ function M.setup()
     DatePickerNormal      = 'SuperKanbanNormal' ,
     DatePickerBorder      = 'SuperKanbanBorder',
     DatePickerTitle       = 'Constant' ,
-    DatePickerWeekDays    = 'SuperKanbanBorder',
-    DatePickerSeparator   = 'NonText',
+    DatePickerWeekDays    = 'String',
+    DatePickerSeparator   = 'String',
     DatePickerToday       = 'SuperKanbanTag',
-    -- DatePickerCursor
+    DatePickerCursor      = 'Cursor',
   }, { prefix = prefix, default = default })
 
-  local _, normal_bg = get_hl('Normal', nil, '#333333')
-  local border_fg = get_hl('SuperKanbanListBorder')
-  local _, card_focus_bg = get_hl('SuperKanbanCardNormal', nil, normal_bg)
-  local _, cursor_bg = get_hl('Cursor')
+  local border_fg = get_hl('SuperKanbanCardBorderNC')
+  local _, card_focus_bg = get_hl('SuperKanbanCardNormal', nil, '#222222')
 
   -- stylua: ignore
   require('super-kanban.utils.hl').set_hl({
-    -- List window
-    ListWinbar            = { fg = normal_bg, bg = border_fg }, -- it is revers of ListBorder
     -- Card window
     CardBorder            = { fg = border_fg, bg = card_focus_bg }, -- Use darker color use to show active card
-    -- Date Picker window
-    DatePickerCursor      = { fg = normal_bg,  bg = cursor_bg },
   }, { prefix = prefix, default = default })
 end
 

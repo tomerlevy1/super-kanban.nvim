@@ -318,16 +318,14 @@ DEFAULT OPTIONS
       ['X'] = 'log_info',
 
       -- Create card at various positions
-      ['gN'] = 'create_card_before',
-      ['gn'] = 'create_card_after',
+      ['gn'] = 'create_card_before',
+      ['gN'] = 'create_card_after',
       ['gK'] = 'create_card_top',
       ['gJ'] = 'create_card_bottom',
 
-      -- Delete or archive cards
+      -- Delete or archive Toggle card checkbox
       ['gD'] = 'delete_card',
       ['g<C-t>'] = 'archive_card',
-
-      -- Toggle card checkbox
       ['<C-t>'] = 'toggle_complete',
 
       -- Sort cards

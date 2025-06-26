@@ -116,8 +116,9 @@ function M:mount(ctx, opts)
 end
 
 function M:item_can_fit()
-  local width = self.win:size().width - 2 - config.board.padding.left
-  return math.floor(width / config.list.width)
+  local board_width = vim.api.nvim_win_get_width(self.win.win)
+  local width = board_width - config.board.padding.left
+  return math.floor(width / (config.list.width + 2))
 end
 
 function M:update_scroll_info(first, last)

@@ -10,6 +10,8 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 ---
 
+![Demo Video](https://imgur.com/a/mJCXXtz)
+
 ## ✨ Features
 
 - Keyboard-centric Kanban workflow built for Neovim

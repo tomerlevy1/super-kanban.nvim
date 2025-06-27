@@ -938,6 +938,7 @@ List window ~
 * `SuperKanbanListNormal`            - List window content
 * `SuperKanbanListBorder`            - Border of list window
 * `SuperKanbanListWinbar`            - Winbar of list window
+* `SuperKanbanListWinbarEdge`        - Edge of winbar
 * `SuperKanbanListTitleBottom`       - Title label below list
 
 Card window ~

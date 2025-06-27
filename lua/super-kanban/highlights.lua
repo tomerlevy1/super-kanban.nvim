@@ -178,7 +178,7 @@ function M.setup()
     DatePickerBorder      = 'SuperKanbanBorder',
     DatePickerTitle       = 'Constant' ,
     DatePickerWeekDays    = 'String',
-    DatePickerSeparator   = 'String',
+    DatePickerSeparator   = 'SuperKanbanDatePickerBorder',
     DatePickerToday       = 'SuperKanbanTag',
     DatePickerCursor      = 'Cursor',
   }, { prefix = prefix, default = default })

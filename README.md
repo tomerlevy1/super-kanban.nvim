@@ -10,7 +10,7 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 ---
 
-![Demo](https://imgur.com/a/UqrEwSR.gif)
+![Demo](https://i.imgur.com/c8e2Vu4.gif)
 
 ## ✨ Features
 

@@ -22,8 +22,9 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 - Keyboard-centric Kanban workflow built for Neovim
 - Treesitter-based parsing for `Markdown` and `Orgmode` (`neorg` coming soon)
 - Compatible with Obsidian Kanban-style markdown
-- Supports tags, checkmarks, due dates, and note links in cards
-- Built-in date picker for assigning due dates and sorting or archiving cards
+- Supports tags, checkmarks, due dates, sorting or archiving cards
+- Built-in date picker for assigning due dates (press `@` in insert mode)
+- Create dedicated notes for each card to store additional context
 - Time tracking support to log and review time spent on each task (`coming soon`)
 
 ---
@@ -93,6 +94,22 @@ require("super-kanban").setup({
     ["<C-t>"] = "toggle_complete",
   },
 })
+```
+
+## Configuration Options
+
+```lua
+{
+  markdown = {...},     -- Settings for working with Markdown kanban files
+  org = {...},          -- Settings for working with Org kanban files
+  card = {...},         -- Window style and behavior for cards
+  list = {...},         -- Layout and options for lists
+  board = {...},        -- Main board window layout and styling
+  date_picker = {...},  -- Appearance and options for the date picker
+  note_popup = {...},   -- Settings for the card note popup
+  icons = {...},        -- Customize UI icons (borders, arrows, etc.)
+  mappings = {...},     -- Custom keymaps for user actions
+}
 ```
 
 See [`:h super-kanban-config-defaults`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L160) in the help file for all available options.

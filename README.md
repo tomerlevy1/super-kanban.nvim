@@ -12,9 +12,10 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 ## Screenshots
 
-![gif](https://files.catbox.moe/oig85u.gif)
+![gif](https://github.com/user-attachments/assets/00708972-7dfe-4503-a90a-2bbbf87e2ded)
 
 ---
+
 
 ## ✨ Features
 

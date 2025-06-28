@@ -16,7 +16,6 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 
 ---
 
-
 ## ✨ Features
 
 - Keyboard-centric Kanban workflow built for Neovim
@@ -116,7 +115,7 @@ See [`:h super-kanban-config-defaults`](https://github.com/hasansujon786/super-k
 
 ---
 
-## ⌨️Keymaps
+## ⌨️Configuration Keymaps
 
 Define custom mappings using the `mappings` option. Each mapping can be:
 
@@ -149,6 +148,42 @@ mappings = {
 You can use all standard mapping options (`desc`, `nowait`, etc.)  
 See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 
+## 🧩 Default Keymaps
+
+| Key      | Action                   | Description                    |
+| -------- | ------------------------ | ------------------------------ |
+| `q`      | `close`                  | Close board window             |
+| `gN`     | `create_card_before`     | Create card before current     |
+| `gn`     | `create_card_after`      | Create card after current      |
+| `gK`     | `create_card_top`        | Create card at top of list     |
+| `gJ`     | `create_card_bottom`     | Create card at bottom of list  |
+| `gD`     | `delete_card`            | Delete current card            |
+| `g<C-t>` | `archive_card`           | Archive current card           |
+| `<C-t>`  | `toggle_complete`        | Toggle card checkbox           |
+| `g.`     | `sort_by_due_descending` | Sort cards by due (descending) |
+| `g,`     | `sort_by_due_ascending`  | Sort cards by due (ascending)  |
+| `/`      | `search_card`            | Search cards                   |
+| `zi`     | `pick_date`              | Open date picker               |
+| `<CR>`   | `open_note`              | Open card note                 |
+| `zN`     | `create_list_at_begin`   | Create list at beginning       |
+| `zn`     | `create_list_at_end`     | Create list at end             |
+| `zD`     | `delete_list`            | Delete current list            |
+| `zr`     | `rename_list`            | Rename current list            |
+| `<C-k>`  | `jump_up`                | Jump to card above             |
+| `<C-j>`  | `jump_down`              | Jump to card below             |
+| `<C-h>`  | `jump_left`              | Jump to list on the left       |
+| `<C-l>`  | `jump_right`             | Jump to list on the right      |
+| `gg`     | `jump_top`               | Jump to top of current list    |
+| `G`      | `jump_bottom`            | Jump to bottom of current list |
+| `z0`     | `jump_list_begin`        | Jump to first list             |
+| `z$`     | `jump_list_end`          | Jump to last list              |
+| `<A-k>`  | `move_up`                | Move card up                   |
+| `<A-j>`  | `move_down`              | Move card down                 |
+| `<A-h>`  | `move_left`              | Move card to previous list     |
+| `<A-l>`  | `move_right`             | Move card to next list         |
+| `zh`     | `move_list_left`         | Move list left                 |
+| `zl`     | `move_list_right`        | Move list right                |
+
 ---
 
 ## 📜 Commands
@@ -179,15 +214,13 @@ require("super-kanban").setup({ ... })
 
 ## 🎨 Highlight Groups
 
-Fully themeable via highlight groups like:
-
 - `SuperKanbanNormal`
 - `SuperKanbanListBorder`
 - `SuperKanbanCardNormal`
 - `SuperKanbanDatePickerCursor`
 - and more...
 
-See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L901) for the full list.
+See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L909) for the full list.
 
 ---
 

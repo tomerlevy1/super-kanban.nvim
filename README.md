@@ -38,7 +38,7 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 #### Optional
 
 - [orgmode.nvim](https://github.com/nvim-orgmode/orgmode) - for Org file support
-- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation
+- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation  *(see [Flash integration](#flashnvim-integration))*
 
 ---
 
@@ -184,6 +184,52 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 | `zh`     | `move_list_left`         | Move list left                 |
 | `zl`     | `move_list_right`        | Move list right                |
 
+## flash.nvim Integration
+
+You can integrate flash.nvim to jump between Kanban windows using label hints.
+
+Example:
+```lua
+local function pick_window(callback)
+  require('flash').jump({
+    highlight = {
+      backdrop = true,
+      groups = {
+        current = 'FlashLabel',
+        label = 'FlashLabel',
+      },
+    },
+    label = { after = { 0, 0 } },
+    search = {
+      mode = 'search',
+      max_length = 0,
+      multi_window = true,
+      exclude = {
+        function(win)
+          local kanban_ft = { superkanban_list = true, superkanban_card = true }
+          return not kanban_ft[vim.bo[vim.api.nvim_win_get_buf(win)].filetype]
+        end,
+      },
+    },
+    action = callback,
+    matcher = function(win)
+      return { { pos = { 1, 0 }, end_pos = { 1, 0 } } }
+    end,
+  })
+end
+
+-- Inside your plugin setup
+{
+  mappings = {
+    ['s'] = {
+      callback = function()
+        pick_window()
+      end,
+      desc = 'Flash',
+    },
+  }
+}
+```
 ---
 
 ## 📜 Commands

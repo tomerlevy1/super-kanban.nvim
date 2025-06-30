@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 vim.api.nvim_create_user_command('SuperKanban', function(...)
   require('super-kanban.command')._command(...)
 end, {
-  nargs = '+',
+  nargs = '*',
   complete = "custom,v:lua.require'super-kanban.command'.get_completion",
   desc = 'SuperKanban',
 })

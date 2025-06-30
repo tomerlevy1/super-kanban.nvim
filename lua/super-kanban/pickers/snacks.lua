@@ -23,8 +23,8 @@ end
 
 ---@param opts snacks.picker.Config
 ---@param ctx superkanban.Ctx
----@param current_item superkanban.cardUI|superkanban.ListUI|nil
-function M.search_cards(opts, ctx, current_item)
+---@param active_item superkanban.cardUI|superkanban.ListUI|nil
+function M.search_cards(opts, ctx, active_item)
   local status_ok, snack_picker = pcall(require, 'snacks.picker')
   if not status_ok then
     vim.notify('snacks.nvim not found', vim.log.levels.ERROR)
@@ -44,21 +44,14 @@ function M.search_cards(opts, ctx, current_item)
     end,
     on_close = function()
       vim.schedule(function()
-        if not found_item and current_item then
-          current_item:focus()
+        if not found_item and active_item then
+          active_item:focus()
         end
       end)
     end,
     title = 'Super Kanban',
-    format = 'text',
     preview = 'preview',
-    layout = {
-      -- preview = "main",
-      preset = 'ivy',
-      layout = {
-        height = 0.4,
-      },
-    },
+    format = 'text', -- TODO: format remove <br>
     -- format = function(item, _)
     --   -- local kind = navic.adapt_lsp_num_to_str(item.value.kind)
     --   -- local kind_hl = "Navbuddy" .. kind
@@ -68,6 +61,12 @@ function M.search_cards(opts, ctx, current_item)
     --   ret[#ret + 1] = { item.text }
     --   return ret
     -- end,
+    layout = {
+      preset = 'ivy',
+      layout = {
+        height = 0.4,
+      },
+    },
     finder = function()
       local items = {}
       for _, list in ipairs(ctx.lists) do
@@ -93,6 +92,49 @@ function M.search_cards(opts, ctx, current_item)
 
   opts = vim.tbl_extend('force', picker_conf, opts or {})
   snack_picker.pick(nil, opts)
+end
+
+---@param opts snacks.picker.Config
+---@param active_item superkanban.cardUI|superkanban.ListUI|nil
+function M.files(opts, active_item)
+  local status_ok, snack_picker = pcall(require, 'snacks.picker')
+  if not status_ok then
+    vim.notify('snacks.nvim not found', vim.log.levels.ERROR)
+    return
+  end
+
+  local found_item = nil
+
+  ---@type snacks.picker.Config
+  local picker_conf = {
+    confirm = function(p, item)
+      p:close()
+      vim.schedule(function()
+        if item then
+          found_item = true
+          require('super-kanban').open(item.file)
+        end
+      end)
+    end,
+    on_close = function()
+      vim.schedule(function()
+        if not found_item and active_item then
+          active_item:focus()
+        end
+      end)
+    end,
+    title = 'Super Kanban',
+    layout = {
+      preset = 'ivy',
+      layout = {
+        height = 0.4,
+      },
+    },
+    ft = { 'md', 'org' },
+  }
+
+  opts = vim.tbl_extend('force', picker_conf, opts or {})
+  snack_picker.files(opts)
 end
 
 return M

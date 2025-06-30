@@ -10,12 +10,36 @@ local utils = require('super-kanban.utils')
 local actions = {}
 
 ---
---- Open the main Kanban board window.
+--- Open the a picker to select file.
 ---
----@param cardUI vim.keymap.set.Opts
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.open = function(cardUI, listUI, ctx)
+  require('super-kanban.pickers.snacks').files({}, cardUI or listUI or nil)
+end
+
+---
+--- Prompt for a filename & create a new file
+---
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.create = function(cardUI, listUI, ctx)
+  require('super-kanban').create(nil, true)
+end
+
+---
+--- Close the main Kanban board window.
+---
+---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
 actions.close = function(cardUI, listUI, ctx)
+  if not ctx then
+    return
+  end
+
   ctx.board:exit()
 end
 
@@ -29,6 +53,10 @@ local _create_list = function(cardUI, listUI, ctx, placement)
   vim.ui.input({
     prompt = 'Enter a name for the new list:',
   }, function(name)
+    if not name then
+      return
+    end
+
     if name then
       vim.schedule(function()
         ctx.board:create_list(name, placement)
@@ -73,6 +101,10 @@ actions.rename_list = function(cardUI, listUI, ctx)
     prompt = 'Rename list:',
     default = listUI.data.title,
   }, function(name)
+    if not name then
+      return
+    end
+
     if name then
       vim.schedule(function()
         listUI:rename_list(name)
@@ -371,7 +403,7 @@ end
 ---@param listUI superkanban.ListUI|nil
 ---@param ctx superkanban.Ctx
 actions.search_card = function(cardUI, listUI, ctx)
-  require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI)
+  require('super-kanban.pickers.snacks').search_cards({}, ctx, cardUI or listUI or nil)
 end
 
 ---

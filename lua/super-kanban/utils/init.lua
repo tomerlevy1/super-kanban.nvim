@@ -84,4 +84,11 @@ function M.save_buffer(buf)
   return false
 end
 
+---@param ctx superkanban.Ctx
+function M.get_active_list_and_card(ctx)
+  local list = ctx and ctx.lists[ctx.location.list]
+  local card = ctx and list.cards[ctx.location.card]
+  return list, card
+end
+
 return M

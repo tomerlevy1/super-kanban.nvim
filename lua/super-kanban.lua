@@ -444,8 +444,22 @@ end
 ---
 --- Open super-kanban board.
 ---
----@param source_path string Absolute or relative path to the source_path
-function M.open(source_path)
+---@param source_path? string Absolute or relative path to the source_path
+---@param open_picker? boolean Open picker to select file if no source_path provided
+function M.open(source_path, open_picker)
+  if not source_path then
+    -- Open picker to select a file
+    if open_picker == true then
+      local current_item = nil
+      if M.is_opned then
+        local list, card = utils.get_active_list_and_card(M._ctx)
+        current_item = card or list
+      end
+      require('super-kanban.pickers.snacks').files({}, current_item)
+    end
+    return
+  end
+
   if M.is_opned and M._ctx.source_path == source_path then
     return
   elseif M.is_opned and M._ctx.board then
@@ -465,10 +479,22 @@ end
 ---
 --- Scaffold a Kanban file with default template.
 ---
----@param source_path string Absolute or relative path to the file used to
---- create the Kanban board.
-function M.create(source_path)
+---@param source_path? string Absolute or relative path to the file used to
+---@param open_prompt? boolean Prompt to get filename if no source_path provided
+function M.create(source_path, open_prompt)
   if not source_path or type(source_path) ~= 'string' or source_path == '' then
+    -- Get filename using prompt
+    if open_prompt == true then
+      vim.ui.input({ prompt = 'Enter a filename:' }, function(value)
+        if not value then
+          return
+        end
+
+        M.create(vim.trim(value))
+      end)
+      return
+    end
+
     utils.msg('Filename is missing. Please provide a valid file name.', 'warn')
     return
   end

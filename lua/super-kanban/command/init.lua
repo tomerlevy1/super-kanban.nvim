@@ -115,7 +115,6 @@
 ---@toc_entry   - SuperKanban card
 ---@tag super-kanban-command-card
 
-
 local utils = require('super-kanban.utils')
 local text = require('super-kanban.utils.text')
 local actions = require('super-kanban.actions')
@@ -146,18 +145,21 @@ local function parse_key_value(arg_str)
 end
 
 ---@private
----@param fn fun(cardUI:superkanban.cardUI|nil,listUI:superkanban.ListUI|nil,ctx:superkanban.Ctx)
+---@param action_cb fun(cardUI:superkanban.cardUI|nil,listUI:superkanban.ListUI|nil,ctx:superkanban.Ctx)
 ---@param ctx superkanban.Ctx
-local function run_action_with_data(fn, ctx)
-  local list = ctx.lists[ctx.location.list]
-  local card = list.cards[ctx.location.card]
-  fn(card, list, ctx)
+local function run_action_with_data(action_cb, ctx)
+  local list, card = utils.get_active_list_and_card(ctx)
+  action_cb(card, list, ctx)
 end
+
+local M = {
+  get_completion = completion.get_completion,
+}
 
 ---@private
 ---@param action_name string
 ---@param ctx superkanban.Ctx
-local execute_command = function(action_name, ctx)
+M.execute_command = function(action_name, ctx)
   if type(action_name) == 'string' then
     local callback = actions[action_name]
     if not callback or not type(callback) == 'function' then
@@ -175,26 +177,26 @@ local execute_command = function(action_name, ctx)
   return false
 end
 
-local M = {
-  get_completion = completion.get_completion,
-}
-
 M._command = function(opts)
   local args = opts.fargs
 
   local mode, file = args[1], nil
 
-  if M.file_modes[mode] then
+  if completion.file_arguments[mode] then
     file = args[2]
-    M.file_modes[mode](file)
+    completion.file_arguments[mode](file, true)
     return
-  elseif M.action_groups[mode] then
+  elseif completion.path_arguments[mode] then
+    file = args[2]
+    completion.path_arguments[mode](file, true)
+    return
+  elseif completion.list_arguments[mode] then
     if not superkanban.is_opned then
       utils.msg('SuperKanban should be open to perform the action.', 'warn')
       return
     end
 
-    local action_group = M.action_groups[mode]
+    local action_group = completion.list_arguments[mode]
     local action_key, action_value = parse_key_value(args[2])
     local act_name_from_group
 
@@ -205,14 +207,15 @@ M._command = function(opts)
       act_name_from_group = action_group
     end
 
-    if execute_command(act_name_from_group, superkanban._ctx) then
+    if M.execute_command(act_name_from_group, superkanban._ctx) then
       return
     end
 
     utils.msg(('[%s] is not a valid command.'):format(text.trim(opts.args)), 'warn')
+  elseif not mode then
+    require('super-kanban.command.select').select()
   else
-    file = args[1]
-    M.file_modes.open(file)
+    utils.msg(('[%s] is not a valid command.'):format(text.trim(opts.args)), 'warn')
   end
 end
 
@@ -221,75 +224,7 @@ end
 function M.setup(conf)
   config = conf
 
-  local file_modes = {
-    open = function(file)
-      superkanban.open(file)
-    end,
-    create = function(file)
-      superkanban.create(file)
-    end,
-  }
-
-  local action_groups = {
-    close = 'close',
-    card = {
-      create = {
-        before = 'create_card_before',
-        after = 'create_card_after',
-        top = 'create_card_top',
-        bottom = 'create_card_bottom',
-      },
-      delete = 'delete_card',
-      toggle_complete = 'toggle_complete',
-      archive = 'archive_card',
-      pick_date = 'pick_date',
-      remove_date = 'remove_date',
-      open_note = 'open_note',
-      search = 'search_card',
-      move = { -- move=direction
-        up = 'move_up',
-        down = 'move_down',
-        left = 'move_left',
-        right = 'move_right',
-      },
-      jump = { -- jump=direction
-        up = 'jump_up',
-        down = 'jump_down',
-        left = 'jump_left',
-        right = 'jump_right',
-        top = 'jump_top',
-        bottom = 'jump_bottom',
-      },
-      -- pick_date = function()
-      --   run_action(actions.pick_date(), superkanban._ctx)
-      -- end,
-    },
-    list = {
-      create = {
-        begin = 'create_list_at_begin',
-        ['end'] = 'create_list_at_end',
-      },
-      rename = 'rename_list',
-      delete = 'delete_list',
-      move = { -- move=direction
-        left = 'move_list_left',
-        right = 'move_list_right',
-      },
-      jump = { -- jump=direction
-        left = 'jump_list_left',
-        right = 'jump_list_right',
-        begin = 'jump_list_begin',
-        ['end'] = 'jump_list_end',
-      },
-      sort = { -- sort=direction
-        descending = 'sort_by_due_descending',
-        ascending = 'sort_by_due_ascending',
-      },
-    },
-  }
-
-  M.file_modes = file_modes
-  M.action_groups = action_groups
+  completion.setup(conf)
 end
 
 return M

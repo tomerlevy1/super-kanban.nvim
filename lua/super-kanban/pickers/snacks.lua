@@ -44,23 +44,20 @@ function M.search_cards(opts, ctx, active_item)
     end,
     on_close = function()
       vim.schedule(function()
-        if not found_item and active_item then
+        if not found_item and active_item and not active_item:closed() then
           active_item:focus()
         end
       end)
     end,
     title = 'Super Kanban',
     preview = 'preview',
-    format = 'text', -- TODO: format remove <br>
-    -- format = function(item, _)
-    --   -- local kind = navic.adapt_lsp_num_to_str(item.value.kind)
-    --   -- local kind_hl = "Navbuddy" .. kind
-
-    --   local ret = {} ---@type snacks.picker.Highlight[]
-    --   -- ret[#ret + 1] = { Snacks.picker.util.align(tostring(kind), 15), kind_hl }
-    --   ret[#ret + 1] = { item.text }
-    --   return ret
-    -- end,
+    -- format = 'text',
+    format = function(item, _)
+      local ret = {} ---@type snacks.picker.Highlight[]
+      local title = item.text:gsub('<br>', '')
+      ret[#ret + 1] = { title }
+      return ret
+    end,
     layout = {
       preset = 'ivy',
       layout = {
@@ -108,17 +105,15 @@ function M.files(opts, active_item)
   ---@type snacks.picker.Config
   local picker_conf = {
     confirm = function(p, item)
+      if item then
+        found_item = true
+        require('super-kanban').open(item.file)
+      end
       p:close()
-      vim.schedule(function()
-        if item then
-          found_item = true
-          require('super-kanban').open(item.file)
-        end
-      end)
     end,
     on_close = function()
       vim.schedule(function()
-        if not found_item and active_item then
+        if not found_item and active_item and not active_item:closed() then
           active_item:focus()
         end
       end)

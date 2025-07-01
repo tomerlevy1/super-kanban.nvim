@@ -47,8 +47,8 @@ If you’re new to Kanban, this [video introduction](https://youtu.be/XpK1vXM5Dd
 - Time tracking support to log and review time spent on each task (`coming soon`)
 
 > ⚠️ **This plugin is in active development and currently in alpha.**
-> Expect breaking changes, unfinished features, and rough edges
-> Feedback and bug reports are very welcome — please open an issue if you run into problems!
+> Expect breaking changes, unfinished features, and rough edge.
+> Feedback and bug reports are very welcome - please open an issue if you run into problems!
 
 ---
 
@@ -62,7 +62,7 @@ If you’re new to Kanban, this [video introduction](https://youtu.be/XpK1vXM5Dd
 #### Optional
 
 - [orgmode.nvim](https://github.com/nvim-orgmode/orgmode) - for Org file support
-- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation _(see [Flash integration](#flashnvim-integration))_
+- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation _(see [Flash integration](#⚡-flashnvim-integration))_
 
 ---
 
@@ -92,6 +92,32 @@ require("mini.deps").add({
   },
 })
 ```
+
+---
+
+## 📘 Usage
+
+Start by creating your first Kanban board file:
+
+`:SuperKanban create <FILE_PATH>`
+
+Then open the board with:
+
+`:SuperKanban open <FILE_PATH>`
+
+You can add a new task with `gn` (create after), and navigate between tasks using `<C-h/j/k/l>`.
+
+To **move** cards across the board, use `<A-h/j/k/l>`. Want to quickly jump around? Use `<C-k>`, `G`, `gg`, and more.
+
+To assign a due date, press `@` in insert mode inside a card.
+
+Each task card:
+
+- Uses the **first line** as the card title
+- Treats any `@{date}` string as a **due date**
+- Interprets `#tag` style words as **tags**
+
+See the [Default Keymaps](#🧩-default-keymaps) section below for all available shortcuts.
 
 ---
 
@@ -208,56 +234,6 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 | `zh`     | `move_list_left`         | Move list left                 |
 | `zl`     | `move_list_right`        | Move list right                |
 
-## flash.nvim Integration
-
-You can integrate flash.nvim to jump between Kanban windows using label hints.
-
-Example:
-
-```lua
-local function pick_window(callback)
-  require('flash').jump({
-    highlight = {
-      backdrop = true,
-      groups = {
-        current = 'FlashLabel',
-        label = 'FlashLabel',
-      },
-    },
-    label = { after = { 0, 0 } },
-    search = {
-      mode = 'search',
-      max_length = 0,
-      multi_window = true,
-      exclude = {
-        function(win)
-          local kanban_ft = { superkanban_list = true, superkanban_card = true }
-          return not kanban_ft[vim.bo[vim.api.nvim_win_get_buf(win)].filetype]
-        end,
-      },
-    },
-    action = callback,
-    matcher = function(win)
-      return { { pos = { 1, 0 }, end_pos = { 1, 0 } } }
-    end,
-  })
-end
-
--- Inside your plugin setup
-{
-  mappings = {
-    ['s'] = {
-      callback = function()
-        pick_window()
-      end,
-      desc = 'Flash',
-    },
-  }
-}
-```
-
----
-
 ## 📜 Commands
 
 | Command                      | Description                                                                                            |
@@ -329,6 +305,56 @@ require("super-kanban").create("my-board.md")  -- Create a new board file
 - and more...
 
 See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L941) for the full list.
+
+---
+
+## ⚡ flash.nvim Integration
+
+You can integrate flash.nvim to jump between Kanban windows using label hints.
+
+Example:
+
+```lua
+local function pick_window(callback)
+  require('flash').jump({
+    highlight = {
+      backdrop = true,
+      groups = {
+        current = 'FlashLabel',
+        label = 'FlashLabel',
+      },
+    },
+    label = { after = { 0, 0 } },
+    search = {
+      mode = 'search',
+      max_length = 0,
+      multi_window = true,
+      exclude = {
+        function(win)
+          local kanban_ft = { superkanban_list = true, superkanban_card = true }
+          return not kanban_ft[vim.bo[vim.api.nvim_win_get_buf(win)].filetype]
+        end,
+      },
+    },
+    action = callback,
+    matcher = function(win)
+      return { { pos = { 1, 0 }, end_pos = { 1, 0 } } }
+    end,
+  })
+end
+
+-- Inside your plugin setup
+{
+  mappings = {
+    ['s'] = {
+      callback = function()
+        pick_window()
+      end,
+      desc = 'Flash',
+    },
+  }
+}
+```
 
 ---
 

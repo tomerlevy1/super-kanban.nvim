@@ -16,6 +16,26 @@ It supports Obsidian-style Markdown and Orgmode formats, with Tree-sitter powere
 
 ---
 
+## 🧭 What is a Kanban Board?
+
+A Kanban board is a visual way to manage tasks and workflows. It breaks your work into cards (representing tasks) and organizes them into columns (representing stages, like “Todo”, “Doing”, “Done”).
+
+Each card can represent a task, feature, or idea, and moves across the board as its status changes.
+Why use Kanban?
+
+- See everything at a glance - from what's coming up to what's done
+- Stay focused by limiting what you’re working on
+- Easily rearrange tasks as priorities change
+- Organize projects into structured, manageable pieces
+
+Whether you’re tracking personal todos or planning a complex project, a Kanban board helps keep things clear and actionable.
+
+### New to Kanban?
+
+If you’re new to Kanban, this [video introduction](https://youtu.be/XpK1vXM5Dd0?si=BQZRmxPnTbL4I8mQ) is highly recommended - it explains the basics clearly and is perfect for beginners!
+
+---
+
 ## ✨ Features
 
 - Keyboard-centric Kanban workflow built for Neovim

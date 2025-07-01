@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🗂️ super-kanban.nvim
+# 🗂️ super-kanban.nvim (WIP)
 
 **A keyboard-centric, minimal, and customizable Kanban board plugin for Neovim.**
 
-It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered parsing and a focus on speed and clarity - right inside your editor.
+It supports Obsidian-style Markdown and Orgmode formats, with Tree-sitter powered parsing and a focus on speed and clarity - right inside your editor.
 
 </div>
 
@@ -19,12 +19,16 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 ## ✨ Features
 
 - Keyboard-centric Kanban workflow built for Neovim
-- Treesitter-based parsing for `Markdown` and `Orgmode` (`neorg` coming soon)
+- Tree-sitter based parsing for `Markdown` and `Orgmode` (`neorg` coming soon)
 - Compatible with Obsidian Kanban-style markdown
 - Supports tags, checkmarks, due dates, sorting or archiving cards
 - Built-in date picker for assigning due dates (press `@` in insert mode)
 - Create dedicated notes for each card to store additional context
 - Time tracking support to log and review time spent on each task (`coming soon`)
+
+> ⚠️ **This plugin is in active development and currently in alpha.**
+> Expect breaking changes, unfinished features, and rough edges
+> Feedback and bug reports are very welcome — please open an issue if you run into problems!
 
 ---
 
@@ -33,12 +37,12 @@ It supports Obsidian-style Markdown and Orgmode formats, with Treesitter-powered
 #### Required
 
 - [snacks.nvim](https://github.com/folke/snacks.nvim) - search & component layout engine
-- Treesitter parser for `markdown` or `org`
+- Tree-sitter parser for `markdown` or `org`
 
 #### Optional
 
 - [orgmode.nvim](https://github.com/nvim-orgmode/orgmode) - for Org file support
-- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation  *(see [Flash integration](#flashnvim-integration))*
+- [flash.nvim](https://github.com/folke/flash.nvim) - for enhanced jump navigation _(see [Flash integration](#flashnvim-integration))_
 
 ---
 
@@ -189,6 +193,7 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 You can integrate flash.nvim to jump between Kanban windows using label hints.
 
 Example:
+
 ```lua
 local function pick_window(callback)
   require('flash').jump({
@@ -230,17 +235,54 @@ end
   }
 }
 ```
+
 ---
 
 ## 📜 Commands
 
-| Command               | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| `:SuperKanban`        | Open the main board window                       |
-| `:SuperKanban create` | Create a new Kanban file                         |
-| `:SuperKanban close`  | Close the main board window                      |
-| `:SuperKanban list`   | List-related actions (create, move, delete, etc) |
-| `:SuperKanban card`   | Card-related actions (move, jump, date, etc)     |
+| Command                      | Description                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `:SuperKanban`               | Show all available subcommands using `vim.ui.input`.                                                   |
+| `:SuperKanban open [FILE]`   | Open the Kanban board. Open a picker if `[FILE]` is not given. (currently only supports snacks.picker) |
+| `:SuperKanban create [FILE]` | Create a new board file. If `[FILE]` is omitted, prompts for a name.                                   |
+| `:SuperKanban close`         | Exit the main Kanban board window.                                                                     |
+| `:SuperKanban list ...`      | List-related actions (create, move, jump, etc.). See below for details.                                |
+| `:SuperKanban card ...`      | Card-related actions (create, jump, due date, etc.). See below for details.                            |
+
+### 📋 List Subcommands
+
+| Command                             | Description                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `:SuperKanban list create=begin`    | Create a list at the beginning of the board. |
+| `:SuperKanban list create=end`      | Create a list at the end of the board.       |
+| `:SuperKanban list rename`          | Rename the currently selected list.          |
+| `:SuperKanban list delete`          | Delete the currently selected list.          |
+| `:SuperKanban list move=left`       | Move the list one position to the left.      |
+| `:SuperKanban list move=right`      | Move the list one position to the right.     |
+| `:SuperKanban list jump=left`       | Jump to the list on the left.                |
+| `:SuperKanban list jump=right`      | Jump to the list on the right.               |
+| `:SuperKanban list jump=begin`      | Jump to the first list.                      |
+| `:SuperKanban list jump=end`        | Jump to the last list.                       |
+| `:SuperKanban list sort=descending` | Sort cards by due date (latest first).       |
+| `:SuperKanban list sort=ascending`  | Sort cards by due date (earliest first).     |
+
+### 📝 Card Subcommands
+
+| Command                                                | Description                                    |
+| ------------------------------------------------------ | ---------------------------------------------- |
+| `:SuperKanban card create=before`                      | Create a card before the current one.          |
+| `:SuperKanban card create=after`                       | Create a card after the current one.           |
+| `:SuperKanban card create=top`                         | Create a card at the top of the list.          |
+| `:SuperKanban card create=bottom`                      | Create a card at the bottom of the list.       |
+| `:SuperKanban card delete`                             | Delete the selected card.                      |
+| `:SuperKanban card toggle_complete`                    | Toggle the checkbox/completion mark.           |
+| `:SuperKanban card archive`                            | Archive the selected card.                     |
+| `:SuperKanban card pick_date`                          | Assign a due date using the date picker.       |
+| `:SuperKanban card remove_date`                        | Remove the due date.                           |
+| `:SuperKanban card search`                             | Search for cards globally in the board.        |
+| `:SuperKanban card open_note`                          | Open or create a note file linked to the card. |
+| `:SuperKanban card move=up/down/left/right`            | Move the card within or across lists.          |
+| `:SuperKanban card jump=up/down/left/right/top/bottom` | Jump focus between cards.                      |
 
 See `:h :SuperKanban` for subcommand details.
 
@@ -248,12 +290,12 @@ See `:h :SuperKanban` for subcommand details.
 
 ## 📦 API
 
-You can call functions directly via Lua:
+Programmatically interact with the plugin using Lua.
+You can open or create Kanban board files directly:
 
 ```lua
-require("super-kanban").open("todo.md")
-require("super-kanban").create("my-board.md")
-require("super-kanban").setup({ ... })
+require("super-kanban").open("todo.md")        -- Open an existing board
+require("super-kanban").create("my-board.md")  -- Create a new board file
 ```
 
 ---
@@ -266,7 +308,7 @@ require("super-kanban").setup({ ... })
 - `SuperKanbanDatePickerCursor`
 - and more...
 
-See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L909) for the full list.
+See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-kanban.nvim/blob/main/doc/super-kanban.txt#L941) for the full list.
 
 ---
 
@@ -275,7 +317,7 @@ See [`:h super-kanban-highlight-groups`](https://github.com/hasansujon786/super-
 Feel free to open issues or PRs if you have ideas or find bugs.
 This plugin is still in early development, so feedback is welcome!
 
-## 🙏 Acknowledgement
+## 🙏 Acknowledgements
 
 - Huge thanks to [arakkkkk/kanban.nvim](https://github.com/arakkkkk/kanban.nvim)
   it was one of the first Neovim Kanban plugins I tried, and it inspired me to

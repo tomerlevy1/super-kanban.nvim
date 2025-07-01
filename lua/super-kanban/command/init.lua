@@ -1,5 +1,6 @@
 ---@text 5. Commands ~
 ---
+---     :SuperKanban                     |super-kanban-command|
 ---     :SuperKanban open                |super-kanban-command-open|
 ---     :SuperKanban create              |super-kanban-command-create|
 ---     :SuperKanban close               |super-kanban-command-close|
@@ -8,21 +9,27 @@
 ---
 --- These commands are provided by |super-kanban.nvim| to control board behavior.
 --- Read below for more details on subcommands and their functionality.
----@tag :SuperKanban super-kanban-command
+---@tag super-kanban-command-intro
 ---@toc_entry 5. Commands
 
---- :SuperKanban [file] ~
---- :SuperKanban open [file] ~
+--- :SuperKanban ~
+---
+---     Show all available subcommands (using vim.ui.input)
+---@toc_entry   - SuperKanban
+---@tag :SuperKanban super-kanban-command
+
+--- :SuperKanban open [FILE] ~
 ---
 ---     Open the main Kanban board window with the given file.
+---     - If no [FILE] is provided, a file picker will be shown.
 ---@toc_entry   - SuperKanban open
 ---@tag super-kanban-command-open
 
---- :SuperKanban create [file] ~
+--- :SuperKanban create [FILE] ~
 ---
----     Create a new board file.
----     - If no argument is passed, prompts for a file. (TODO: work on this)
----     - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+---     Create a new Kanban board file.
+---     - If no [FILE] is given, a prompt will ask for the filename.
+---     - Supports relative or absolute paths, e.g., `file.md` or `dir/file.md`.
 ---@toc_entry   - SuperKanban create
 ---@tag super-kanban-command-create
 
@@ -37,29 +44,29 @@
 ---     Perform list-related actions like creating, renaming, deleting,
 ---     moving, or jumping between lists in the Kanban board.
 ---
---- Available subcommands: ~
+--- Available subcommands:
 ---
---- create=[position]
+--- :SuperKanban list create=[POSITION] ~
 ---   - `begin` : Create a list at the beginning of the board.
 ---   - `end`   : Create a list at the end of the board.
 ---
---- rename
+--- :SuperKanban list rename ~
 ---   Rename the currently selected list.
 ---
---- delete
+--- :SuperKanban list delete ~
 ---   Delete the currently selected list.
 ---
---- move=[direction]
+--- :SuperKanban list move=[DIRECTION] ~
 ---   - `left`  : Move the list one position to the left.
 ---   - `right` : Move the list one position to the right.
 ---
---- jump=[direction]
+--- :SuperKanban list jump=[DIRECTION] ~
 ---   - `left`  : Jump focus to the list on the left.
 ---   - `right` : Jump focus to the list on the right.
 ---   - `begin` : Jump focus to the first list.
 ---   - `end`   : Jump focus to the last list.
 ---
---- sort=[option]
+--- :SuperKanban list sort=[OPTION] ~
 ---   - `descending` : Sort cards in the list by due date (latest first).
 ---   - `ascending`  : Sort cards in the list by due date (earliest first).
 ---@toc_entry   - SuperKanban list
@@ -70,42 +77,42 @@
 ---     Perform card-related actions such as creating, moving, jumping,
 ---     toggling completion, assigning due dates, and more.
 ---
---- Available subcommands: ~
+--- Available subcommands:
 ---
---- create=[position]
+--- :SuperKanban card create=[POSITION] ~
 ---   - `before` : Create a card before the current card.
 ---   - `after`  : Create a card after the current card.
 ---   - `top`    : Create a card at the top of the current list.
 ---   - `bottom` : Create a card at the bottom of the current list.
 ---
---- delete
+--- :SuperKanban card delete ~
 ---   Delete the currently selected card.
 ---
---- toggle_complete
+--- :SuperKanban card toggle_complete ~
 ---   Toggle the completion status of the card.
 ---
---- archive
+--- :SuperKanban card archive ~
 ---   Archive the currently selected card.
 ---
---- pick_date
+--- :SuperKanban card pick_date ~
 ---   Open the date picker to assign a due date.
 ---
---- remove_date
+--- :SuperKanban card remove_date ~
 ---   Remove the due date from the current card.
 ---
---- search
+--- :SuperKanban card search ~
 ---   Search for cards globally across the board.
 ---
---- open_note
+--- :SuperKanban card open_note ~
 ---   Open or create note file for current card.
 ---
---- move=[direction]
+--- :SuperKanban card move=[DIRECTION] ~
 ---   - `up`     : Move the current card upward within the list.
 ---   - `down`   : Move the current card downward within the list.
 ---   - `left`   : Move the card to the previous list.
 ---   - `right`  : Move the card to the next list.
 ---
---- jump=[direction]
+--- :SuperKanban card jump=[DIRECTION] ~
 ---   - `up`     : Jump focus to the card above.
 ---   - `down`   : Jump focus to the card below.
 ---   - `left`   : Jump to the previous list.

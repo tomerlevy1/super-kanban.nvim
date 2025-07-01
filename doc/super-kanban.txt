@@ -1,4 +1,4 @@
-*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 June 27
+*super-kanban.txt* *super-kanban.nvim*                   Last change: 2025 July 02
 
 ------------------------------------------------------------------------------
                                                 *super-kanban-table-of-contents*
@@ -14,7 +14,8 @@ TABLE OF CONTENTS
     - Mappings ................................ |super-kanban-config-mappings|
     - Default Options ......................... |super-kanban-config-defaults|
   4. API .................................................. |super-kanban-api|
-  5. Commands ............................ |:SuperKanban| |super-kanban-command|
+  5. Commands ................................... |super-kanban-command-intro|
+    - SuperKanban ........................ |:SuperKanban| |super-kanban-command|
     - SuperKanban open ........................... |super-kanban-command-open|
     - SuperKanban create ....................... |super-kanban-command-create|
     - SuperKanban close ......................... |super-kanban-command-close|
@@ -376,22 +377,23 @@ The following functions are provided by |super-kanban.nvim|.
 
 ------------------------------------------------------------------------------
                                                                       *M.open()*
-                            `M.open`({source_path})
+                     `M.open`({source_path}, {open_picker})
 
 Open super-kanban board.
 
 Parameters ~
-{source_path} `(string)` Absolute or relative path to the source_path
+{source_path} `(optional)` `(string)` Absolute or relative path to the source_path
+{open_picker} `(optional)` `(boolean)` Open picker to select file if no source_path provided
 
 ------------------------------------------------------------------------------
                                                                     *M.create()*
-                           `M.create`({source_path})
+                    `M.create`({source_path}, {open_prompt})
 
 Scaffold a Kanban file with default template.
 
 Parameters ~
-{source_path} `(string)` Absolute or relative path to the file used to
-create the Kanban board.
+{source_path} `(optional)` `(string)` Absolute or relative path to the file used to
+{open_prompt} `(optional)` `(boolean)` Prompt to get filename if no source_path provided
 
 ------------------------------------------------------------------------------
                                                                      *M.setup()*
@@ -405,9 +407,10 @@ Parameters ~
 
 ==============================================================================
 ------------------------------------------------------------------------------
-                                             *:SuperKanban* *super-kanban-command*
+                                                    *super-kanban-command-intro*
 5. Commands ~
 
+    :SuperKanban                     |super-kanban-command|
     :SuperKanban open                |super-kanban-command-open|
     :SuperKanban create              |super-kanban-command-create|
     :SuperKanban close               |super-kanban-command-close|
@@ -418,19 +421,25 @@ These commands are provided by |super-kanban.nvim| to control board behavior.
 Read below for more details on subcommands and their functionality.
 
 ------------------------------------------------------------------------------
+                                             *:SuperKanban* *super-kanban-command*
+:SuperKanban ~
+
+    Show all available subcommands (using vim.ui.input)
+
+------------------------------------------------------------------------------
                                                      *super-kanban-command-open*
-:SuperKanban [file] ~
-:SuperKanban open [file] ~
+:SuperKanban open [FILE] ~
 
     Open the main Kanban board window with the given file.
+    - If no [FILE] is provided, a file picker will be shown.
 
 ------------------------------------------------------------------------------
                                                    *super-kanban-command-create*
-:SuperKanban create [file] ~
+:SuperKanban create [FILE] ~
 
-    Create a new board file.
-    - If no argument is passed, prompts for a file. (TODO: work on this)
-    - You may pass a relative or absolute path like `file.md` or `dir/file.md`.
+    Create a new Kanban board file.
+    - If no [FILE] is given, a prompt will ask for the filename.
+    - Supports relative or absolute paths, e.g., `file.md` or `dir/file.md`.
 
 ------------------------------------------------------------------------------
                                                     *super-kanban-command-close*
@@ -445,29 +454,29 @@ Read below for more details on subcommands and their functionality.
     Perform list-related actions like creating, renaming, deleting,
     moving, or jumping between lists in the Kanban board.
 
-Available subcommands: ~
+Available subcommands:
 
-create=[position]
+:SuperKanban list create=[POSITION] ~
   - `begin` : Create a list at the beginning of the board.
   - `end`   : Create a list at the end of the board.
 
-rename
+:SuperKanban list rename ~
   Rename the currently selected list.
 
-delete
+:SuperKanban list delete ~
   Delete the currently selected list.
 
-move=[direction]
+:SuperKanban list move=[DIRECTION] ~
   - `left`  : Move the list one position to the left.
   - `right` : Move the list one position to the right.
 
-jump=[direction]
+:SuperKanban list jump=[DIRECTION] ~
   - `left`  : Jump focus to the list on the left.
   - `right` : Jump focus to the list on the right.
   - `begin` : Jump focus to the first list.
   - `end`   : Jump focus to the last list.
 
-sort=[option]
+:SuperKanban list sort=[OPTION] ~
   - `descending` : Sort cards in the list by due date (latest first).
   - `ascending`  : Sort cards in the list by due date (earliest first).
 
@@ -478,42 +487,42 @@ sort=[option]
     Perform card-related actions such as creating, moving, jumping,
     toggling completion, assigning due dates, and more.
 
-Available subcommands: ~
+Available subcommands:
 
-create=[position]
+:SuperKanban card create=[POSITION] ~
   - `before` : Create a card before the current card.
   - `after`  : Create a card after the current card.
   - `top`    : Create a card at the top of the current list.
   - `bottom` : Create a card at the bottom of the current list.
 
-delete
+:SuperKanban card delete ~
   Delete the currently selected card.
 
-toggle_complete
+:SuperKanban card toggle_complete ~
   Toggle the completion status of the card.
 
-archive
+:SuperKanban card archive ~
   Archive the currently selected card.
 
-pick_date
+:SuperKanban card pick_date ~
   Open the date picker to assign a due date.
 
-remove_date
+:SuperKanban card remove_date ~
   Remove the due date from the current card.
 
-search
+:SuperKanban card search ~
   Search for cards globally across the board.
 
-open_note
+:SuperKanban card open_note ~
   Open or create note file for current card.
 
-move=[direction]
+:SuperKanban card move=[DIRECTION] ~
   - `up`     : Move the current card upward within the list.
   - `down`   : Move the current card downward within the list.
   - `left`   : Move the card to the previous list.
   - `right`  : Move the card to the next list.
 
-jump=[direction]
+:SuperKanban card jump=[DIRECTION] ~
   - `up`     : Jump focus to the card above.
   - `down`   : Jump focus to the card below.
   - `left`   : Jump to the previous list.
@@ -531,13 +540,35 @@ Customize key mappings using the `mappings` option in setup().
 Read below to find available built-in action names and their functionality.
 
 ------------------------------------------------------------------------------
+                                                                *actions.open()*
+                   `actions.open`({cardUI}, {listUI}, {ctx})
+
+Opens a file picker to select a supported Kanban file.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
+                                                              *actions.create()*
+                  `actions.create`({cardUI}, {listUI}, {ctx})
+
+Prompts the user to enter a filename and creates a new Kanban file.
+
+Parameters ~
+{cardUI} `(superkanban.cardUI|nil)`
+{listUI} `(superkanban.ListUI|nil)`
+{ctx} `(superkanban.Ctx)`
+
+------------------------------------------------------------------------------
                                                                *actions.close()*
                    `actions.close`({cardUI}, {listUI}, {ctx})
 
-Open the main Kanban board window.
+Close the main Kanban board window.
 
 Parameters ~
-{cardUI} `(vim.keymap.set.Opts)`
+{cardUI} `(superkanban.cardUI|nil)`
 {listUI} `(superkanban.ListUI|nil)`
 {ctx} `(superkanban.Ctx)`
 

@@ -10,7 +10,7 @@ local utils = require('super-kanban.utils')
 local actions = {}
 
 ---
---- Open the a picker to select file.
+--- Opens a file picker to select a supported Kanban file.
 ---
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil
@@ -20,7 +20,7 @@ actions.open = function(cardUI, listUI, ctx)
 end
 
 ---
---- Prompt for a filename & create a new file
+--- Prompts the user to enter a filename and creates a new Kanban file.
 ---
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil

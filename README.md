@@ -46,7 +46,8 @@ If you’re new to Kanban, this [video introduction](https://youtu.be/XpK1vXM5Dd
 - Create dedicated notes for each card to store additional context
 - Time tracking support to log and review time spent on each task (`coming soon`)
 
-> ⚠️ **This plugin is in active development and currently in alpha.**
+> [!WARNING]
+> **This plugin is in active development and currently in alpha.**
 > Expect breaking changes, unfinished features, and rough edge.
 > Feedback and bug reports are very welcome - please open an issue if you run into problems!
 
@@ -235,7 +236,7 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 | `zh`     | `move_list_left`         | Move list left                 |
 | `zl`     | `move_list_right`        | Move list right                |
 
-### Pate Picker Keymaps
+### Date Picker Keymaps
 
 | Key        | Description           |
 | ---------- | --------------------- |

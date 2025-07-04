@@ -203,6 +203,7 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 | Key      | Action                   | Description                    |
 | -------- | ------------------------ | ------------------------------ |
 | `q`      | `close`                  | Close board window             |
+| `g?`     | `help`                   | Show keymap help window        |
 | `gN`     | `create_card_before`     | Create card before current     |
 | `gn`     | `create_card_after`      | Create card after current      |
 | `gK`     | `create_card_top`        | Create card at top of list     |
@@ -233,6 +234,22 @@ See `:h vim.keymap.set()` and `vim.keymap.set.Opts` for details.
 | `<A-l>`  | `move_right`             | Move card to next list         |
 | `zh`     | `move_list_left`         | Move list left                 |
 | `zl`     | `move_list_right`        | Move list right                |
+
+### Pate Picker Keymaps
+
+| Key        | Description           |
+| ---------- | --------------------- |
+| `q`        | Close date picker     |
+| `.`        | Focus on today's date |
+| `n`        | Go to next month      |
+| `p`        | Go to previous month  |
+| `i,o,<cr>` | Insert selected date  |
+
+### Note Popup Keymaps
+
+| Key | Description        |
+| --- | ------------------ |
+| `q` | Close popup window |
 
 ## 📜 Commands
 

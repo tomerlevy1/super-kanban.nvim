@@ -564,7 +564,7 @@ M._keys = {
   { lhs = '.', desc = "Focus on today's date" },
   { lhs = 'n', desc = 'Go to next month' },
   { lhs = 'p', desc = 'Go to previous month' },
-  { lhs = 'i', desc = 'Insert selected date' },
+  { lhs = 'i,o,<cr>', desc = 'Insert selected date' },
 }
 
 return M

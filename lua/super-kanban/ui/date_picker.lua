@@ -307,7 +307,10 @@ function M:mount(opts)
     }, conf.date_picker.win_options),
     -- Non config values
     backdrop = false,
-    bo = { filetype = constants.date_picker.filetype },
+    bo = {
+      filetype = constants.date_picker.filetype,
+      modifiable = false,
+    },
     width = width,
     height = info.height,
     border = 'none',
@@ -340,18 +343,30 @@ function M:mount(opts)
       b = { 'ge', expr = true },
       w = { 'e', expr = true },
       ['0'] = { '0e', expr = true },
-      ['.'] = function()
-        self:update_month(self.current_year, self.current_month, { focus_on = 'today' })
-      end,
-      n = function()
-        self:next_month()
-      end,
-      p = function()
-        self:prev_month()
-      end,
-      i = handle_on_select,
-      o = handle_on_select,
-      ['<CR>'] = handle_on_select,
+      {
+        '.',
+        function()
+          self:update_month(self.current_year, self.current_month, { focus_on = 'today' })
+        end,
+        desc = "Focus on today's date",
+      },
+      {
+        'n',
+        function()
+          self:next_month()
+        end,
+        desc = 'Go to next month',
+      },
+      {
+        'p',
+        function()
+          self:prev_month()
+        end,
+        desc = 'Go to previous month',
+      },
+      { 'i', handle_on_select, desc = 'Insert selected date' },
+      { 'o', handle_on_select, desc = 'Insert selected date' },
+      { '<CR>', handle_on_select, desc = 'Insert selected date' },
     },
   })
 end
@@ -410,8 +425,13 @@ function M:update_month(year, month, opts)
   vim.api.nvim_win_set_height(self.win.win, info.height)
   vim.api.nvim_win_set_height(self.border_win.win, info.border_height)
 
+  local buf = self.win.buf
+
   self.border_win:set_title(get_calander_title(year, month))
-  vim.api.nvim_buf_set_lines(self.win.buf, 0, -1, false, info.lines)
+  vim.api.nvim_set_option_value('modifiable', true, { buf = buf })
+  vim.api.nvim_buf_set_lines(buf or 0, 0, -1, false, info.lines)
+  vim.api.nvim_set_option_value('modifiable', false, { buf = buf })
+
   self:hl_a_day(info.day_positions.today)
   if focus_on then
     self:put_cursor_on_a_day(info.day_positions[focus_on])
@@ -538,5 +558,13 @@ end
 function M.setup(conf)
   config = conf
 end
+
+M._keys = {
+  { lhs = 'q', desc = "Close" },
+  { lhs = '.', desc = "Focus on today's date" },
+  { lhs = 'n', desc = 'Go to next month' },
+  { lhs = 'p', desc = 'Go to previous month' },
+  { lhs = 'i', desc = 'Insert selected date' },
+}
 
 return M

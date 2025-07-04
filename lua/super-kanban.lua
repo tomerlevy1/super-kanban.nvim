@@ -310,8 +310,8 @@ local default_config = {
   mappings = {
     -- Close board window
     ['q'] = 'close',
-    -- Log card info
-    ['X'] = 'log_info',
+    -- Show keymap help window
+    ['g?'] = 'help',
 
     -- Create card at various positions
     ['gN'] = 'create_card_before',
@@ -362,6 +362,8 @@ local default_config = {
 }
 --minidoc_afterlines_end
 -- stylua: ignore end
+
+-- ['X'] = 'log_info',
 
 ---@private
 ---@param source_path string

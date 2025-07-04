@@ -146,4 +146,8 @@ function M.setup(conf)
   config = conf
 end
 
+M._keys = {
+  { lhs = 'q', desc = 'Close' },
+}
+
 return M

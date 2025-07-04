@@ -618,6 +618,16 @@ actions.log_info = function(cardUI, listUI, ctx)
   end
 end
 
+---
+--- Show keymap help window
+---
+---@param cardUI superkanban.cardUI|nil
+---@param listUI superkanban.ListUI|nil
+---@param ctx superkanban.Ctx
+actions.help = function(cardUI, listUI, ctx)
+  require('super-kanban.ui.help').show(cardUI or listUI)
+end
+
 ---@private
 ---@param cardUI superkanban.cardUI|nil
 ---@param listUI superkanban.ListUI|nil

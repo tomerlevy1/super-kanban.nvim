@@ -129,10 +129,10 @@ function M.setup()
 
   -- stylua: ignore
   require('super-kanban.utils.hl').set_hl({
-    Normal                = 'NormalFloat',
-    Border                = 'FloatBorder',
+    Normal                = 'Normal',
+    Border                = 'Comment',
     Bubble                = 'String',
-    BubbleEdge            = 'SuperKanbanBubble',
+    BubbleEdge            = 'String',
 
     BoardNormal           = 'SuperKanbanNormal',
     BoardBorder           = 'SuperKanbanBorder',
@@ -145,17 +145,17 @@ function M.setup()
     -- List window
     ListNormal            = 'SuperKanbanNormal',
     ListBorder            = 'SuperKanbanBorder',
-    ListWinbar            = 'Search',
-    ListWinbarEdge        = 'Search',
+    ListWinbar            = 'Visual',
+    ListWinbarEdge        = 'SuperKanbanBorder',
     ListTitleBottom       = 'String',
 
     -- Card window
-    CardNormal            = 'CursorLine', -- Use darker color use to show active card
+    CardNormal            = 'NormalFloat', -- Use darker color use to show active card
     CardNormalNC          = 'SuperKanbanListNormal',
     -- CardBorder
     CardBorderNC          = 'SuperKanbanListBorder',
     CardWinBar            = 'SuperKanbanCardNormal',
-    CardWinbarNC          = 'SuperKanbanCardNormalNC',
+    CardWinbarNC          = '@punctuation.bracket',
 
     -- Card content
     None                  = { fg = 'NONE' },
@@ -184,7 +184,7 @@ function M.setup()
   }, { prefix = prefix, default = default })
 
   local border_fg = get_hl('SuperKanbanCardBorderNC')
-  local _, card_focus_bg = get_hl('SuperKanbanCardNormal', nil, '#222222')
+  local _, card_focus_bg = get_hl('SuperKanbanCardNormal', nil, 'none')
 
   -- stylua: ignore
   require('super-kanban.utils.hl').set_hl({

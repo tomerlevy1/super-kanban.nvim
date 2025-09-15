@@ -169,6 +169,10 @@ function M:exit()
   self.win:close()
 end
 
+function M:write_kanban()
+  require('super-kanban.parser.writer').write_kanban_file(self.ctx, config)
+end
+
 function M:on_exit()
   require('super-kanban.parser.writer').write_kanban_file(self.ctx, config)
   for _, li in ipairs(self.ctx.lists) do
